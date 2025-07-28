@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
@@ -27,6 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="Id">ID of the service.</param>
 /// <param name="Title">Title or name of the service.</param>
 /// <param name="Provider">Provider of the service.</param>
+/// <param name="Shortname">Provider short name of the service.</param>
 /// <param name="LeadPictureId">Lead picture Id.</param>
 /// <param name="ContactEmail">Contact email address.</param>
 /// <param name="Description">The description of the service.</param>
@@ -37,9 +39,11 @@ public record ServiceOverviewData(
     Guid Id,
     string? Title,
     string Provider,
+    [property: JsonPropertyName("providerShortName")] string Shortname,
     Guid? LeadPictureId,
     string? ContactEmail,
     string? Description,
     LicenseTypeId LicenseType,
     string Price,
-    IEnumerable<ServiceTypeId> ServiceTypeIds);
+    IEnumerable<ServiceTypeId> ServiceTypeIds
+);

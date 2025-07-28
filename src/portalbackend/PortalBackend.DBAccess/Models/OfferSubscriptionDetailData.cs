@@ -44,6 +44,7 @@ public record SubscriberSubscriptionDetailData(
     OfferSubscriptionStatusId OfferSubscriptionStatus,
     string? Name,
     string Provider,
+    [property: JsonPropertyName("providerShortName")] string Shortname,
     IEnumerable<string> Contact,
     IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData,
     IEnumerable<SubscriptionAssignedConnectorData> ConnectorData
@@ -67,6 +68,7 @@ public record SubscriptionAssignedConnectorData(
 /// <param name="OfferSubscriptionStatus">Status of the offer subscription</param>
 /// <param name="Name">Name of the Offer</param>
 /// <param name="Customer">Name of the company subscribing the offer</param>
+/// <param name="Shortname">Company short name of the company subscribing the offer</param>
 /// <param name="Bpn">When called from /provider bpn of the company subscribing the offer, otherwise the provider company's bpn</param>
 /// <param name="Contact">When called from /provider the company admins of the subscribing company, otherwise the salesmanagers of the offer provider</param>
 /// <param name="TechnicalUserData">Information about the technical user</param>
@@ -77,6 +79,7 @@ public record OfferProviderSubscriptionDetail(
     OfferSubscriptionStatusId OfferSubscriptionStatus,
     string? Name,
     string Customer,
+    [property: JsonPropertyName("providerShortName")] string Shortname,
     string? Bpn,
     IEnumerable<string> Contact,
     IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData,

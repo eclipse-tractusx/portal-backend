@@ -21,6 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 
@@ -33,6 +34,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 /// <param name="Agreements">the assigned agreements</param>
 /// <param name="Price">the offer price</param>
 /// <param name="Images">list of the images</param>
+/// <param name="Shortname">returns shortname of company</param>
 /// <param name="ProviderUri">the provider uri</param>
 /// <param name="ContactEmail">contact email</param>
 /// <param name="ContactNumber">contact number</param>
@@ -47,6 +49,7 @@ public record ServiceProviderResponse(
     IEnumerable<OfferAgreement> Agreements,
     string? Price,
     IEnumerable<Guid> Images,
+    [property: JsonPropertyName("providerShortName")] string Shortname,
     string? ProviderUri,
     string? ContactEmail,
     string? ContactNumber,

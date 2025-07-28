@@ -241,6 +241,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 service.Id,
                 service.Name,
                 service.ProviderCompany!.Name,
+                service.ProviderCompany!.Shortname,
                 service.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.SERVICE_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                 service.ContactEmail,
                 service.OfferDescriptions.SingleOrDefault(ln => ln.LanguageShortName == languageShortName)!.DescriptionShort,
@@ -275,6 +276,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 offer.Id,
                 offer.Name,
                 offer.ProviderCompany!.Name,
+                offer.ProviderCompany!.Shortname,
                 offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.SERVICE_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                 offer.ContactEmail,
                 offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
@@ -350,6 +352,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                     ? new OfferProviderData(
                         x.Offer.Name,
                         x.Offer.ProviderCompany!.Name,
+                        x.Offer.ProviderCompany!.Shortname,
                         x.Offer.Documents.Where(document => document.DocumentTypeId == documentTypeId && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                         x.Offer.ProviderCompany!.Name,
                         offerTypeId == OfferTypeId.APP
@@ -670,6 +673,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 offer.Name,
                 offer.ServiceDetails.Select(x => x.ServiceTypeId),
                 offer.ProviderCompany!.Name,
+                offer.ProviderCompany!.Shortname,
                 offer.OfferDescriptions.Select(description => new LocalizedDescription(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
                 offer.Documents.Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
                 offer.MarketingUrl,
@@ -704,6 +708,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 offer.Name,
                 offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.SERVICE_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                 offer.ProviderCompany!.Name,
+                offer.ProviderCompany!.Shortname,
                 offer.OfferStatusId,
                 offer.DateLastChanged
                 ))
@@ -730,6 +735,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 offer.Name,
                 offer.OfferStatusId,
                 offer.ProviderCompany!.Name,
+                offer.ProviderCompany!.Shortname,
                 offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionShort
                            ?? offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == defaultLanguageShortName)!.DescriptionShort
                         ))

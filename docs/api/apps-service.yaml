@@ -3472,6 +3472,8 @@ components:
           nullable: true
         customer:
           type: string
+        providerShortName:
+          type: string
         bpn:
           type: string
           nullable: true
@@ -3537,6 +3539,8 @@ components:
           type: string
           nullable: true
         provider:
+          type: string
+        providerShortName:
           type: string
         status:
           $ref: '#/components/schemas/OfferSubscriptionStatusId'
@@ -3713,6 +3717,8 @@ components:
           type: string
           nullable: true
         provider:
+          type: string
+        providerShortName:
           type: string
         contact:
           type: array

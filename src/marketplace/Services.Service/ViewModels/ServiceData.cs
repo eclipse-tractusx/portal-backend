@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 
@@ -43,6 +44,7 @@ public record ServiceData(
     string Title,
     IEnumerable<ServiceTypeId> ServiceTypes,
     string Provider,
+    [property: JsonPropertyName("providerShortName")] string Shortname,
     IEnumerable<LocalizedDescription> Descriptions,
     IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
     string ProviderUri,
