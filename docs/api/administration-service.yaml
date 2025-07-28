@@ -6285,6 +6285,7 @@ components:
           type: string
         companyShortName:
           type: string
+          nullable: true
         companyRoles:
           type: array
           items:
@@ -6351,6 +6352,7 @@ components:
           type: string
         companyShortName:
           type: string
+          nullable: true
         email:
           type: string
           nullable: true

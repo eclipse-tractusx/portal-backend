@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using System.Text.Json.Serialization;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record OfferSubscriptionConnectorData(
     Guid SubscriptionId,
     string CustomerName,
-    [property: JsonPropertyName("customerShortName")] string Shortname,
+    [property: JsonPropertyName("customerShortName")] string? Shortname,
     string? OfferName,
     IEnumerable<Guid> ConnectorIds
 );
