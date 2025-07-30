@@ -55,6 +55,7 @@ public class ConnectorsBusinessLogicTests
     private static readonly Guid CompanyIdWithoutSdDocument = Guid.NewGuid();
     private static readonly Guid ExistingConnectorId = Guid.NewGuid();
     private static readonly Guid CompanyWithoutBpnId = Guid.NewGuid();
+    private static readonly Guid CompanyWithoutCountryCode = Guid.NewGuid();
     private readonly Guid _validOfferSubscriptionId = Guid.NewGuid();
     private readonly IIdentityData _identity;
     private readonly IFixture _fixture;
@@ -467,8 +468,23 @@ public class ConnectorsBusinessLogicTests
         async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
+        var exception = await Assert.ThrowsAsync<ConflictException>(Act);
         exception.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_UNEXPECTED_NO_BPN_ASSIGNED.ToString());
+    }
+
+    [Fact]
+    public async Task CreateConnectorAsync_WithoutCountryCode_ThrowsUnexpectedConditionException()
+    {
+        // Arrange
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, null);
+        A.CallTo(() => _identity.CompanyId).Returns(CompanyWithoutCountryCode);
+
+        // Act
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
+
+        // Assert
+        var exception = await Assert.ThrowsAsync<ConflictException>(Act);
+        exception.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_COUNTRYCODE_NOT_FOUND.ToString());
     }
 
     [Fact]
@@ -632,8 +648,9 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var sa01 = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
+        var data = default(OfferSubscriptionWithProvider?);
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
-            .Returns((false, default, default, default, default, default, default));
+            .Returns(data);
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, sa01);
 
         SetupTechnicalIdentity();
@@ -652,8 +669,9 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var sa01 = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
+        var data = new OfferSubscriptionWithProvider(false, default, default, default, default, default, default);
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
-            .Returns((true, false, default, default, default, default, default));
+            .Returns(data);
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, sa01);
 
         SetupTechnicalIdentity();
@@ -672,8 +690,9 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var sa01 = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
+        var data = new OfferSubscriptionWithProvider(true, true, default, default, default, default, default);
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
-            .Returns((true, true, true, default, default, default, default));
+            .Returns(data);
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, sa01);
 
         SetupTechnicalIdentity();
@@ -692,8 +711,9 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var sa01 = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
+        var data = new OfferSubscriptionWithProvider(true, false, OfferSubscriptionStatusId.INACTIVE, default, default, default, default);
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
-            .Returns((true, true, false, OfferSubscriptionStatusId.INACTIVE, default, default, default));
+            .Returns(data);
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, sa01);
 
         SetupTechnicalIdentity();
@@ -712,8 +732,9 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var sa01 = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
+        var data = new OfferSubscriptionWithProvider(true, false, OfferSubscriptionStatusId.ACTIVE, null, ValidCompanyId, ValidCompanyBpn, CountryCode_de);
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, A<Guid>.That.Matches(x => x == ValidCompanyId)))
-            .Returns((true, true, false, OfferSubscriptionStatusId.ACTIVE, null, ValidCompanyId, ValidCompanyBpn));
+            .Returns(data);
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, sa01);
         A.CallTo(() => _technicalUserRepository.CheckTechnicalUserDetailsAsync(A<Guid>._, A<Guid>._)).Returns((true, false));
 
@@ -731,8 +752,9 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var subscriptionId = Guid.NewGuid();
         var companyId = Guid.NewGuid();
+        var data = new OfferSubscriptionWithProvider(true, false, OfferSubscriptionStatusId.ACTIVE, Guid.NewGuid(), companyId, null, CountryCode_de);
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
-            .Returns((true, true, false, OfferSubscriptionStatusId.ACTIVE, Guid.NewGuid(), companyId, null));
+            .Returns(data);
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, null);
 
         SetupTechnicalIdentity();
@@ -743,6 +765,27 @@ public class ConnectorsBusinessLogicTests
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_CONFLICT_SET_BPN.ToString());
+    }
+
+    [Fact]
+    public async Task CreateManagedConnectorAsync_WithSubscribingCompanyWithoutCountryCode_ThrowsUnexpectedConditionException()
+    {
+        // Arrange
+        var subscriptionId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var data = new OfferSubscriptionWithProvider(true, false, OfferSubscriptionStatusId.ACTIVE, Guid.NewGuid(), companyId, ValidCompanyBpn, null);
+        A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
+            .Returns(data);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, null);
+
+        SetupTechnicalIdentity();
+
+        // Act
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_COUNTRYCODE_NOT_FOUND.ToString());
     }
 
     [Fact]
@@ -1258,6 +1301,25 @@ public class ConnectorsBusinessLogicTests
     }
 
     [Fact]
+    public async Task UpdateConnectorUrl_WithoutCountryCode_ThrowsUnexpectedConditionException()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var data = _fixture.Build<ConnectorUpdateInformation>()
+            .With(x => x.CountryAlpha2Code, string.Empty)
+            .Create();
+        A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, _identity.CompanyId))
+            .Returns(data);
+
+        // Act
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_COUNTRYCODE_NOT_FOUND.ToString());
+    }
+
+    [Fact]
     public async Task UpdateConnectorUrl_WithUserNotOfProviderCompany_ThrowsForbiddenException()
     {
         // Arrange
@@ -1346,10 +1408,36 @@ public class ConnectorsBusinessLogicTests
         ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_CONFLICT_SET_BPN.ToString());
     }
 
-    [Fact]
-    public async Task UpdateConnectorUrl_WithValidData_CallsExpected()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UpdateConnectorUrl_WithValidData_CallsExpected(bool clearingHouseDisabled)
     {
         // Arrange
+        var sut = new ConnectorsBusinessLogic(_portalRepositories, Options.Create(new ConnectorsSettings
+        {
+            MaxPageSize = 15,
+            ValidCertificationContentTypes = new[]
+            {
+                "application/x-pem-file",
+                "application/x-x509-ca-cert",
+                "application/pkix-cert"
+            }
+        }),
+        Options.Create(new ClearinghouseSettings
+        {
+            DefaultClearinghouseCredentials = new ClearinghouseCredentialsSettings
+            {
+                CountryAlpha2Code = "DefaultOrWhatever",
+                ClearinghouseConnectDisabled = clearingHouseDisabled
+            },
+            RegionalClearinghouseCredentials = [
+                new ClearinghouseCredentialsSettings {
+                    CountryAlpha2Code = CountryCode_de,
+                    ClearinghouseConnectDisabled = clearingHouseDisabled
+                }
+            ]
+        }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, _dateTimeProvider, A.Fake<ILogger<ConnectorsBusinessLogic>>());
         var documentId = Guid.NewGuid();
         var connectorId = Guid.NewGuid();
         var document = new Document(documentId, null!, null!, null!, default, default, DocumentStatusId.PENDING, default, default);
@@ -1362,6 +1450,7 @@ public class ConnectorsBusinessLogicTests
             .With(x => x.Status, ConnectorStatusId.ACTIVE)
             .With(x => x.Type, ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
             .With(x => x.Bpn, "BPNL123456789")
+            .With(x => x.CountryAlpha2Code, CountryCode_de)
             .With(x => x.SelfDescriptionDocumentId, documentId)
             .With(x => x.SelfDescriptionCompanyDocumentId, Guid.NewGuid())
             .Create();
@@ -1383,13 +1472,13 @@ public class ConnectorsBusinessLogicTests
            });
 
         // Act
-        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), CancellationToken.None);
+        await sut.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), CancellationToken.None);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connectorId, null, A<Action<Connector>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _documentRepository.AttachAndModifyDocument((Guid)data.SelfDescriptionDocumentId!, null, A<Action<Document>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
         connector.ConnectorUrl.Should().Be("https://new.de");
         document.DocumentStatusId.Should().Be(DocumentStatusId.INACTIVE);
     }
@@ -1729,13 +1818,15 @@ public class ConnectorsBusinessLogicTests
             .Returns(false);
 
         A.CallTo(() => _companyRepository.GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(ValidCompanyId))
-            .Returns((ValidCompanyBpn, Guid.NewGuid()));
+            .Returns((ValidCompanyBpn, Guid.NewGuid(), CountryCode_de));
         A.CallTo(() => _companyRepository.GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(CompanyIdWithoutSdDocument))
-            .Returns((ValidCompanyBpn, null));
-        A.CallTo(() => _companyRepository.GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(A<Guid>.That.Not.Matches(x => x == ValidCompanyId || x == CompanyIdWithoutSdDocument)))
-            .Returns((null, null));
+            .Returns((ValidCompanyBpn, null, CountryCode_de));
+        A.CallTo(() => _companyRepository.GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(CompanyWithoutCountryCode))
+            .Returns((ValidCompanyBpn, Guid.NewGuid(), null));
+        A.CallTo(() => _companyRepository.GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(A<Guid>.That.Not.Matches(x => x == ValidCompanyId || x == CompanyIdWithoutSdDocument || x == CompanyWithoutCountryCode)))
+            .Returns((null, null, null));
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(_validOfferSubscriptionId, ValidCompanyId))
-            .Returns((true, true, false, OfferSubscriptionStatusId.ACTIVE, Guid.NewGuid(), HostCompanyId, ValidCompanyBpn));
+            .Returns(new OfferSubscriptionWithProvider(true, false, OfferSubscriptionStatusId.ACTIVE, Guid.NewGuid(), HostCompanyId, ValidCompanyBpn, CountryCode_de));
 
         A.CallTo(() => _connectorsRepository.CreateConnector(A<string>._, A<string>._, A<string>._, A<Action<Connector>?>._))
             .Invokes((string name, string location, string connectorUrl, Action<Connector>? setupOptionalFields) =>
