@@ -60,6 +60,7 @@ public class RegistrationBusinessLogic(
 {
     private readonly IIdentityData _identityData = identityService.IdentityData;
     private readonly RegistrationSettings _settings = settings.Value;
+
     private static readonly Regex bpnRegex = new(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
 
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
@@ -268,7 +269,6 @@ public class RegistrationBusinessLogic(
         {
             await identityProviderProvisioningService.UpdateCompanyNameInSharedIdentityProvider(_identityData.CompanyId, companyDetails.Name).ConfigureAwait(ConfigureAwaitOptions.None);
         }
-
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
@@ -352,8 +352,7 @@ public class RegistrationBusinessLogic(
                 c.Shortname = modifyData.ShortName;
                 c.CompanyStatusId = CompanyStatusId.PENDING;
                 c.AddressId = addressId;
-            }
-            );
+            });
 
     public Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo)
     {
