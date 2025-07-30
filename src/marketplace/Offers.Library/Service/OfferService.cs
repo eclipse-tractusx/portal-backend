@@ -815,7 +815,7 @@ public class OfferService(
                 data.ExternalServiceData?.ParticipantId,
                 data.ExternalServiceData == null || data.ExternalServiceData.TrustedIssuer.EndsWith(":holder-iatp") ? data.ExternalServiceData?.TrustedIssuer : $"{data.ExternalServiceData.TrustedIssuer}:holder-iatp",
                 walletData.BpnDidResolverUrl,
-                authUrl,
+                authUrl!.Contains("/oauth/token") ? authUrl : $"{authUrl}/oauth/token",
                 serviceUrl));
     }
 
