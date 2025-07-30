@@ -53,7 +53,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../externalsystems/UniversalDidResolver.Library/UniversalDidResolver.Library.csproj" />
+    <ProjectReference Include="..\..\externalsystems\UniversalDidResolver.Library\UniversalDidResolver.Library.csproj" />
     <ProjectReference Include="..\..\keycloak\Keycloak.Authentication\Keycloak.Authentication.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\processes\ApplicationChecklist.Config\ApplicationChecklist.Config.csproj" />
