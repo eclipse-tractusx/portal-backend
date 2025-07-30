@@ -644,9 +644,6 @@ public class BpdmBusinessLogicTests
         {
             BusinessPartnerNumber = "1"
         };
-        var checklistEntry = _fixture.Build<ApplicationChecklistEntry>()
-            .With(x => x.ApplicationChecklistEntryStatusId, ApplicationChecklistEntryStatusId.TO_DO)
-            .Create();
         var checklist = new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
             {
                 { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE },
