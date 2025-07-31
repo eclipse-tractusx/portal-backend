@@ -82,12 +82,14 @@ public class TechnicalUserBusinessLogic(
         technicalUserCreationInfos.UserRoleIds.Except(result.TechnicalUserRoleIds)
             .IfAny(unassignable => throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ROLES_NOT_ASSIGN_ARGUMENT, parameters: [new("unassignable", string.Join(",", unassignable)), new("userRoleIds", string.Join(",", result.TechnicalUserRoleIds))]));
 
-        var trustedAssignableRoles = result.TechnicalUserRoleIds;
-        var requestedRoles = technicalUserCreationInfos.UserRoleIds;
-        var filteredTechnicalUserRoles = requestedRoles.Where(roleId => trustedAssignableRoles.Contains(roleId)).ToImmutableArray();
-        if (!filteredTechnicalUserRoles.Any() || !await bringYourOwnWalletBusinessLogic.IsUserRoleAuthorizedForBYOW(companyId, filteredTechnicalUserRoles))
+        var filteredTechnicalUserRoles = technicalUserCreationInfos.UserRoleIds.Where(roleId => result.TechnicalUserRoleIds.Contains(roleId)).ToImmutableArray();
+        var isBringYourOwnWallet = await bringYourOwnWalletBusinessLogic.IsBringYourOwnWallet(companyId).ConfigureAwait(ConfigureAwaitOptions.None);
+        if (isBringYourOwnWallet)
         {
-            throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_USER_ROLES_NOT_ALLOWED, parameters: [new("userRoleIds", string.Join(",", bringYourOwnWalletBusinessLogic.GetExcludedUserRoles()))]);
+            if (filteredTechnicalUserRoles.Any(id => bringYourOwnWalletBusinessLogic.GetExcludedUserRoles().Contains(id)))
+            {
+                throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_USER_ROLES_NOT_ALLOWED, parameters: [new("userRoleIds", string.Join(",", bringYourOwnWalletBusinessLogic.GetExcludedUserRoles()))]);
+            }
         }
 
         const TechnicalUserTypeId TechnicalUserTypeId = TechnicalUserTypeId.OWN;

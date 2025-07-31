@@ -47,49 +47,6 @@ public class BringYourOwnWalletBusinessLogicTests
     }
 
     [Fact]
-    public async Task IsUserRoleAuthorizedForBYOW_ReturnsTrue_WhenNotBYOW()
-    {
-        // Arrange
-        A.CallTo(() => _companyRepository.GetApplicationIdByCompanyId(_companyId)).Returns(_applicationId);
-        A.CallTo(() => _companyRepository.IsBringYourOwnWallet(_applicationId)).Returns(false);
-
-        // Act
-        var result = await _sut.IsUserRoleAuthorizedForBYOW(_companyId, new[] { _excludedRoleId });
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task IsUserRoleAuthorizedForBYOW_ReturnsFalse_WhenBYOWAndRoleIsExcluded()
-    {
-        // Arrange
-        A.CallTo(() => _companyRepository.GetApplicationIdByCompanyId(_companyId)).Returns(_applicationId);
-        A.CallTo(() => _companyRepository.IsBringYourOwnWallet(_applicationId)).Returns(true);
-
-        // Act
-        var result = await _sut.IsUserRoleAuthorizedForBYOW(_companyId, new[] { _excludedRoleId });
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task IsUserRoleAuthorizedForBYOW_ReturnsTrue_WhenBYOWAndRoleIsNotExcluded()
-    {
-        // Arrange
-        var otherRoleId = Guid.NewGuid();
-        A.CallTo(() => _companyRepository.GetApplicationIdByCompanyId(_companyId)).Returns(_applicationId);
-        A.CallTo(() => _companyRepository.IsBringYourOwnWallet(_applicationId)).Returns(true);
-
-        // Act
-        var result = await _sut.IsUserRoleAuthorizedForBYOW(_companyId, new[] { otherRoleId });
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
-    [Fact]
     public void GetExcludedUserRoles_ReturnsConfiguredRoles()
     {
         // Act

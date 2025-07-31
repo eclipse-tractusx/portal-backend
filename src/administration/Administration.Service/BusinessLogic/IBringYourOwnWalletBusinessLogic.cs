@@ -21,8 +21,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public interface IBringYourOwnWalletBusinessLogic
 {
-    Task<bool> IsUserRoleAuthorizedForBYOW(Guid companyId, IEnumerable<Guid> userRoleId);
-
     IEnumerable<Guid> GetExcludedUserRoles();
 
     Task<bool> IsBringYourOwnWallet(Guid companyId);

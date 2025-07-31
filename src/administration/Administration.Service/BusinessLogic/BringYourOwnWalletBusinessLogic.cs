@@ -29,15 +29,6 @@ public class BringYourOwnWalletBusinessLogic(
 {
     private readonly IEnumerable<Guid> _excludedRoles = options.Value.NonApplicableUserRoles;
 
-    public async Task<bool> IsUserRoleAuthorizedForBYOW(Guid companyId, IEnumerable<Guid> userRoleId)
-    {
-        if (!await IsBringYourOwnWallet(companyId))
-        {
-            return true;
-        }
-        return !userRoleId.Any(id => _excludedRoles.Contains(id));
-    }
-
     public IEnumerable<Guid> GetExcludedUserRoles()
     {
         return _excludedRoles;

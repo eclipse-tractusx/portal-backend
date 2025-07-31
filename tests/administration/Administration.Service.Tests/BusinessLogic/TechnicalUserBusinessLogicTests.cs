@@ -107,8 +107,8 @@ public class TechnicalUserBusinessLogicTests
         A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
         A.CallTo(() => _identity.CompanyId).Returns(ValidCompanyId);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
-        A.CallTo(() => _bringYourOwnWalletBusinessLogic.IsUserRoleAuthorizedForBYOW(A<Guid>._, A<IEnumerable<Guid>>._))
-            .Returns(true);
+        A.CallTo(() => _bringYourOwnWalletBusinessLogic.IsBringYourOwnWallet(A<Guid>._))
+            .Returns(false);
 
         var encryptionKey = _fixture.CreateMany<byte>(32).ToArray();
 
@@ -146,9 +146,11 @@ public class TechnicalUserBusinessLogicTests
         SetupCreateOwnCompanyServiceAccount();
         var serviceAccountCreationInfos = new TechnicalUserCreationInfo("TheName", "Just a short description", IamClientAuthMethod.SECRET, Enumerable.Repeat(UserRoleId1, 1));
         var sut = new TechnicalUserBusinessLogic(_provisioningManager, _portalRepositories, _options, _technicalUserCreation, _identityService, _serviceAccountManagement, _bringYourOwnWalletBusinessLogic);
-        A.CallTo(() => _bringYourOwnWalletBusinessLogic.IsUserRoleAuthorizedForBYOW(A<Guid>._, A<IEnumerable<Guid>>._))
-            .Returns(false);
+        A.CallTo(() => _bringYourOwnWalletBusinessLogic.IsBringYourOwnWallet(A<Guid>._))
+            .Returns(true);
 
+        A.CallTo(() => _bringYourOwnWalletBusinessLogic.GetExcludedUserRoles())
+            .Returns([UserRoleId1]);
         // Act
         async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos);
 
