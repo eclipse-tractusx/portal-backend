@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Collections.Immutable;
+using System.Text.Json;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -988,9 +989,10 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetAllMemberCompaniesBPNAsync(null).ToListAsync();
 
         // Assert
-        result.Should().NotBeNull().And.HaveCount(5).And.Satisfy(
+        result.Should().NotBeNull().And.HaveCount(6).And.Satisfy(
             x => x == "BPNL07800HZ01643",
             x => x == "BPNL00000003AYRE",
+            x => x == "BPNL00000000BYOW",
             x => x == "BPNL00000003CRHK",
             x => x == "BPNL00000003CRHL",
             x => x == "BPNL00000001TEST");
@@ -1103,5 +1105,64 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         return (sut, context);
     }
 
+    #endregion
+
+    #region BringYourOwnWallet
+
+    [Fact]
+    public async Task IsBringYourOwnWallet_ReturnsTrue()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.IsBringYourOwnWallet(Guid.Parse("c20ba2f7-ac9d-48d4-9498-a46be50c9271")).ConfigureAwait(ConfigureAwaitOptions.None);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task IsBringYourOwnWallet_NoMatchingClientId_ReturnsFalse()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.IsBringYourOwnWallet(Guid.NewGuid()).ConfigureAwait(ConfigureAwaitOptions.None);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CreateCompanyWallet_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut();
+        var didDocument = JsonDocument.Parse("{}"); // Provide a valid JSON string or object as needed
+
+        // Act
+        await sut.CreateCustomerWallet(Guid.NewGuid(), "did:web:example.com", didDocument);
+
+        // Assert
+        context.CompanyWalletDatas.Should().NotBeEmpty();
+        context.CompanyWalletDatas.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task CreateCompanyWallet_ExistingCustomerWallet_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut();
+        var didDocument = JsonDocument.Parse("{}"); // Provide a valid JSON string or object as needed
+
+        // Act
+        await sut.CreateCustomerWallet(Guid.Parse("554f23d5-669e-48ed-b06b-9a84dfa017c5"), "did:web:example.com", didDocument);
+
+        // Assert
+        context.CompanyWalletDatas.Should().NotBeEmpty();
+        context.CompanyWalletDatas.Where(wallet => wallet.ClientId.Equals(BringYourOwnWalletClientFields.Identification)).Should().HaveCount(1);
+    }
     #endregion
 }

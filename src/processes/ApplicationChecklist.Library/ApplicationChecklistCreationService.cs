@@ -51,7 +51,7 @@ public class ApplicationChecklistCreationService : IApplicationChecklistCreation
 
     private IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)> CreateEntries(Guid applicationId, IEnumerable<ApplicationChecklistEntryTypeId> existingChecklistEntryTypeIds, string? bpn)
     {
-        var missingEntries = GetApplicationChecklistTypes()
+        var missingEntries = GetApplicationChecklistTypes(applicationId)
             .Except(existingChecklistEntryTypeIds);
         if (missingEntries.Any())
         {
@@ -64,9 +64,10 @@ public class ApplicationChecklistCreationService : IApplicationChecklistCreation
         return Enumerable.Empty<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>();
     }
 
-    private IEnumerable<ApplicationChecklistEntryTypeId> GetApplicationChecklistTypes()
+    private IEnumerable<ApplicationChecklistEntryTypeId> GetApplicationChecklistTypes(Guid applicationId)
     {
-        if (_settings.UseDimWallet)
+        var isBringYourOwnWallet = _portalRepositories.GetInstance<ICompanyRepository>().IsBringYourOwnWallet(applicationId).GetAwaiter().GetResult();
+        if (_settings.UseDimWallet || isBringYourOwnWallet)
             return Enum.GetValues<ApplicationChecklistEntryTypeId>();
 
         return Enum.GetValues<ApplicationChecklistEntryTypeId>().Except(new[]

@@ -247,7 +247,7 @@ public class DimBusinessLogic : IDimBusinessLogic
     {
         var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new UnexpectedConditionException("Assembly location must be set");
 
-        var path = Path.Combine(location, "Schemas", "DidDocument.schema.json");
+        var path = Path.Join(location, "Schemas", "DidDocument.schema.json");
         var schemaJson = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var schema = JsonSchema.FromText(schemaJson);
