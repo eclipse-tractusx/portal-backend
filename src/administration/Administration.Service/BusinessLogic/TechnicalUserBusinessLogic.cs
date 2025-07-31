@@ -84,12 +84,9 @@ public class TechnicalUserBusinessLogic(
 
         var filteredTechnicalUserRoles = technicalUserCreationInfos.UserRoleIds.Where(roleId => result.TechnicalUserRoleIds.Contains(roleId)).ToImmutableArray();
         var isBringYourOwnWallet = await bringYourOwnWalletBusinessLogic.IsBringYourOwnWallet(companyId).ConfigureAwait(ConfigureAwaitOptions.None);
-        if (isBringYourOwnWallet)
+        if (isBringYourOwnWallet && filteredTechnicalUserRoles.Any(id => bringYourOwnWalletBusinessLogic.GetExcludedUserRoles().Contains(id)))
         {
-            if (filteredTechnicalUserRoles.Any(id => bringYourOwnWalletBusinessLogic.GetExcludedUserRoles().Contains(id)))
-            {
-                throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_USER_ROLES_NOT_ALLOWED, parameters: [new("userRoleIds", string.Join(",", bringYourOwnWalletBusinessLogic.GetExcludedUserRoles()))]);
-            }
+            throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_USER_ROLES_NOT_ALLOWED, parameters: [new("userRoleIds", string.Join(",", bringYourOwnWalletBusinessLogic.GetExcludedUserRoles()))]);
         }
 
         const TechnicalUserTypeId TechnicalUserTypeId = TechnicalUserTypeId.OWN;
