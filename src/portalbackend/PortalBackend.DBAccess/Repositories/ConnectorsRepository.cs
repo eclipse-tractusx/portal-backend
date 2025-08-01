@@ -234,7 +234,7 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                 con.TypeId,
                 con.Name,
                 con.HostId != null ? con.Host!.Name : con.Provider!.Name,
-                con.Host!.Shortname,
+                con.Host != null ? con.Host!.Shortname : con.Provider!.Shortname,
                 con.HostId ?? con.ProviderId,
                 con.SdSkippedDate)
         ).SingleOrDefaultAsync();
