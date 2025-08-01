@@ -6943,7 +6943,6 @@ components:
           nullable: true
         hostCompanyShortName:
           type: string
-          nullable: true
         selfDescriptionDocumentId:
           type: string
           format: uuid
@@ -6990,6 +6989,7 @@ components:
           type: string
         hostCompanyShortName:
           type: string
+          nullable: true
         companyId:
           type: string
           format: uuid
