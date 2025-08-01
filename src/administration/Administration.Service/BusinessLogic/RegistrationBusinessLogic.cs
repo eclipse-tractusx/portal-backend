@@ -147,6 +147,7 @@ public sealed class RegistrationBusinessLogic(
                         application.ApplicationStatusId,
                         application.DateCreated,
                         application.Company!.Name,
+                        application.Company!.Shortname,
                         application.Company!.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId),
                         application.ApplicationChecklistEntries.Where(x => x.ApplicationChecklistEntryTypeId != ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION).OrderBy(x => x.ApplicationChecklistEntryTypeId).Select(x => new ApplicationChecklistEntryDetails(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId)),
                         application.Invitations
@@ -199,7 +200,8 @@ public sealed class RegistrationBusinessLogic(
                         s.Application.Id,
                         s.Application.ApplicationStatusId,
                         s.Application.DateCreated,
-                        s.Application.Company!.Name)
+                        s.Application.Company!.Name,
+                        s.Application.Company!.Shortname)
                     {
                         FirstName = s.CompanyUser!.Firstname,
                         LastName = s.CompanyUser.Lastname,
