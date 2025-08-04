@@ -33,5 +33,6 @@ public record CompanyDetailData(
     string? StreetAdditional,
     string? StreetNumber,
     string? ZipCode,
-    IEnumerable<CompanyUniqueIdData> UniqueIds
-) : RegistrationData(Name, City, StreetName, CountryAlpha2Code, BusinessPartnerNumber, ShortName, Region, StreetAdditional, StreetNumber, ZipCode, UniqueIds);
+    IEnumerable<CompanyUniqueIdData> UniqueIds,
+    string? HolderDid = null
+) : RegistrationData(Name, City, StreetName, CountryAlpha2Code, BusinessPartnerNumber, ShortName, Region, StreetAdditional, StreetNumber, ZipCode, UniqueIds, HolderDid);

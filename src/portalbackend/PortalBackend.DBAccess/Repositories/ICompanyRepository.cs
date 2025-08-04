@@ -41,8 +41,17 @@ public interface ICompanyRepository
 
     void AttachAndModifyCompany(Guid companyId, Action<Company>? initialize, Action<Company> modify);
 
-    Address CreateAddress(string city, string streetname, string region, string countryAlpha2Code, Action<Address>? setOptionalParameters = null);
+    Task CreateCustomerWallet(Guid companyId, string did, JsonDocument didDocument);
 
+    Task<bool> IsBringYourOwnWallet(Guid applicationId);
+
+    Task<Guid> GetApplicationIdByCompanyId(Guid companyId);
+
+    Task<bool> IsDidInUse(string did);
+
+    Task<string?> GetCompanyHolderDidAsync(Guid companyId);
+
+    Address CreateAddress(string city, string streetname, string region, string countryAlpha2Code, Action<Address>? setOptionalParameters = null);
     void AttachAndModifyAddress(Guid addressId, Action<Address>? initialize, Action<Address> modify);
 
     void CreateUpdateDeleteIdentifiers(Guid companyId, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> initialItems, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> modifiedItems);

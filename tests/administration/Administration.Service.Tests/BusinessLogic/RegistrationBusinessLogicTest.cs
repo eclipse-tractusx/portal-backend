@@ -465,8 +465,59 @@ public class RegistrationBusinessLogicTest
             .MustHaveHappenedOnceExactly();
     }
 
+    [Theory]
+    [InlineData(true, ProcessStepTypeId.TRANSMIT_BPN_DID)]
+    [InlineData(false, ProcessStepTypeId.TRANSMIT_BPN_DID)]
+    public async Task SetRegistrationVerification_WithApproval_BYOW_CallsExpected(bool useDimWallet, ProcessStepTypeId expectedTypeId)
+    {
+        // Arrange
+        var options = Options.Create(new RegistrationSettings { UseDimWallet = useDimWallet });
+        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, null!, null!, null!, null!);
+        var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        SetupForApproveRegistrationVerification(entry);
+        A.CallTo(() => _companyRepository.IsBringYourOwnWallet(IdWithBpn))
+            .Returns(true);
+        // Act
+        await logic.ApproveRegistrationVerification(IdWithBpn);
+
+        // Assert
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        entry.Comment.Should().BeNull();
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
+
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(
+            A<IApplicationChecklistService.ManualChecklistProcessStepData>._,
+            null,
+            A<Action<ApplicationChecklistEntry>>._,
+            A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == expectedTypeId) == 1)))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.IsBringYourOwnWallet(IdWithBpn)).MustHaveHappenedOnceExactly();
+    }
+
     [Fact]
     public async Task SetRegistrationVerification_WithBpnNotDone_CallsExpected()
+    {
+        // Arrange
+        var entry = new ApplicationChecklistEntry(IdWithoutBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        SetupForApproveRegistrationVerification(entry);
+        A.CallTo(() => _companyRepository.IsBringYourOwnWallet(IdWithBpn))
+            .Returns(true);
+        // Act
+        await _logic.ApproveRegistrationVerification(IdWithoutBpn);
+
+        // Assert
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        entry.Comment.Should().BeNull();
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, null, A<Action<ApplicationChecklistEntry>>._, null)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task SetRegistrationVerification_BYOW_WithBpnNotDone_CallsExpected()
     {
         // Arrange
         var entry = new ApplicationChecklistEntry(IdWithoutBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);

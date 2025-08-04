@@ -39,7 +39,7 @@ public class BpnDidResolverBusinessLogic : IBpnDidResolverBusinessLogic
 
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> TransmitDidAndBpn(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
-        if (context.Checklist[ApplicationChecklistEntryTypeId.IDENTITY_WALLET] != ApplicationChecklistEntryStatusId.IN_PROGRESS)
+        if (context.Checklist[ApplicationChecklistEntryTypeId.IDENTITY_WALLET] != ApplicationChecklistEntryStatusId.IN_PROGRESS && !await IsBringYourOwnWallet(context.ApplicationId))
         {
             return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
                 ProcessStepStatusId.FAILED,
@@ -63,6 +63,9 @@ public class BpnDidResolverBusinessLogic : IBpnDidResolverBusinessLogic
             true,
             null);
     }
+
+    private async Task<bool> IsBringYourOwnWallet(Guid applicationId) =>
+        await _portalRepositories.GetInstance<ICompanyRepository>().IsBringYourOwnWallet(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
     private async Task PostDidAndBpn(Guid applicationId, CancellationToken cancellationToken)
     {
