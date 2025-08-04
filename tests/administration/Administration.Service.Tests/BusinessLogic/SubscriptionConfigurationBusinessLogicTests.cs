@@ -222,7 +222,7 @@ public class SubscriptionConfigurationBusinessLogicTests
     }
 
     [Fact]
-    public async Task SetProviderCompanyDetailsAsync_WithNotExistingAndUrlNull_DoesNothing()
+    public async Task SetProviderCompanyDetailsAsync_WithNotExistingAndUrlNull_ThrowsAndDoesNothing()
     {
         // Arrange
         SetupProviderCompanyDetails();
@@ -234,6 +234,8 @@ public class SubscriptionConfigurationBusinessLogicTests
         async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
         // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        ex.Message.Should().Be("Url must be set (Parameter 'Url')");
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<ProviderDetailsCreationData>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
         A.CallTo(() => _companyRepository.RemoveProviderCompanyDetails(A<Guid>._)).MustNotHaveHappened();
         A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
