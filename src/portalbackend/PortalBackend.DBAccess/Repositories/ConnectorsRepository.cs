@@ -57,6 +57,7 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                 con.StatusId,
                 con.HostId,
                 con.Host!.Name,
+                con.Host!.Shortname,
                 con.SelfDescriptionDocumentId,
                 con.TechnicalUserId == null ? null : new TechnicalUserData(
                     con.TechnicalUser!.Id,
@@ -84,6 +85,7 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                     c.TypeId,
                     c.StatusId,
                     c.Provider!.Name,
+                    c.Provider!.Shortname,
                     c.SelfDescriptionDocumentId,
                     c.TechnicalUserId == default ? null : new TechnicalUserData(
                         c.TechnicalUser!.Id,
@@ -106,6 +108,7 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                     connector.StatusId,
                     connector.HostId,
                     connector.Host!.Name,
+                    connector.Host!.Shortname,
                     connector.SelfDescriptionDocumentId,
                     connector.TechnicalUserId == default ? null : new TechnicalUserData(
                         connector.TechnicalUser!.Id,
@@ -230,8 +233,9 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                 con.Id,
                 con.TypeId,
                 con.Name,
-                con.HostId ?? con.ProviderId,
                 con.HostId != null ? con.Host!.Name : con.Provider!.Name,
+                con.Host != null ? con.Host!.Shortname : con.Provider!.Shortname,
+                con.HostId ?? con.ProviderId,
                 con.SdSkippedDate)
         ).SingleOrDefaultAsync();
 

@@ -27,7 +27,9 @@ public record CompanyApplicationWithCompanyUserDetails(
     [property: JsonPropertyName("applicationId")] Guid ApplicationId,
     [property: JsonPropertyName("applicationStatus")] CompanyApplicationStatusId CompanyApplicationStatusId,
     [property: JsonPropertyName("dateCreated")] DateTimeOffset DateCreated,
-    [property: JsonPropertyName("companyName")] string CompanyName)
+    [property: JsonPropertyName("companyName")] string CompanyName,
+    [property: JsonPropertyName("companyShortName")] string? Shortname
+    )
 {
     [JsonPropertyName("email")]
     public string? Email { get; set; }
