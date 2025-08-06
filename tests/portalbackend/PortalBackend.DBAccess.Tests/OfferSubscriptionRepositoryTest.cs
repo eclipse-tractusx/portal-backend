@@ -128,7 +128,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetAllBusinessAppDataForUserIdAsync(new("8b42e6de-7b59-4217-a63c-198e83d93776")).ToListAsync();
 
         // Assert
-        result.Should().ContainSingle().Which.Should().Match<(Guid OfferId, Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider)>(x =>
+        result.Should().ContainSingle().Which.Should().Match<(Guid OfferId, Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider, string Shortname)>(x =>
             x.SubscriptionUrl == "https://ec-qas.d13fe27.kyma.ondemand.com" &&
             x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce05744000b")
         );
