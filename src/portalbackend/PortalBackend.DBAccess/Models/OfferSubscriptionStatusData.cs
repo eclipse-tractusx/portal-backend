@@ -29,12 +29,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="OfferId">Id of the Offer</param>
 /// <param name="OfferName">Name of the Offer</param>
 /// <param name="Provider">When called from /provider name of the company subscribing the offer, otherwise the provider company's name</param>
+/// <param name="Shortname">When called from /provider short name of the company subscribing the offer</param>
 /// <param name="OfferSubscriptionStatusId">Status of the offer subscription</param>
 /// <param name="DocumentId">Id of the documents</param>
 public record OfferSubscriptionStatusData(
     [property: JsonPropertyName("offerId")] Guid OfferId,
     [property: JsonPropertyName("name")] string? OfferName,
     [property: JsonPropertyName("provider")] string Provider,
+    [property: JsonPropertyName("providerShortName")] string Shortname,
     [property: JsonPropertyName("status")] OfferSubscriptionStatusId OfferSubscriptionStatusId,
     [property: JsonPropertyName("subscriptionId")] Guid OfferSubscriptionId,
     [property: JsonPropertyName("image")] Guid? DocumentId

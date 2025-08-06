@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
@@ -33,13 +34,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="Price">Pricing information of the app.</param>
 /// <param name="OfferSubscriptionDetailData">Detail Data of the offer subscription</param>
 public record OfferDetailData(
-   Guid Id,
-   string? Title,
-   string Provider,
-   string? ContactEmail,
-   string? Description,
-   string Price,
-   IEnumerable<OfferSubscriptionStateDetailData> OfferSubscriptionDetailData);
+    Guid Id,
+    string? Title,
+    string Provider,
+    string? ContactEmail,
+    string? Description,
+    string Price,
+    IEnumerable<OfferSubscriptionStateDetailData> OfferSubscriptionDetailData
+);
 
 /// <summary>
 /// View model of an application's detailed data specific for service.
@@ -47,6 +49,7 @@ public record OfferDetailData(
 /// <param name="Id">ID of the app.</param>
 /// <param name="Title">Title or name of the app.</param>
 /// <param name="Provider">Provider of the app.</param>
+/// <param name="Shortname">Provider shortname of the app.</param>
 /// <param name="LeadPictureId">Lead picture Id.</param>
 /// <param name="ContactEmail">Contact email address.</param>
 /// <param name="Description">The description of the service.</param>
@@ -61,6 +64,7 @@ public record ServiceDetailData(
     Guid Id,
     string? Title,
     string Provider,
+    [property: JsonPropertyName("providerShortName")] string Shortname,
     Guid? LeadPictureId,
     string? ContactEmail,
     string? Description,
@@ -78,4 +82,7 @@ public record ServiceDetailData(
 /// </summary>
 /// <param name="OfferSubscriptionId">Id of the offerSubscription</param>
 /// <param name="OfferSubscriptionStatus">Latest status</param>
-public record OfferSubscriptionStateDetailData(Guid OfferSubscriptionId, OfferSubscriptionStatusId OfferSubscriptionStatus);
+public record OfferSubscriptionStateDetailData(
+    Guid OfferSubscriptionId,
+    OfferSubscriptionStatusId OfferSubscriptionStatus
+);
