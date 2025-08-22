@@ -66,6 +66,14 @@ public interface IRegistrationBusinessLogic
     Task ProcessDimResponseAsync(string bpn, DimWalletData data, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Updates Did Document for the wallet
+    /// </summary>
+    /// <param name="bpn">the companies business partner number</param>
+    /// <param name="data">Did Document Data</param>
+    /// <param name="cancellationToken"></param>
+    Task UpdateDidDocumentAsync(string bpn, DidDocumentData data, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Gets the checklist details for the given application
     /// </summary>
     /// <param name="applicationId">Id of the application</param>

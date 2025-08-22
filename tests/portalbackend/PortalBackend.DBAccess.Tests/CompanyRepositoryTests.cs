@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Collections.Immutable;
+using System.Text.Json;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -988,12 +989,13 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetAllMemberCompaniesBPNAsync(null).ToListAsync();
 
         // Assert
-        result.Should().NotBeNull().And.HaveCount(5).And.Satisfy(
+        result.Should().NotBeNull().And.HaveCount(6).And.Satisfy(
             x => x == "BPNL07800HZ01643",
             x => x == "BPNL00000003AYRE",
             x => x == "BPNL00000003CRHK",
             x => x == "BPNL00000003CRHL",
-            x => x == "BPNL00000001TEST");
+            x => x == "BPNL00000001TEST",
+            x => x == "BPNL0000000DIDUP");
     }
 
     #endregion
@@ -1090,6 +1092,57 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region UpdateDidComponent
+    [Fact]
+    public async Task AttachAndModifyWalletData_UpdatesDidDocument()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut();
+        var didDocument = JsonDocument.Parse("""
+        {
+            "did": "did:web:test",
+            "walletUrl": "https://example.org/auth"
+        }
+        """);
+
+        // Act
+        sut.AttachAndModifyWalletData(Guid.Parse("ac17d2a4-3bf8-4d78-906f-b96aeddddfd1"), w => { }, w => w.DidDocument = didDocument);
+
+        context.CompanyWalletDatas
+            .Where(x => x.CompanyId == new Guid("3dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))
+            .Should().ContainSingle()
+            .Which.Should().Match<CompanyWalletData>(x =>
+                x.DidDocument == didDocument);
+    }
+
+    [Fact]
+    public async Task GetCopmanyActiveWalletId_ReturnsWalletId()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.GetCopmanyActiveWalletId("BPNL0000000DIDUP");
+
+        // Assert
+        result.Should().Be(Guid.Parse("ac17d2a4-3bf8-4d78-906f-b96aeddddfd1"));
+    }
+
+    [Fact]
+    public async Task GetCopmanyActiveWalletId_ReturnsNullOrEmpty()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.GetCopmanyActiveWalletId("BPNL0000000001ON");
+
+        // Assert
+        result.Should().BeEmpty();
     }
 
     #endregion

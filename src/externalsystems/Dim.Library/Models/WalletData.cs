@@ -33,3 +33,7 @@ public record AuthenticationDetail(
     [property: JsonPropertyName("clientID")] string ClientId,
     [property: JsonPropertyName("clientSecret")] string ClientSecret
 );
+
+public record DidDocumentData(
+    [property: JsonPropertyName("didDocument")] JsonDocument DidDocument
+);

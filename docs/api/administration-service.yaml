@@ -3583,6 +3583,44 @@ paths:
           description: Internal Server Error
         '401':
           description: The User is unauthorized
+    patch:
+      tags:
+        - Registration
+      summary: 'Updates the Did Document for the wallet (Authorization required - Roles: store_didDocument)'
+      parameters:
+        - name: bpn
+          in: path
+          description: BusinessPartnerNumber for dim
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Did Document for updating
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DidDocumentData'
+      responses:
+        '204':
+          description: Empty response on success.
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No application found for the bpn.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Either the CompanyApplication is not in status Confirmed or the Company is not ACTIVE or Wallet does not exist.
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
   '/api/administration/registration/applications/{applicationId}/checklistDetails':
     get:
       tags:
@@ -7070,6 +7108,11 @@ components:
         - ASC
         - DESC
       type: string
+    DidDocumentData:
+      type: object
+      properties:
+        didDocument: { }
+      additionalProperties: false
     DimUrlsResponse:
       type: object
       properties:

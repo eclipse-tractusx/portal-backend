@@ -89,5 +89,17 @@
     "company_status_id": 1,
     "address_id": "27418031-d6b5-442b-8802-3f653c6679f7",
     "self_description_document_id": null
+  },
+  {
+    "id": "3dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2022-03-24 18:01:33.438000 +00:00",
+    "business_partner_number": "BPNL0000000DIDUP",
+    "name": "DCP Company",
+    "shortname": "DCP Company",
+    "company_status_id": 2,
+    "address_id": "27418031-d6b5-442b-8802-3f653c6679f7",
+    "self_description_document_id": null
   }
+
+  
 ]
