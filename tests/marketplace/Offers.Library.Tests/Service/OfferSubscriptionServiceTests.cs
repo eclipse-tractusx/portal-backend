@@ -290,7 +290,7 @@ public class OfferSubscriptionServiceTests
             });
 
         // Act
-        var result = await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, OfferTypeId.APP, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles);
+        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, OfferTypeId.APP, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles);
 
         // Assert
         A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._)).MustHaveHappened();
