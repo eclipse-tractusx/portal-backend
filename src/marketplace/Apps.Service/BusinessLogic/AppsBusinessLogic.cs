@@ -101,12 +101,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public async Task<AppDetailResponse> GetAppDetailsByIdAsync(Guid appId, string? languageShortName = null)
     {
         var result = await _portalRepositories.GetInstance<IOfferRepository>()
-            .GetOfferDetailsByIdAsync(appId, _identityData.CompanyId, languageShortName, Constants.DefaultLanguage, OfferTypeId.APP).ConfigureAwait(ConfigureAwaitOptions.None);
-        if (result == null)
-        {
-            throw NotFoundException.Create(AppErrors.APP_NOT_EXIST, new ErrorParameter[] { new("appId", appId.ToString()) });
-        }
-
+            .GetOfferDetailsByIdAsync(appId, _identityData.CompanyId, languageShortName, Constants.DefaultLanguage, OfferTypeId.APP).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw NotFoundException.Create(AppErrors.APP_NOT_EXIST, new ErrorParameter[] { new("appId", appId.ToString()) });
         return new AppDetailResponse(
             result.Id,
             result.Title ?? Constants.ErrorString,
@@ -121,12 +116,12 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             result.LicenseTypeId,
             result.Price ?? Constants.ErrorString,
             result.Tags,
-            result.IsSubscribed == default ? null : result.IsSubscribed,
             result.Languages,
             result.Documents.GroupBy(d => d.DocumentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.DocumentId, d.DocumentName))),
             result.PrivacyPolicies,
             result.IsSingleInstance,
-            result.TechnicalUserProfile.ToDictionary(g => g.TechnicalUserProfileId, g => g.UserRoles)
+            result.TechnicalUserProfile.ToDictionary(g => g.TechnicalUserProfileId, g => g.UserRoles),
+            result.OfferSubscriptionDetailData
         );
     }
 

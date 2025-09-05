@@ -142,7 +142,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         documentTypeId.Should().NotContain(DocumentTypeId.APP_LEADIMAGE);
         documentTypeId.Should().NotContain(DocumentTypeId.APP_IMAGE);
         offerDetail.TechnicalUserProfile.Should().BeEmpty();
-        offerDetail.IsSubscribed.Should().Be(OfferSubscriptionStatusId.PENDING);
+        offerDetail.OfferSubscriptionDetailData.Should().HaveCount(2).And.Satisfy(
+            x => x.OfferSubscriptionId == new Guid("e8886159-9258-44a5-88d8-f5735a197a09") && x.OfferSubscriptionStatus == OfferSubscriptionStatusId.PENDING,
+            x => x.OfferSubscriptionId == new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba") && x.OfferSubscriptionStatus == OfferSubscriptionStatusId.ACTIVE
+        );
     }
 
     #endregion

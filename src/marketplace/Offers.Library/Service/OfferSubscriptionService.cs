@@ -70,10 +70,8 @@ public class OfferSubscriptionService : IOfferSubscriptionService
 
         var activeAgreementConsents = await ValidateConsent(offerAgreementConsentData, offerId).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
-        var offerSubscription = offerTypeId == OfferTypeId.APP
-            ? await HandleAppSubscriptionAsync(offerId, offerSubscriptionsRepository, companyInformation, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None)
-            : offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, _identityData.IdentityId);
+        var offerSubscription = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+            .CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, _identityData.IdentityId);
 
         CreateProcessSteps(offerSubscription);
         CreateConsentsForSubscription(offerSubscription.Id, activeAgreementConsents, companyInformation.CompanyId, _identityData.IdentityId);
@@ -277,23 +275,6 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         }
 
         return companyInformation;
-    }
-
-    private static async Task<OfferSubscription> HandleAppSubscriptionAsync(
-        Guid offerId,
-        IOfferSubscriptionsRepository offerSubscriptionsRepository,
-        CompanyInformationData companyInformation,
-        Guid userId)
-    {
-        var activeOrPendingSubscriptionExists = await offerSubscriptionsRepository
-            .CheckPendingOrActiveSubscriptionExists(offerId, companyInformation.CompanyId, OfferTypeId.APP)
-            .ConfigureAwait(ConfigureAwaitOptions.None);
-        if (activeOrPendingSubscriptionExists)
-        {
-            throw ConflictException.Create(OfferSubscriptionServiceErrors.COMPANY_ALREADY_SUBSCRIBED, new ErrorParameter[] { new("companyId", companyInformation.CompanyId.ToString()), new(nameof(offerId), offerId.ToString()) });
-        }
-
-        return offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, userId);
     }
 
     private void CreateConsentsForSubscription(Guid offerSubscriptionId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, Guid companyId, Guid companyUserId)

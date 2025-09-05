@@ -2642,8 +2642,6 @@ components:
           items:
             type: string
           description: Tags assigned to application.
-        isSubscribed:
-          $ref: '#/components/schemas/OfferSubscriptionStatusId'
         languages:
           type: array
           items:
@@ -2729,6 +2727,11 @@ components:
             items:
               type: string
           description: Technical User Profile for app
+        offerSubscriptionDetailData:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferSubscriptionStateDetailData'
+          description: Detail Data of the offer subscription
       additionalProperties: false
       description: View model of an application's detailed data.
     AppInstanceSetupData:
@@ -3525,6 +3528,15 @@ components:
           type: string
           format: uuid
         status:
+          $ref: '#/components/schemas/OfferSubscriptionStatusId'
+      additionalProperties: false
+    OfferSubscriptionStateDetailData:
+      type: object
+      properties:
+        offerSubscriptionId:
+          type: string
+          format: uuid
+        offerSubscriptionStatus:
           $ref: '#/components/schemas/OfferSubscriptionStatusId'
       additionalProperties: false
     OfferSubscriptionStatusDetailData:

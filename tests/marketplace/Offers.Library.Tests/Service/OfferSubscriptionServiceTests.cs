@@ -136,8 +136,6 @@ public class OfferSubscriptionServiceTests
                     new UserRoleConfig(ClientId, new[] { "Service Manager", "Sales Manager" })
                 };
         var serviceManagerRoles = new[] { new UserRoleConfig("portal", new[] { "Service Manager" }) };
-        A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
-            .Returns(false);
         var companyAssignedApps = new List<OfferSubscription>();
         var now = DateTimeOffset.UtcNow;
         A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._))
@@ -163,10 +161,6 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         companyAssignedApps.Should().HaveCount(1);
-        if (offerTypeId == OfferTypeId.APP)
-        {
-            A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(_existingOfferId, _companyId, offerTypeId)).MustHaveHappenedOnceExactly();
-        }
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x => x.Count() == 1 && x.Single().ProcessStepTypeId == ProcessStepTypeId.TRIGGER_PROVIDER))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingProcessCreation.RoleBaseSendMail(
             A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(subscriptionManagerRoles),
@@ -199,8 +193,6 @@ public class OfferSubscriptionServiceTests
                     new UserRoleConfig("portal", new[] { "Service Manager", "Sales Manager" })
                 };
         var serviceManagerRoles = new[] { new UserRoleConfig("portal", new[] { "Service Manager" }) };
-        A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
-            .Returns(false);
         var companyAssignedApps = new List<OfferSubscription>();
         var now = DateTimeOffset.UtcNow;
         A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._))
@@ -245,8 +237,6 @@ public class OfferSubscriptionServiceTests
             new UserRoleConfig("portal", new [] { "App Manager", "Sales Manager" })} : new[]{
             new UserRoleConfig("Client1", new [] { "Service Manager", "Sales Manager" })};
         var serviceManagerRoles = new[] { new UserRoleConfig("portal", new[] { "Service Manager" }) };
-        A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
-            .Returns(false);
         var companyAssignedApps = new List<OfferSubscription>();
         var now = DateTimeOffset.UtcNow;
         A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._))
@@ -272,14 +262,11 @@ public class OfferSubscriptionServiceTests
             new UserRoleConfig("portal", new [] { "App Manager", "Sales Manager" })};
         var serviceManagerRoles = new[] { new UserRoleConfig("portal", new[] { "Service Manager" }) };
         var subscriptionId = Guid.NewGuid();
-        A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
-            .Returns(false);
 
         // Act
         await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, OfferTypeId.APP, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles);
 
         // Assert
-        A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(_existingOfferId, _companyId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._)).MustHaveHappened();
         A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyOfferSubscription(subscriptionId, A<Action<OfferSubscription>>._)).MustNotHaveHappened();
         A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._)).MustHaveHappened();
@@ -287,28 +274,29 @@ public class OfferSubscriptionServiceTests
     }
 
     [Fact]
-    public async Task AddOfferSubscription_WithExistingActiveAppSubscription_Throws()
+    public async Task AddOfferSubscription_WithExistingActiveAppSubscription_Expected()
     {
         // Arrange
         var subscriptionManagerRoles = new[]{
             new UserRoleConfig("portal", new [] { "App Manager", "Sales Manager" })};
         var serviceManagerRoles = new[] { new UserRoleConfig("portal", new[] { "Service Manager" }) };
         var subscriptionId = Guid.NewGuid();
-        A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
-            .Returns(true);
-
-        var Act = () => _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, OfferTypeId.APP, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles);
+        var companyAssignedApps = new List<OfferSubscription>();
+        A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._))
+            .Invokes((Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId) =>
+            {
+                var companyAssignedApp = new OfferSubscription(subscriptionId, offerId, companyId, offerSubscriptionStatusId, requesterId, DateTime.UtcNow);
+                companyAssignedApps.Add(companyAssignedApp);
+            });
 
         // Act
-        var result = await Assert.ThrowsAsync<ConflictException>(Act);
+        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, OfferTypeId.APP, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles);
 
         // Assert
-        A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(_existingOfferId, _companyId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._)).MustNotHaveHappened();
-        A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyOfferSubscription(subscriptionId, A<Action<OfferSubscription>>._)).MustNotHaveHappened();
-        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._)).MustNotHaveHappened();
-        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._)).MustNotHaveHappened();
-        result.Message.Should().Be(OfferSubscriptionServiceErrors.COMPANY_ALREADY_SUBSCRIBED.ToString());
+        A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._)).MustHaveHappened();
+        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._)).MustHaveHappened();
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._)).MustHaveHappened();
+        companyAssignedApps.Should().HaveCount(1);
     }
 
     [Theory]
@@ -632,22 +620,21 @@ public class OfferSubscriptionServiceTests
     #region APP - Specialcases
 
     [Fact]
-    public async Task AddOfferSubscription_WithExistingActiveSubscription_ThrowsConflictException()
+    public async Task AddOfferSubscription_WithExistingActiveSubscription_Expected()
     {
         // Arrange
         var subscriptionManagerRoles = new[]{
             new UserRoleConfig("portal", new [] { "App Manager", "Sales Manager" })};
         var serviceManagerRoles = new[] { new UserRoleConfig("portal", new[] { "Service Manager" }) };
         A.CallTo(() => _identity.CompanyId).Returns(_existingActiveSubscriptionCompanyId);
-        A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(_existingOfferId, _existingActiveSubscriptionCompanyId, A<OfferTypeId>._))
-            .Returns(true);
 
         // Act
-        async Task Act() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, OfferTypeId.APP, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles);
+        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, OfferTypeId.APP, BasePortalUrl, subscriptionManagerRoles, serviceManagerRoles);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(OfferSubscriptionServiceErrors.COMPANY_ALREADY_SUBSCRIBED.ToString());
+        A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._)).MustHaveHappened();
+        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._)).MustHaveHappened();
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._)).MustHaveHappened();
     }
 
     #endregion

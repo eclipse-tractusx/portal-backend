@@ -36,7 +36,6 @@ public class OfferSubscriptionServiceErrorMessageContainer : IErrorMessageContai
         new((int)OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED, "Consent to agreements {agreementId} must be given for offer {offerId}"),
         new((int)OfferSubscriptionServiceErrors.COMPANY_NOT_EXIST, "Company {companyId} does not exist"),
         new((int)OfferSubscriptionServiceErrors.COMPANY_NO_BUSINESS_PARTNER_NUMBER, "company {organizationName} has no BusinessPartnerNumber assigned"),
-        new((int)OfferSubscriptionServiceErrors.COMPANY_ALREADY_SUBSCRIBED, "company {companyId} is already subscribed to {offerId}")
     ]);
 
     public Type Type { get => typeof(OfferSubscriptionServiceErrors); }
@@ -56,5 +55,4 @@ public enum OfferSubscriptionServiceErrors
     CONSENT_TO_AGREEMENTS_REQUIRED,
     COMPANY_NOT_EXIST,
     COMPANY_NO_BUSINESS_PARTNER_NUMBER,
-    COMPANY_ALREADY_SUBSCRIBED
 }
