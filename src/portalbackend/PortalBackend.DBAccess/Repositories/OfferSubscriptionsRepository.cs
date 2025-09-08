@@ -509,21 +509,22 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
 
     /// <inheritdoc />
     public IAsyncEnumerable<ActiveOfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId) =>
-        dbContext.OfferSubscriptions
+        dbContext.Offers
             .AsNoTracking()
-            .Where(os =>
-                os.Offer!.OfferTypeId == offerTypeId && os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
-                os.CompanyId == userCompanyId)
-            .Select(os => new ActiveOfferSubscriptionStatusData(
-                os.OfferId,
-                os.Offer!.Name,
-                os.Offer.ProviderCompany!.Name,
-                os.Offer.Documents
+            .Where(o =>
+                o.OfferTypeId == offerTypeId && o.OfferSubscriptions.Any(os => os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
+                os.CompanyId == userCompanyId))
+            .Select(o => new ActiveOfferSubscriptionStatusData(
+                o.Id,
+                o.Name,
+                o.ProviderCompany!.Name,
+                o.Documents
                     .Where(document =>
                         document.DocumentTypeId == documentTypeId
                         && document.DocumentStatusId == DocumentStatusId.LOCKED)
                     .Select(document => document.Id).FirstOrDefault(),
-                os.Id
+                o.OfferSubscriptions.Where(x => x.CompanyId == userCompanyId && x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE)
+                    .OrderByDescending(x => x.DateCreated).Select(x => x.Id).FirstOrDefault()
             )).ToAsyncEnumerable();
 
     /// <inheritdoc />
