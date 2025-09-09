@@ -20,19 +20,24 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public sealed class MultiKeycloakSettings
 {
-    public bool IsSharedIdpMultiInstancesEnabled { get; init; }
+    [Required]
+    public bool IsSharedIdpMultiInstancesEnabled { get; set; }
+
+    [DistinctValues("x => x.Index")]
     public IEnumerable<EncryptionModeConfig> EncryptionConfigs { get; set; } = null!;
 
     public int EncryptionConfigIndex { get; set; }
 }
 
-public static class MultiKeycloakSettingsExtention
+public static class MultiKeycloakSettingsExtension
 {
     public static IServiceCollection AddMultiKeycloak(
         this IServiceCollection services,
@@ -43,7 +48,19 @@ public static class MultiKeycloakSettingsExtention
              .ConfigureKeycloakSettingsMap(config.GetSection("Keycloak"))
              .AddTransient<ISharedMultiKeycloakResolver, SharedMultiKeycloakResolver>();
 
-        services.AddOptions<MultiKeycloakSettings>().Bind(config.GetSection("MultiSharedKeycloak"));
+        var configSection = config.GetSection("MultiSharedKeycloak");
+        services
+             .AddOptions<MultiKeycloakSettings>()
+             .Bind(configSection)
+             .Validate(options =>
+             {
+                 if (options.IsSharedIdpMultiInstancesEnabled &&
+                     (options.EncryptionConfigs == null || !options.EncryptionConfigs.Any()))
+                 {
+                     return false;
+                 }
+                 return true;
+             }, "EncryptionConfigs must be provided when IsSharedIdpMultiInstancesEnabled is true");
 
         return services;
     }
