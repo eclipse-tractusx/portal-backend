@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
@@ -34,7 +35,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.ExternalSystems.Provisioning.Libra
 public class IdpManagement : IIdpManagement
 {
     private static readonly string MasterRealm = "master";
-    private static readonly string SharedRealm = "shared";
     private static readonly IReadOnlyDictionary<IamClientAuthMethod, string> IamClientAuthMethodsInternalDictionary = new Dictionary<IamClientAuthMethod, string>
     {
         { IamClientAuthMethod.JWT, "client-jwt" },
@@ -43,17 +43,17 @@ public class IdpManagement : IIdpManagement
         { IamClientAuthMethod.SECRET_JWT, "client-secret-jwt" }
     };
 
-    private readonly IKeycloakFactory _factory;
+    private readonly ISharedMultiKeycloakResolver _sharedMultiKeycloakResolver;
     private readonly KeycloakClient _centralIdp;
     private readonly IdpManagementSettings _settings;
     private readonly IProvisioningDBAccess? _provisioningDbAccess;
 
-    public IdpManagement(IKeycloakFactory keycloakFactory, IProvisioningDBAccess provisioningDbAccess, IOptions<IdpManagementSettings> options)
+    public IdpManagement(IKeycloakFactory keycloakFactory, IProvisioningDBAccess provisioningDbAccess, IOptions<IdpManagementSettings> options, ISharedMultiKeycloakResolver sharedMultiKeycloakResolver)
     {
-        _factory = keycloakFactory;
         _centralIdp = keycloakFactory.CreateKeycloakClient("central");
         _provisioningDbAccess = provisioningDbAccess;
         _settings = options.Value;
+        _sharedMultiKeycloakResolver = sharedMultiKeycloakResolver;
     }
 
     public async ValueTask<string> GetNextCentralIdentityProviderNameAsync() =>
@@ -69,7 +69,7 @@ public class IdpManagement : IIdpManagement
 
     public async Task<(string ClientId, string Secret, string ServiceAccountUserId)> CreateSharedIdpServiceAccountAsync(string realm)
     {
-        var sharedIdp = _factory.CreateKeycloakClient(SharedRealm);
+        var sharedIdp = await _sharedMultiKeycloakResolver.ResolveAndAssignKeycloak(realm);
         var clientId = GetServiceAccountClientId(realm);
         var internalClientId = await CreateServiceAccountClient(sharedIdp, MasterRealm, clientId, clientId, IamClientAuthMethod.SECRET, true);
         var serviceAccountUser = await sharedIdp.GetUserForServiceAccountAsync(MasterRealm, internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -82,9 +82,9 @@ public class IdpManagement : IIdpManagement
         return (clientId, credentials.Value, serviceAccountUser.Id);
     }
 
-    public async Task AddRealmRoleMappingsToUserAsync(string serviceAccountUserId)
+    public async Task AddRealmRoleMappingsToUserAsync(string serviceAccountUserId, string? realmName = null)
     {
-        var sharedIdp = _factory.CreateKeycloakClient(SharedRealm);
+        var sharedIdp = await _sharedMultiKeycloakResolver.GetKeycloakClient(realmName);
         var roleCreateRealm = await sharedIdp.GetRoleByNameAsync(MasterRealm, "create-realm").ConfigureAwait(ConfigureAwaitOptions.None);
         await sharedIdp.AddRealmRoleMappingsToUserAsync(MasterRealm, serviceAccountUserId, Enumerable.Repeat(roleCreateRealm, 1)).ConfigureAwait(ConfigureAwaitOptions.None);
     }
@@ -117,7 +117,7 @@ public class IdpManagement : IIdpManagement
 
     public async ValueTask UpdateCentralIdentityProviderUrlsAsync(string alias, string organisationName, string loginTheme, string clientId, string secret)
     {
-        var sharedKeycloak = _factory.CreateKeycloakClient(SharedRealm, clientId, secret);
+        var sharedKeycloak = await _sharedMultiKeycloakResolver.GetKeycloakClient(alias, clientId, secret);
         var config = await sharedKeycloak.GetOpenIDConfigurationAsync(alias).ConfigureAwait(ConfigureAwaitOptions.None);
         var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(ConfigureAwaitOptions.None);
         identityProvider.Config!.AuthorizationUrl = config.AuthorizationEndpoint.ToString();
@@ -156,7 +156,7 @@ public class IdpManagement : IIdpManagement
         var config = new IdentityProviderClientConfig(
             $"{redirectUrl}/*",
             jwksUrl);
-        var sharedKeycloak = _factory.CreateKeycloakClient(SharedRealm, clientId, secret);
+        var sharedKeycloak = await _sharedMultiKeycloakResolver.GetKeycloakClient(realm, clientId, secret);
         var newClient = _settings.SharedRealmClient.Clone();
         newClient.RedirectUris = Enumerable.Repeat(config.RedirectUri, 1);
         newClient.Attributes ??= new Dictionary<string, string>();
@@ -190,7 +190,7 @@ public class IdpManagement : IIdpManagement
 
     private async Task<KeycloakClient> CreateSharedRealmAsync(string idpName, string organisationName, string? loginTheme, string clientId, string secret)
     {
-        var sharedKeycloak = _factory.CreateKeycloakClient(SharedRealm, clientId, secret);
+        var sharedKeycloak = await _sharedMultiKeycloakResolver.GetKeycloakClient(idpName, clientId, secret);
 
         await CreateSharedRealmAsyncInternal(sharedKeycloak, idpName, organisationName, loginTheme).ConfigureAwait(ConfigureAwaitOptions.None);
         return sharedKeycloak;

@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.FlurlSetup;
@@ -46,7 +47,9 @@ public class IdentityProviderManagerTests
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         var keycloakFactory = A.Fake<IKeycloakFactory>();
+        var sharedMultiKeycloakResolver = A.Fake<ISharedMultiKeycloakResolver>();
         var provisioningDbAccess = A.Fake<IProvisioningDBAccess>();
+        var portalRepositories = A.Fake<IPortalRepositories>();
         A.CallTo(() => keycloakFactory.CreateKeycloakClient("central"))
             .Returns(new KeycloakClient(CentralUrl, "test", "test", "test", false));
         var settings = new ProvisioningSettings
@@ -86,7 +89,7 @@ public class IdentityProviderManagerTests
             },
         };
 
-        _sut = new ProvisioningManager(keycloakFactory, provisioningDbAccess, Options.Create(settings));
+        _sut = new ProvisioningManager(keycloakFactory, provisioningDbAccess, Options.Create(settings), sharedMultiKeycloakResolver);
     }
 
     [Fact]

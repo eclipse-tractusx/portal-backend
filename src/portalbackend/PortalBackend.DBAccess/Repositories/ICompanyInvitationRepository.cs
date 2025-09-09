@@ -33,5 +33,5 @@ public interface ICompanyInvitationRepository
     void AttachAndModifyCompanyInvitation(Guid invitationId, Action<CompanyInvitation>? initialize, Action<CompanyInvitation> modify);
     Task<string?> GetIdpNameForInvitationId(Guid invitationId);
     Task<(string OrgName, string? IdpName, string? ClientId, byte[]? ClientSecret, byte[]? InitializationVector, int? EncryptionMode)> GetUpdateCentralIdpUrlData(Guid invitationId);
-    Task<string?> GetServiceAccountUserIdForInvitation(Guid invitationId);
+    Task<(string? ServiceAccountUserId, string? IdpName)> GetServiceAccountAndRealmForInvitation(Guid invitationId);
 }

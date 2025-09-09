@@ -370,4 +370,38 @@ public class IdentityProviderRepository : IIdentityProviderRepository
             .Where(x => x.IdentityProviderId == identityProviderId)
             .Select(x => x.IamIdpAlias)
             .SingleOrDefaultAsync();
+    public async Task<(string SharedIdpUrl, string ClientId, byte[] ClientSecret, byte[]? InitializationVector, int EncryptionMode, string? authRealm, bool useAuthTrail)> GetSharedIdpInstanceByRealm(string realm) =>
+     await _context.SharedIdpRealmMappings
+            .Where(x => x.RealmName == realm)
+            .Select(x => new ValueTuple<string, string, byte[], byte[]?, int, string?, bool>(
+                x.SharedIdpInstanceDetail!.SharedIdpUrl,
+                x.SharedIdpInstanceDetail.ClientId,
+                x.SharedIdpInstanceDetail.ClientSecret,
+                x.SharedIdpInstanceDetail.InitializationVector,
+                x.SharedIdpInstanceDetail.EncryptionMode,
+                x.SharedIdpInstanceDetail.AuthRealm,
+                x.SharedIdpInstanceDetail.UseAuthTrail))
+            .SingleOrDefaultAsync();
+
+    public SharedIdpRealmMapping CreateSharedIdpRealmMapping(Guid instanceId, string realmName) =>
+            _context.SharedIdpRealmMappings
+            .Add(new SharedIdpRealmMapping(
+                instanceId,
+                realmName
+            )).Entity;
+
+    public Task<List<SharedIdpInstanceDetail>> GetAllSharedIdpInstanceDetails()
+            => _context.SharedIdpInstanceDetails.Where(item => item.IsRunning).ToListAsync();
+
+    public Task<bool> IsSharedIdpInstanceExists(string sharedIdp)
+            => _context.SharedIdpInstanceDetails
+            .AnyAsync(item => item.SharedIdpUrl == sharedIdp);
+
+    public async Task CreateSharedIdpInstanceDetails(string sharedIdpUrl, string clientId, byte[] secret, byte[] initializationVector, int encryptionConfigIndex, Action<SharedIdpInstanceDetail>? setOptionalFields)
+
+    {
+        var sharedIdpInstanceDetail = new SharedIdpInstanceDetail(Guid.NewGuid(), sharedIdpUrl, clientId, secret, initializationVector, encryptionConfigIndex, DateTimeOffset.UtcNow);
+        setOptionalFields?.Invoke(sharedIdpInstanceDetail);
+        await _context.SharedIdpInstanceDetails.AddAsync(sharedIdpInstanceDetail).ConfigureAwait(false);
+    }
 }

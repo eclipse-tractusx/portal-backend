@@ -39,4 +39,5 @@ public interface IIdentityProviderBusinessLogic
     ValueTask<UserIdentityProviderLinkData> GetOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, Guid identityProviderId);
     ValueTask DeleteOwnCompanyUserIdentityProviderDataAsync(Guid companyUserId, Guid identityProviderId);
     ValueTask<IdentityProviderDetailsWithConnectedCompanies> GetOwnIdentityProviderWithConnectedCompanies(Guid identityProviderId);
+    Task CreateSharedIdpInstanceDetails(SharedIdpInstanceRequestData sharedIdpInstanceRequestData);
 }

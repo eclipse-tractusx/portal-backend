@@ -42,6 +42,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.D
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.SelfDescriptionCreation.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.UserProvisioning.Executor;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Serilog;
 
 LoggingExtensions.EnsureInitialized();
@@ -53,6 +54,7 @@ try
         .ConfigureServices((hostContext, services) =>
         {
             services
+                .AddMultiKeycloak(hostContext.Configuration)
                 .AddMailingAndTemplateManager(hostContext.Configuration)
                 .AddProcessExecutionService<ProcessTypeId, ProcessStepTypeId>(hostContext.Configuration.GetSection("Processes"))
                 .AddTransient<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>, ApplicationChecklistProcessTypeExecutor>()

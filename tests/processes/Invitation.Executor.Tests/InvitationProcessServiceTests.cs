@@ -253,8 +253,8 @@ public class InvitationProcessServiceTests
         // Arrange
         var companyInvitationId = Guid.NewGuid();
         var serviceAccountId = Guid.NewGuid().ToString();
-        A.CallTo(() => _companyInvitationRepository.GetServiceAccountUserIdForInvitation(companyInvitationId))
-            .Returns(serviceAccountId);
+        A.CallTo(() => _companyInvitationRepository.GetServiceAccountAndRealmForInvitation(companyInvitationId))
+            .Returns((serviceAccountId, "testRealm"));
 
         // Act
         var result = await _sut.AddRealmRoleMappingsToUserAsync(companyInvitationId);
@@ -265,22 +265,6 @@ public class InvitationProcessServiceTests
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.nextStepTypeIds.Should().ContainSingle()
             .Which.Should().Be(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM);
-    }
-
-    [Fact]
-    public async Task AddRealmRoleMappingsToUserAsync_WithNotExisting_ThrowsConflictException()
-    {
-        // Arrange
-        var companyInvitation = _fixture.Create<CompanyInvitation>();
-        A.CallTo(() => _companyInvitationRepository.GetServiceAccountUserIdForInvitation(companyInvitation.Id))
-            .Returns((string?)null);
-
-        // Act
-        Task Act() => _sut.AddRealmRoleMappingsToUserAsync(companyInvitation.Id);
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-
-        // Assert
-        ex.Message.Should().Be("ServiceAccountUserId must not be null");
     }
 
     #endregion

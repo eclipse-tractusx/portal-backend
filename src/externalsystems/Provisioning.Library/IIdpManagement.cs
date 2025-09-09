@@ -28,6 +28,6 @@ public interface IIdpManagement
     Task CreateCentralIdentityProviderOrganisationMapperAsync(string alias, string organisationName);
     Task CreateSharedRealmIdpClientAsync(string realm, string loginTheme, string organisationName, string clientId, string secret);
     ValueTask EnableCentralIdentityProviderAsync(string alias);
-    Task AddRealmRoleMappingsToUserAsync(string serviceAccountUserId);
+    Task AddRealmRoleMappingsToUserAsync(string serviceAccountUserId, string? realmName = null);
     Task CreateSharedClientAsync(string realm, string clientId, string secret);
 }

@@ -46,7 +46,7 @@ await WebAppHelper
     {
         builder.Services
             .AddPublicInfos();
-
+        builder.Services.AddMultiKeycloak(builder.Configuration);
         builder.Services
             .AddPortalRepositories(builder.Configuration)
             .AddProvisioningManager(builder.Configuration);

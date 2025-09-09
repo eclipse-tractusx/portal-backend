@@ -161,6 +161,94 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region  Multi Shared Idp Tests
+
+    [Fact]
+    public async Task CreateSharedIdpRealmMapping_WithValid_CreatesEntity()
+    {
+        // Arrange
+        var sut = await CreateSut();
+        var instanceId = Guid.NewGuid();
+        var realmName = "realmX";
+
+        // Act
+        var result = sut.CreateSharedIdpRealmMapping(instanceId, realmName);
+
+        // Assert
+        result.SharedIdpInstanceDetailId.Should().Be(instanceId);
+        result.RealmName.Should().Be(realmName);
+    }
+
+    [Fact]
+    public async Task IsSharedIdpInstanceExists_WithExisting_ReturnsTrue()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext();
+        var url = "https://shared.example.org";
+        context.SharedIdpInstanceDetails.Add(new SharedIdpInstanceDetail(
+            Guid.NewGuid(),
+            url,
+            "clientX",
+            new byte[] { 1, 2, 3 },
+            new byte[16],
+            1,
+            DateTimeOffset.UtcNow));
+        await context.SaveChangesAsync();
+
+        // Act
+        var result = await sut.IsSharedIdpInstanceExists(url);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task IsSharedIdpInstanceExists_WithNotExisting_ReturnsFalse()
+    {
+        // Arrange
+        var sut = await CreateSut();
+        var url = "https://not-existing.org";
+
+        // Act
+        var result = await sut.IsSharedIdpInstanceExists(url);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CreateSharedIdpInstanceDetails_WithValid_AddsEntity()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext();
+        var url = "https://new.example.org";
+        var clientId = "clientY";
+        var secret = new byte[] { 1, 2, 3 };
+        var iv = new byte[16];
+        var encryptionIndex = 1;
+
+        // Act
+        await sut.CreateSharedIdpInstanceDetails(url, clientId, secret, iv, encryptionIndex, sia =>
+        {
+            sia.AuthRealm = "authRealm";
+            sia.UseAuthTrail = true;
+            sia.MaxRealmCount = 5;
+            sia.IsRunning = true;
+        });
+        await context.SaveChangesAsync();
+
+        // Assert
+        var entity = context.SharedIdpInstanceDetails.SingleOrDefault(x => x.SharedIdpUrl == url);
+        entity.Should().NotBeNull();
+        entity!.ClientId.Should().Be(clientId);
+        entity.AuthRealm.Should().Be("authRealm");
+        entity.UseAuthTrail.Should().BeTrue();
+        entity.MaxRealmCount.Should().Be(5);
+        entity.IsRunning.Should().BeTrue();
+    }
+
+    #endregion
+
     #region GetOwnCompanyIdentityProviderUpdateData
 
     [Theory]

@@ -49,11 +49,13 @@ public class IdentityProviderBusinessLogic(
     IErrorMessageService errorMessageService,
     IMailingProcessCreation mailingProcessCreation,
     IOptions<IdentityProviderSettings> options,
+    IOptions<MultiKeycloakSettings> multiKeycloakOptions,
     ILogger<IdentityProviderBusinessLogic> logger)
     : IIdentityProviderBusinessLogic
 {
     private readonly IIdentityData _identityData = identityService.IdentityData;
     private readonly IdentityProviderSettings _settings = options.Value;
+    private readonly MultiKeycloakSettings _multiKeycloakSettings = multiKeycloakOptions.Value;
 
     private static readonly Regex DisplayNameValidationExpression = new(@"^[a-zA-Z0-9\!\?\@\&\#\'\x22\(\)_\-\=\/\*\.\,\;\: ]+$", RegexOptions.None, TimeSpan.FromSeconds(1));
 
@@ -1098,5 +1100,35 @@ public class IdentityProviderBusinessLogic(
         return (iamUserId, alias);
     }
 
+    public async Task CreateSharedIdpInstanceDetails(SharedIdpInstanceRequestData sharedIdpInstanceRequestData)
+    {
+        var identityProviderRepository = portalRepositories.GetInstance<IIdentityProviderRepository>();
+
+        if (sharedIdpInstanceRequestData.MaxRealmCount <= 0)
+        {
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_UNEXPECT_VAL_FOR_MAX_REALM_COUNT);
+        }
+
+        if (await identityProviderRepository.IsSharedIdpInstanceExists(sharedIdpInstanceRequestData.SharedIdpUrl))
+        {
+            throw ConflictException.Create(AdministrationIdentityProviderErrors.IDENTITY_CONFLICT_SHARED_IDP_INSTANCE_ALREADY_EXISTS, [new(nameof(sharedIdpInstanceRequestData.SharedIdpUrl), sharedIdpInstanceRequestData.SharedIdpUrl)]);
+        }
+        var cryptoHelper = _multiKeycloakSettings.EncryptionConfigs.GetCryptoHelper(_multiKeycloakSettings.EncryptionConfigIndex);
+        var (secret, initializationVector) = cryptoHelper.Encrypt(sharedIdpInstanceRequestData.ClientSecret);
+        await identityProviderRepository.CreateSharedIdpInstanceDetails(sharedIdpInstanceRequestData.SharedIdpUrl,
+                                                                                                            sharedIdpInstanceRequestData.ClientId,
+                                                                                                            secret,
+                                                                                                            initializationVector,
+                                                                                                            _multiKeycloakSettings.EncryptionConfigIndex,
+                                                                                                             sia =>
+                                                                                                                    {
+                                                                                                                        sia.UseAuthTrail = sharedIdpInstanceRequestData.UseAuthTrail;
+                                                                                                                        sia.AuthRealm = sharedIdpInstanceRequestData.AuthRealm;
+                                                                                                                        sia.MaxRealmCount = sharedIdpInstanceRequestData.MaxRealmCount;
+                                                                                                                        sia.IsRunning = true;
+                                                                                                                    }
+                                                                                                            );
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+    }
     private sealed record UserProfile(string? FirstName, string? LastName, string? Email);
 }

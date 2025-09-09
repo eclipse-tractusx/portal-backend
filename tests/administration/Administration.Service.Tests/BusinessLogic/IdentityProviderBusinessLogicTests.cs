@@ -40,6 +40,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
@@ -54,6 +55,7 @@ public class IdentityProviderBusinessLogicTests
     private readonly IUserRepository _userRepository;
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IOptions<IdentityProviderSettings> _options;
+    private readonly IOptions<MultiKeycloakSettings> _multiKeycloakOptions;
     private readonly IdentityProviderCsvSettings _csvSettings;
     private readonly IIdentityService _identityService;
     private readonly IErrorMessageService _errorMessageService;
@@ -72,7 +74,7 @@ public class IdentityProviderBusinessLogicTests
     private readonly Guid _existingUserId;
     private readonly string _userProviderId;
     private readonly string _username;
-
+    private readonly byte[] _encryptionKey;
     public IdentityProviderBusinessLogicTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
@@ -87,6 +89,7 @@ public class IdentityProviderBusinessLogicTests
         _identityService = A.Fake<IIdentityService>();
         _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
         _options = A.Fake<IOptions<IdentityProviderSettings>>();
+        _multiKeycloakOptions = A.Fake<IOptions<MultiKeycloakSettings>>();
         _document = A.Fake<IFormFile>();
         _logger = A.Fake<ILogger<IdentityProviderBusinessLogic>>();
         _identity = A.Fake<IIdentityData>();
@@ -102,6 +105,7 @@ public class IdentityProviderBusinessLogicTests
         _encoding = _fixture.Create<Encoding>();
         _userProviderId = _fixture.Create<string>();
         _username = _fixture.Create<string>();
+        _encryptionKey = _fixture.CreateMany<byte>(32).ToArray();
 
         A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
         A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
@@ -127,6 +131,21 @@ public class IdentityProviderBusinessLogicTests
             HeaderProviderUserId = "ProviderUserId",
             HeaderProviderUserName = "ProviderUserName",
         };
+        _multiKeycloakOptions = Options.Create(new MultiKeycloakSettings
+        {
+            IsSharedIdpMultiInstancesEnabled = true,
+            EncryptionConfigIndex = 0,
+            EncryptionConfigs =
+                     [
+                         new EncryptionModeConfig
+                                            {
+                                                Index = 0,
+                                                CipherMode = CipherMode.CBC,
+                                                PaddingMode = PaddingMode.PKCS7,
+                                                EncryptionKey = Convert.ToHexString(_encryptionKey)
+                                            }
+                     ]
+        });
 
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>())
             .Returns(_identityProviderRepository);
@@ -158,6 +177,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
 
         var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None);
@@ -199,6 +219,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
 
         async Task Act() => await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None);
@@ -250,6 +271,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
 
         var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None);
@@ -300,6 +322,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
 
         var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None);
@@ -347,6 +370,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
 
         var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None);
@@ -394,6 +418,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
 
         var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None);
@@ -441,6 +466,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
 
         var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None);
@@ -478,6 +504,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
 
         // Act
@@ -501,6 +528,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
 
         // Act
@@ -522,6 +550,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
 
         // Act
@@ -547,6 +576,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
 
         // Act
@@ -569,6 +599,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
 
         SetupCreateOwnCompanyIdentityProvider();
@@ -594,6 +625,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
 
         // Act
@@ -620,6 +652,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
 
         var idpName = _fixture.Create<string>();
@@ -704,6 +737,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataForDelete(A<Guid>._, A<Guid>._))
             .Returns<(bool, string?, IdentityProviderTypeId, IEnumerable<(Guid, IEnumerable<string>)>, string)>(default);
@@ -729,6 +763,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataForDelete(A<Guid>._, A<Guid>._))
             .Returns((false, string.Empty, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>(), string.Empty));
@@ -754,6 +789,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataForDelete(A<Guid>._, A<Guid>._))
             .Returns((true, "test", IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>(), string.Empty));
@@ -782,6 +818,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIdpLinkedCompanyUserIds(identityProviderId, _companyId))
             .Returns(_fixture.CreateMany<Guid>(3).ToAsyncEnumerable());
@@ -820,6 +857,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataForDelete(A<Guid>._, A<Guid>._))
             .Returns((true, "test", IdentityProviderTypeId.OWN, new[] { (_companyId, new[] { "other-alias" }.AsEnumerable()) }, string.Empty));
@@ -866,6 +904,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataForDelete(A<Guid>._, A<Guid>._))
             .Returns((true, "test", IdentityProviderTypeId.MANAGED, Enumerable.Repeat((company.Id, Enumerable.Empty<string>()), 1), string.Empty));
@@ -933,6 +972,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         var oidcGuid = Guid.NewGuid();
         var samlGuid = Guid.NewGuid();
@@ -971,6 +1011,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         var oidcGuid = Guid.NewGuid();
         var samlGuid = Guid.NewGuid();
@@ -1008,6 +1049,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         var samlGuid = Guid.NewGuid();
         var saml = (samlGuid, IdentityProviderCategoryId.KEYCLOAK_SAML, "saml-alias", IdentityProviderTypeId.OWN, default(string?));
@@ -1048,6 +1090,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
             .Returns((string.Empty, IdentityProviderCategoryId.KEYCLOAK_OIDC, false, IdentityProviderTypeId.OWN, null));
@@ -1072,6 +1115,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
             .Returns((null, IdentityProviderCategoryId.KEYCLOAK_OIDC, true, IdentityProviderTypeId.OWN, null));
@@ -1096,6 +1140,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
             .Returns(("cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, true, IdentityProviderTypeId.OWN, null));
@@ -1129,6 +1174,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
             .Returns(("cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, true, IdentityProviderTypeId.OWN, "http://metadata"));
@@ -1167,6 +1213,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
             .Returns(("saml-alias", IdentityProviderCategoryId.KEYCLOAK_SAML, true, IdentityProviderTypeId.OWN, null));
@@ -1194,6 +1241,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, _companyId))
             .Returns(("saml-alias", IdentityProviderCategoryId.KEYCLOAK_SAML, true, IdentityProviderTypeId.OWN, null));
@@ -1227,6 +1275,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderStatusUpdateData(A<Guid>._, A<Guid>._, A<bool>._))
             .Returns<(bool, (string?, IdentityProviderCategoryId, IdentityProviderTypeId, string?), IEnumerable<(Guid, IEnumerable<string>)>?, bool, string)>(default);
@@ -1252,6 +1301,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderStatusUpdateData(A<Guid>._, A<Guid>._, A<bool>._))
             .Returns((false, (string.Empty, IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, null), Enumerable.Empty<(Guid, IEnumerable<string>)>(), false, string.Empty));
@@ -1277,6 +1327,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderStatusUpdateData(A<Guid>._, A<Guid>._, A<bool>._))
             .Returns((true, ("cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, null), new[] { (_companyId, new[] { "alt-cl1" }.AsEnumerable()) }, false, string.Empty));
@@ -1304,6 +1355,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderStatusUpdateData(A<Guid>._, A<Guid>._, A<bool>._))
             .Returns((true, ("cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, null), Enumerable.Empty<(Guid, IEnumerable<string>)>(), false, string.Empty));
@@ -1335,6 +1387,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderStatusUpdateData(A<Guid>._, A<Guid>._, A<bool>._))
             .Returns((true, ("cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, null), new[] { (_companyId, new[] { "cl1", "alt-cl1", "foo" }.AsEnumerable()) }, false, string.Empty));
@@ -1370,6 +1423,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderStatusUpdateData(A<Guid>._, A<Guid>._, A<bool>._))
             .Returns((true, ("cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, null), null, false, string.Empty));
@@ -1402,6 +1456,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderStatusUpdateData(A<Guid>._, A<Guid>._, A<bool>._))
             .Returns((true, ("cl1", IdentityProviderCategoryId.KEYCLOAK_SAML, IdentityProviderTypeId.OWN, null), new[] { (_companyId, new[] { "cl1", "alt-cl1", "foo" }.AsEnumerable()) }, false, string.Empty));
@@ -1437,6 +1492,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderStatusUpdateData(A<Guid>._, A<Guid>._, A<bool>._))
             .Returns((true, ("cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, null), new[] { (_companyId, new[] { "alt-cl1" }.AsEnumerable()) }, false, string.Empty));
@@ -1469,6 +1525,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderStatusUpdateData(A<Guid>._, A<Guid>._, A<bool>._))
             .Returns((true, ("cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.MANAGED, null), new[] { (_companyId, new[] { "alt-cl1" }.AsEnumerable()) }, true, string.Empty));
@@ -1511,6 +1568,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateData(A<Guid>._, A<Guid>._))
             .Returns<(bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, string?)>(default);
@@ -1538,6 +1596,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateData(A<Guid>._, A<Guid>._))
             .Returns<(bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, string?)>(default);
@@ -1565,6 +1624,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateData(A<Guid>._, A<Guid>._))
             .Returns((false, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, null));
@@ -1593,6 +1653,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateData(A<Guid>._, A<Guid>._))
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, null));
@@ -1622,6 +1683,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateData(A<Guid>._, A<Guid>._))
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, null));
@@ -1651,6 +1713,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         var cancellationToken = CancellationToken.None;
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateData(A<Guid>._, A<Guid>._))
@@ -1704,6 +1767,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateData(A<Guid>._, A<Guid>._))
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SAML, IdentityProviderTypeId.OWN, null));
@@ -1733,6 +1797,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateData(A<Guid>._, A<Guid>._))
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SAML, IdentityProviderTypeId.OWN, null));
@@ -1762,6 +1827,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateData(A<Guid>._, A<Guid>._))
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SAML, IdentityProviderTypeId.OWN, null));
@@ -1798,6 +1864,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateData(A<Guid>._, A<Guid>._))
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, null));
@@ -1827,6 +1894,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateData(A<Guid>._, A<Guid>._))
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, null));
@@ -1856,6 +1924,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateData(A<Guid>._, A<Guid>._))
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, null));
@@ -1895,6 +1964,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
             .Returns<(bool, string?, bool)>(default);
@@ -1923,6 +1993,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
             .Returns((true, "cl1", true));
@@ -1953,6 +2024,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
             .Returns((true, null, false));
@@ -1981,6 +2053,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
             .Returns((true, "cl1", false));
@@ -2010,6 +2083,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
             .Returns((true, "cl1", true));
@@ -2029,6 +2103,131 @@ public class IdentityProviderBusinessLogicTests
 
     #endregion
 
+    #region Multi Shared Idps
+
+    [Fact]
+    public async Task CreateSharedIdpInstanceDetails_InvalidMaxRealmCount_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var request = new SharedIdpInstanceRequestData(
+            SharedIdpUrl: "https://shared.example.org",
+            ClientId: "clientX",
+            ClientSecret: "secretValue",
+            AuthRealm: "authRealm",
+            UseAuthTrail: true,
+            MaxRealmCount: 0 // invalid
+        );
+
+        var sut = new IdentityProviderBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            _errorMessageService,
+            _mailingProcessCreation,
+            _options,
+            _multiKeycloakOptions,
+            _logger);
+
+        // Act
+        async Task Act() => await sut.CreateSharedIdpInstanceDetails(request);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_UNEXPECT_VAL_FOR_MAX_REALM_COUNT.ToString());
+    }
+
+    [Fact]
+    public async Task CreateSharedIdpInstanceDetails_InstanceAlreadyExists_ThrowsConflictException()
+    {
+        // Arrange
+        var request = new SharedIdpInstanceRequestData(
+            SharedIdpUrl: "https://shared.example.org",
+            ClientId: "clientX",
+            ClientSecret: "secretValue",
+            AuthRealm: "authRealm",
+            UseAuthTrail: false,
+            MaxRealmCount: 5
+        );
+
+        A.CallTo(() => _identityProviderRepository.IsSharedIdpInstanceExists(request.SharedIdpUrl))
+            .Returns(true);
+
+        var sut = new IdentityProviderBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            _errorMessageService,
+            _mailingProcessCreation,
+            _options,
+            _multiKeycloakOptions,
+            _logger);
+
+        // Act
+        async Task Act() => await sut.CreateSharedIdpInstanceDetails(request);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_CONFLICT_SHARED_IDP_INSTANCE_ALREADY_EXISTS.ToString());
+    }
+
+    [Fact]
+    public async Task CreateSharedIdpInstanceDetails_WithValid_CallsExpected()
+    {
+        // Arrange
+        var request = new SharedIdpInstanceRequestData(
+            SharedIdpUrl: "https://shared.example.org",
+            ClientId: "clientY",
+            ClientSecret: "superSecret",
+            AuthRealm: "authRealm",
+            UseAuthTrail: true,
+            MaxRealmCount: 3
+        );
+
+        A.CallTo(() => _identityProviderRepository.IsSharedIdpInstanceExists(request.SharedIdpUrl))
+            .Returns(false);
+
+        var sut = new IdentityProviderBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            _errorMessageService,
+            _mailingProcessCreation,
+            _options,
+            _multiKeycloakOptions,
+            _logger);
+
+        SharedIdpInstanceDetail? configuredDetail = null;
+
+        A.CallTo(() => _identityProviderRepository.CreateSharedIdpInstanceDetails(
+                request.SharedIdpUrl,
+                request.ClientId,
+                A<byte[]>.Ignored,
+                A<byte[]>.Ignored,
+                _multiKeycloakOptions.Value.EncryptionConfigIndex,
+                A<Action<SharedIdpInstanceDetail>>._))
+            .Invokes((string url, string clientId, byte[] secret, byte[] iv, int encIndex, Action<SharedIdpInstanceDetail> action) =>
+            {
+                var detail = new SharedIdpInstanceDetail(Guid.NewGuid(), url, clientId, iv, secret, encIndex, DateTimeOffset.UtcNow);
+                action(detail);
+                configuredDetail = detail;
+            });
+
+        // Act
+        await sut.CreateSharedIdpInstanceDetails(request);
+
+        // Assert
+        configuredDetail.Should().NotBeNull();
+        configuredDetail!.AuthRealm.Should().Be(request.AuthRealm);
+        configuredDetail.UseAuthTrail.Should().Be(request.UseAuthTrail);
+        configuredDetail.MaxRealmCount.Should().Be(request.MaxRealmCount);
+        configuredDetail.IsRunning.Should().BeTrue();
+
+        A.CallTo(() => _portalRepositories.SaveAsync())
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
     #region GetOwnCompanyUserIdentityProviderLinkDataAsync
 
     [Fact]
@@ -2044,6 +2243,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
             .Returns<(bool, string?, bool)>(default);
@@ -2069,6 +2269,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
             .Returns((true, "cl1", true));
@@ -2096,6 +2297,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
             .Returns((true, null, false));
@@ -2121,6 +2323,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
             .Returns((true, "cl1", false));
@@ -2147,6 +2350,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
             .Returns((true, "cl1", true));
@@ -2180,6 +2384,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
             .Returns((true, "cl1", true));
@@ -2213,6 +2418,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
             .Returns((true, "cl1", true));
@@ -2243,6 +2449,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
             .Returns((true, "cl1", true));
@@ -2274,6 +2481,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, _identity.CompanyId))
             .Returns((true, "cl1", true));
@@ -2298,6 +2506,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderAliasDataUntracked(_identity.CompanyId, A<IEnumerable<Guid>>._))
             .Returns(Enumerable.Empty<(Guid, string)>().ToAsyncEnumerable());
@@ -2326,6 +2535,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
             .Returns((string.Empty, IdentityProviderCategoryId.KEYCLOAK_OIDC, false, IdentityProviderTypeId.OWN, null, Enumerable.Empty<ConnectedCompanyData>()));
@@ -2350,6 +2560,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
             .Returns((null, IdentityProviderCategoryId.KEYCLOAK_OIDC, true, IdentityProviderTypeId.OWN, null, Enumerable.Empty<ConnectedCompanyData>()));
@@ -2374,6 +2585,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
             .Returns(("cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, true, IdentityProviderTypeId.OWN, null, Enumerable.Empty<ConnectedCompanyData>()));
@@ -2402,6 +2614,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
             .Returns(("cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, true, IdentityProviderTypeId.OWN, null, Enumerable.Repeat(new ConnectedCompanyData(companyId, "Test Company"), 1)));
@@ -2433,6 +2646,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
             .Returns(("saml-alias", IdentityProviderCategoryId.KEYCLOAK_SAML, true, IdentityProviderTypeId.OWN, null, Enumerable.Repeat(new ConnectedCompanyData(companyId, "Test Company"), 1)));
@@ -2462,6 +2676,7 @@ public class IdentityProviderBusinessLogicTests
             _errorMessageService,
             _mailingProcessCreation,
             _options,
+            _multiKeycloakOptions,
             _logger);
         A.CallTo(() => _identityProviderRepository.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, _companyId))
             .Returns(("saml-alias", IdentityProviderCategoryId.KEYCLOAK_SAML, true, IdentityProviderTypeId.OWN, null, Enumerable.Repeat(new ConnectedCompanyData(companyId, "Test Company"), 1)));

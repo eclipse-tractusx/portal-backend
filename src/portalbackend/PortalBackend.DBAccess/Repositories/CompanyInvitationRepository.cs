@@ -106,9 +106,9 @@ public class CompanyInvitationRepository(PortalDbContext context)
                 x.EncryptionMode))
             .SingleOrDefaultAsync();
 
-    public Task<string?> GetServiceAccountUserIdForInvitation(Guid invitationId) =>
+    public Task<(string? ServiceAccountUserId, string? IdpName)> GetServiceAccountAndRealmForInvitation(Guid invitationId) =>
         context.CompanyInvitations
             .Where(x => x.Id == invitationId)
-            .Select(x => x.ServiceAccountUserId)
+            .Select(x => new ValueTuple<string?, string?>(x.ServiceAccountUserId, x.IdpName))
             .SingleOrDefaultAsync();
 }

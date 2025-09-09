@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.FlurlSetup;
 using Config = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders.Config;
@@ -49,12 +50,14 @@ public class ProvisioningManagerTests
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         var keycloakFactory = A.Fake<IKeycloakFactory>();
+        var sharedMultiKeycloakResolver = A.Fake<ISharedMultiKeycloakResolver>();
         _provisioningDbAccess = A.Fake<IProvisioningDBAccess>();
+        var portalRepositories = A.Fake<IPortalRepositories>();
         A.CallTo(() => keycloakFactory.CreateKeycloakClient("central"))
             .Returns(new KeycloakClient(CentralUrl, "test", "test", "test", false));
-        A.CallTo(() => keycloakFactory.CreateKeycloakClient("shared"))
+        A.CallTo(() => sharedMultiKeycloakResolver.GetKeycloakClient(A<string>._))
             .Returns(new KeycloakClient(SharedUrl, "test", "test", "test", false));
-        A.CallTo(() => keycloakFactory.CreateKeycloakClient("shared", A<string>._, A<string>._))
+        A.CallTo(() => sharedMultiKeycloakResolver.GetKeycloakClient(A<string>._, A<string>._, A<string>._))
             .Returns(new KeycloakClient(SharedUrl, "test", "test", "test", false));
         var settings = new ProvisioningSettings
         {
@@ -93,7 +96,7 @@ public class ProvisioningManagerTests
             },
         };
 
-        _sut = new ProvisioningManager(keycloakFactory, _provisioningDbAccess, Options.Create(settings));
+        _sut = new ProvisioningManager(keycloakFactory, _provisioningDbAccess, Options.Create(settings), sharedMultiKeycloakResolver);
     }
 
     [Fact]

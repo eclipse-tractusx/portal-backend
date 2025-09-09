@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.FlurlSetup;
 using Config = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders.Config;
 using Idp = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
@@ -49,14 +50,18 @@ public class IdpManagementTests
             .ForEach(b => fixture.Behaviors.Remove(b));
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
+        var sharedClient = new KeycloakClient(SharedUrl, "test", "test", "test", false);
         var keycloakFactory = A.Fake<IKeycloakFactory>();
+        var sharedMultiKeycloakResolver = A.Fake<ISharedMultiKeycloakResolver>();
         _provisioningDbAccess = A.Fake<IProvisioningDBAccess>();
         A.CallTo(() => keycloakFactory.CreateKeycloakClient("central"))
             .Returns(new KeycloakClient(CentralUrl, "test", "test", "test", false));
-        A.CallTo(() => keycloakFactory.CreateKeycloakClient("shared"))
-            .Returns(new KeycloakClient(SharedUrl, "test", "test", "test", false));
-        A.CallTo(() => keycloakFactory.CreateKeycloakClient("shared", A<string>._, A<string>._))
-            .Returns(new KeycloakClient(SharedUrl, "test", "test", "test", false));
+        A.CallTo(() => sharedMultiKeycloakResolver.GetKeycloakClient(A<string>._))
+            .Returns(sharedClient);
+        A.CallTo(() => sharedMultiKeycloakResolver.GetKeycloakClient(A<string>._, A<string>._, A<string>._))
+            .Returns(sharedClient);
+        A.CallTo(() => sharedMultiKeycloakResolver.ResolveAndAssignKeycloak(A<string>._))
+            .Returns(sharedClient);
         var settings = new IdpManagementSettings
         {
             CentralRealm = CentralRealm,
@@ -91,7 +96,7 @@ public class IdpManagementTests
             },
         };
 
-        _sut = new IdpManagement(keycloakFactory, _provisioningDbAccess, Options.Create(settings));
+        _sut = new IdpManagement(keycloakFactory, _provisioningDbAccess, Options.Create(settings), sharedMultiKeycloakResolver);
     }
 
     #region GetNextCentralIdentityProviderNameAsync

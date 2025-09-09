@@ -374,4 +374,12 @@ public class IdentityProviderController(IIdentityProviderBusinessLogic businessL
         await businessLogic.DeleteOwnCompanyUserIdentityProviderDataAsync(companyUserId, identityProviderId).ConfigureAwait(false);
         return NoContent();
     }
+
+    [HttpPost]
+    [Authorize(Roles = "register_multi_shared_idp")]
+    [Route("operator/multi-shared-idp")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(typeof(IdentityProviderUpdateStats), StatusCodes.Status200OK)]
+    public Task CreateSharedIdpInstanceDetails([FromBody] SharedIdpInstanceRequestData sharedIdpInstanceRequestData) =>
+        businessLogic.CreateSharedIdpInstanceDetails(sharedIdpInstanceRequestData);
 }

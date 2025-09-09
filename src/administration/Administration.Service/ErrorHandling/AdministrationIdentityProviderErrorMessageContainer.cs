@@ -65,7 +65,9 @@ public class AdministrationIdentityProviderErrorMessageContainer : IErrorMessage
         new((int)AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_INVALID_IDENTITY_PROVIDER_IDS, "invalid identityProviders: {invalidIds)} for company {companyId}"),
         new((int)AdministrationIdentityProviderErrors.IDENTITY_NOT_COMPANY_USERID_NOT_EXIST, "companyUserId {companyUserId} does not exist"),
         new((int)AdministrationIdentityProviderErrors.IDENTITY_NOT_FOUND_COMPANY_OF_COMPANY_USER_ID, "identityProvider {identityProviderId} not found in company of user {companyUserId}"),
-        new((int)AdministrationIdentityProviderErrors.IDENTITY_UNEXPECT_COMPANY_USERID_NOT_LINKED_KEYCLOAK, "companyUserId {companyUserId} is not linked to keycloak")
+        new((int)AdministrationIdentityProviderErrors.IDENTITY_UNEXPECT_COMPANY_USERID_NOT_LINKED_KEYCLOAK, "companyUserId {companyUserId} is not linked to keycloak"),
+        new((int)AdministrationIdentityProviderErrors.IDENTITY_CONFLICT_SHARED_IDP_INSTANCE_ALREADY_EXISTS, "Shared Idp Instance Url {SharedIdpUrl} is already exists"),
+        new((int)AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_UNEXPECT_VAL_FOR_MAX_REALM_COUNT, "Max Realm count should be greater than 0")
     ]);
 
     public Type Type { get => typeof(AdministrationIdentityProviderErrors); }
@@ -115,6 +117,8 @@ public enum AdministrationIdentityProviderErrors
     IDENTITY_ARGUMENT_INVALID_IDENTITY_PROVIDER_IDS,
     IDENTITY_NOT_COMPANY_USERID_NOT_EXIST,
     IDENTITY_NOT_FOUND_COMPANY_OF_COMPANY_USER_ID,
-    IDENTITY_UNEXPECT_COMPANY_USERID_NOT_LINKED_KEYCLOAK
+    IDENTITY_UNEXPECT_COMPANY_USERID_NOT_LINKED_KEYCLOAK,
+    IDENTITY_CONFLICT_SHARED_IDP_INSTANCE_ALREADY_EXISTS,
+    IDENTITY_ARGUMENT_UNEXPECT_VAL_FOR_MAX_REALM_COUNT
 
 }

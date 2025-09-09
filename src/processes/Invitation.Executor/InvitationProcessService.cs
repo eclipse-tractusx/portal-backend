@@ -121,14 +121,14 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> AddRealmRoleMappingsToUserAsync(Guid invitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var serviceAccountUserId = await companyInvitationRepository.GetServiceAccountUserIdForInvitation(invitationId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (serviceAccountUserId, realmName) = await companyInvitationRepository.GetServiceAccountAndRealmForInvitation(invitationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (string.IsNullOrWhiteSpace(serviceAccountUserId))
         {
             throw new ConflictException("ServiceAccountUserId must not be null");
         }
 
-        await _idpManagement.AddRealmRoleMappingsToUserAsync(serviceAccountUserId).ConfigureAwait(ConfigureAwaitOptions.None);
+        await _idpManagement.AddRealmRoleMappingsToUserAsync(serviceAccountUserId, realmName).ConfigureAwait(ConfigureAwaitOptions.None);
 
         return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM, 1), ProcessStepStatusId.DONE, true, null);
     }

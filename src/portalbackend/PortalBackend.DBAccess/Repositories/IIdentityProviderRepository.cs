@@ -63,4 +63,9 @@ public interface IIdentityProviderRepository
     Task<IdpData?> GetIdentityProviderDataForProcessIdAsync(Guid processId);
     void CreateIdentityProviderAssignedProcessRange(IEnumerable<(Guid IdentityProviderId, Guid ProcessId)> identityProviderProcessIds);
     Task<string?> GetIamIdentityProviderForIdp(Guid identityProviderId);
+    Task<(string SharedIdpUrl, string ClientId, byte[] ClientSecret, byte[]? InitializationVector, int EncryptionMode, string? authRealm, bool useAuthTrail)> GetSharedIdpInstanceByRealm(string realm);
+    SharedIdpRealmMapping CreateSharedIdpRealmMapping(Guid instanceId, string realmName);
+    Task<List<SharedIdpInstanceDetail>> GetAllSharedIdpInstanceDetails();
+    Task<bool> IsSharedIdpInstanceExists(string sharedIdp);
+    Task CreateSharedIdpInstanceDetails(string sharedIdpUrl, string clientId, byte[] secret, byte[] initializationVector, int encryptionConfigIndex, Action<SharedIdpInstanceDetail>? setOptionalFields);
 }

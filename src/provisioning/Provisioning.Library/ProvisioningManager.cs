@@ -31,20 +31,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 public partial class ProvisioningManager : IProvisioningManager
 {
     private readonly KeycloakClient _centralIdp;
-    private readonly IKeycloakFactory _factory;
+    private readonly ISharedMultiKeycloakResolver _sharedMultiKeycloakResolver;
     private readonly IProvisioningDBAccess? _provisioningDBAccess;
     private readonly ProvisioningSettings _settings;
 
-    public ProvisioningManager(IKeycloakFactory keycloakFactory, IProvisioningDBAccess? provisioningDBAccess, IOptions<ProvisioningSettings> options)
+    public ProvisioningManager(IKeycloakFactory keycloakFactory, IProvisioningDBAccess? provisioningDBAccess, IOptions<ProvisioningSettings> options, ISharedMultiKeycloakResolver sharedMultiKeycloakResolver)
     {
         _centralIdp = keycloakFactory.CreateKeycloakClient("central");
-        _factory = keycloakFactory;
         _settings = options.Value;
         _provisioningDBAccess = provisioningDBAccess;
+        _sharedMultiKeycloakResolver = sharedMultiKeycloakResolver;
     }
 
-    public ProvisioningManager(IKeycloakFactory keycloakFactory, IOptions<ProvisioningSettings> options)
-        : this(keycloakFactory, null, options)
+    public ProvisioningManager(IKeycloakFactory keycloakFactory, IOptions<ProvisioningSettings> options, ISharedMultiKeycloakResolver sharedMultiKeycloakResolver)
+        : this(keycloakFactory, null, options, sharedMultiKeycloakResolver)
     {
     }
 
@@ -52,7 +52,7 @@ public partial class ProvisioningManager : IProvisioningManager
     {
         var deleteSharedKeycloak = await GetSharedKeycloakClient(alias).ConfigureAwait(ConfigureAwaitOptions.None);
         await deleteSharedKeycloak.DeleteRealmAsync(alias).ConfigureAwait(ConfigureAwaitOptions.None);
-        var sharedKeycloak = _factory.CreateKeycloakClient("shared");
+        var sharedKeycloak = await _sharedMultiKeycloakResolver.GetKeycloakClient(alias);
         await DeleteSharedIdpServiceAccountAsync(sharedKeycloak, alias);
     }
 
@@ -272,7 +272,7 @@ public partial class ProvisioningManager : IProvisioningManager
     private async Task<KeycloakClient> GetSharedKeycloakClient(string realm)
     {
         var (clientId, secret) = await GetSharedIdpServiceAccountSecretAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None);
-        return _factory.CreateKeycloakClient("shared", clientId, secret);
+        return await _sharedMultiKeycloakResolver.GetKeycloakClient(realm, clientId, secret);
     }
 
     public async Task DeleteSharedRealmAsync(string alias)
@@ -283,7 +283,7 @@ public partial class ProvisioningManager : IProvisioningManager
 
     public async Task DeleteIdpSharedServiceAccount(string alias)
     {
-        var sharedKeycloak = _factory.CreateKeycloakClient("shared");
+        var sharedKeycloak = await _sharedMultiKeycloakResolver.GetKeycloakClient(alias);
         await DeleteSharedIdpServiceAccountAsync(sharedKeycloak, alias);
     }
 

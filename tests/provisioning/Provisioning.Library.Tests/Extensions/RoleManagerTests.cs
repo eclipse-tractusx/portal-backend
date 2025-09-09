@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests.Extensions;
 
@@ -40,6 +41,8 @@ public class RoleManagerTests
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         var keycloakFactory = A.Fake<IKeycloakFactory>();
+        var sharedMultiKeycloakResolver = A.Fake<ISharedMultiKeycloakResolver>();
+        var portalRepositories = A.Fake<IPortalRepositories>();
         A.CallTo(() => keycloakFactory.CreateKeycloakClient("central"))
             .Returns(new KeycloakClient("https://test.de", "test", "test", "test", false));
         var settings = new ProvisioningSettings
@@ -47,7 +50,7 @@ public class RoleManagerTests
             CentralRealm = "test"
         };
 
-        _sut = new ProvisioningManager(keycloakFactory, null, Options.Create(settings));
+        _sut = new ProvisioningManager(keycloakFactory, null, Options.Create(settings), sharedMultiKeycloakResolver);
     }
 
     [Fact]

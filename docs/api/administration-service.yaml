@@ -2543,6 +2543,39 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: The User is unauthorized
+  /api/administration/identityprovider/operator/multi-shared-idp:
+    post:
+      tags:
+        - IdentityProvider
+      summary: ' (Authorization required - Roles: register_multi_shared_idp)'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SharedIdpInstanceRequestData'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/SharedIdpInstanceRequestData'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/SharedIdpInstanceRequestData'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/IdentityProviderUpdateStats'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdentityProviderUpdateStats'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/IdentityProviderUpdateStats'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
   /api/administration/invitation:
     post:
       tags:
@@ -7948,6 +7981,24 @@ components:
           type: string
         authenticationType:
           $ref: '#/components/schemas/IamClientAuthMethod'
+      additionalProperties: false
+    SharedIdpInstanceRequestData:
+      type: object
+      properties:
+        sharedIdpUrl:
+          type: string
+        clientId:
+          type: string
+        clientSecret:
+          type: string
+        useAuthTrail:
+          type: boolean
+        authRealm:
+          type: string
+          nullable: true
+        maxRealmCount:
+          type: integer
+          format: int32
       additionalProperties: false
     TechnicalUserCreationInfo:
       type: object
