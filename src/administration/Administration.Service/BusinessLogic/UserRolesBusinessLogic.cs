@@ -95,10 +95,10 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
             });
     }
 
-    public Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync(Guid appId, Guid companyUserId, IEnumerable<string> roles) =>
+    public Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync(Guid appId, Guid companyUserId, Guid subscriptionId, IEnumerable<string> roles) =>
         ModifyUserRolesInternal(
             () => _portalRepositories.GetInstance<IUserRepository>()
-                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, companyUserId, _identityData.CompanyId),
+                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, companyUserId, subscriptionId, _identityData.CompanyId),
             (Guid companyUserId, IEnumerable<string> roles, Guid offerId) => _portalRepositories.GetInstance<IUserRolesRepository>()
                 .GetAssignedAndMatchingAppRoles(companyUserId, roles, offerId).Select(x => new UserRoleModificationData(x.UserRoleText, x.RoleId, x.IsAssigned, true)),
             appId, companyUserId, roles, _identityData.CompanyId,

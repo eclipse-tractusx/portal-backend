@@ -229,22 +229,23 @@ public class UserController : ControllerBase
     /// Updates the app-roles for the user
     /// </summary>
     /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the application</param>
-    /// <param name="companyUserId"></param>
+    /// <param name="companyUserId" example="3282A535-4C52-4D9A-B5DA-2AB11C466933">Id of the company user</param>
+    /// <param name="subscriptionId" example="4ED6B89E-6D74-4C3D-B979-C461C80D7936">Id of the subscription</param>
     /// <param name="roles"></param>
     /// <returns></returns>
-    /// <remarks>Example: PUT: api/administration/user/owncompany/users/{companyUserId}/apps/{appId}/roles</remarks>
+    /// <remarks>Example: PUT: api/administration/user/owncompany/users/{companyUserId}/apps/{appId}/subscription/{subscriptionId}/roles</remarks>
     /// <response code="200">Roles got successfully updated user account.</response>
     /// <response code="400">Invalid User roles for client</response>
     /// <response code="404">User not found</response>
     [HttpPut]
     [Authorize(Roles = "modify_user_account")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [Route("owncompany/users/{companyUserId}/apps/{appId}/roles")]
+    [Route("owncompany/users/{companyUserId}/apps/{appId}/subscription/{subscriptionId}/roles")]
     [ProducesResponseType(typeof(IEnumerable<UserRoleWithId>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync([FromRoute] Guid companyUserId, [FromRoute] Guid appId, [FromBody] IEnumerable<string> roles) =>
-        _rolesLogic.ModifyAppUserRolesAsync(appId, companyUserId, roles);
+    public Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync([FromRoute] Guid companyUserId, [FromRoute] Guid appId, [FromRoute] Guid subscriptionId, [FromBody] IEnumerable<string> roles) =>
+        _rolesLogic.ModifyAppUserRolesAsync(appId, companyUserId, subscriptionId, roles);
 
     /// <summary>
     /// Adds the given business partner numbers to the user for the given id.
