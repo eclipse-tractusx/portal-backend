@@ -56,6 +56,8 @@ public class ConnectorsBusinessLogic(
     : IConnectorsBusinessLogic
 {
     private static readonly Regex BpnRegex = new(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
+    private static readonly Regex CatalogRegex = new(@"^.+/api/v[1-9][0-9]*/dsp$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
     private readonly IIdentityData _identityData = identityService.IdentityData;
     private readonly ConnectorsSettings _connectorSettings = connectorOptions.Value;
     private readonly ClearinghouseSettings _clearinghouseSettings = clearinghouseOptions.Value;
@@ -112,6 +114,8 @@ public class ConnectorsBusinessLogic(
     {
         var companyId = _identityData.CompanyId;
         var (name, connectorUrl, location, technicalUserId) = connectorInputModel;
+
+        CheckCatalogUrlFormat(connectorUrl);
         await CheckDuplicateConnector(name, connectorUrl).ConfigureAwait(ConfigureAwaitOptions.None);
         await CheckLocationExists(location);
 
@@ -141,6 +145,8 @@ public class ConnectorsBusinessLogic(
     {
         var companyId = _identityData.CompanyId;
         var (name, connectorUrl, location, subscriptionId, technicalUserId) = connectorInputModel;
+
+        CheckCatalogUrlFormat(connectorUrl);
         await CheckDuplicateConnector(name, connectorUrl).ConfigureAwait(ConfigureAwaitOptions.None);
         await CheckLocationExists(location).ConfigureAwait(ConfigureAwaitOptions.None);
 
@@ -184,6 +190,14 @@ public class ConnectorsBusinessLogic(
             subscriptionId,
             result.CompanyId,
             cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+    }
+
+    private static void CheckCatalogUrlFormat(string catalogUrl)
+    {
+        if (!CatalogRegex.IsMatch(catalogUrl))
+        {
+            throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_INCORRECT_CATALOG_URL_FORMAT, new ErrorParameter[] { new("catalogUrl", catalogUrl) });
+        }
     }
 
     private async Task CheckLocationExists(string location)
