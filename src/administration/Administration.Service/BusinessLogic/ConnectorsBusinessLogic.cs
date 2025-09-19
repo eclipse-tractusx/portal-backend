@@ -56,7 +56,7 @@ public class ConnectorsBusinessLogic(
     : IConnectorsBusinessLogic
 {
     private static readonly Regex BpnRegex = new(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
-    private static readonly Regex CatalogRegex = new(@"^.+/api/v[1-9][0-9]*/dsp$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex CatalogRegex = new(@"^.+/api/v[1-9][0-9]*/dsp$", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromSeconds(1));
 
     private readonly IIdentityData _identityData = identityService.IdentityData;
     private readonly ConnectorsSettings _connectorSettings = connectorOptions.Value;
