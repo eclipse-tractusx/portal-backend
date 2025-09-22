@@ -4,7 +4,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
-## 2.6.0-RC1
+## 2.6.0
 
 ### Feature
 
@@ -34,6 +34,10 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 * **Dependencies**
   * updated app dependencies [#1370](https://github.com/eclipse-tractusx/portal-backend/pull/1370), [#1389](https://github.com/eclipse-tractusx/portal-backend/pull/1389), [#1361](https://github.com/eclipse-tractusx/portal-backend/pull/1361), [#1408](https://github.com/eclipse-tractusx/portal-backend/pull/1408), [#1416](https://github.com/eclipse-tractusx/portal-backend/pull/1416)
+
+### Known Knowns
+
+* Please refer to the **[list of open bugs](https://github.com/eclipse-tractusx/portal-backend/issues?q=is%3Aopen+is%3Aissue+label%3Abug)**.
 
 ## 2.5.0
 
