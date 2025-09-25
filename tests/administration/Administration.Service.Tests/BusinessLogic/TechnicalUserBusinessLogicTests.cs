@@ -745,6 +745,132 @@ public class TechnicalUserBusinessLogicTests
             .And.AllSatisfy(x => x.ProviderOnly.Should().Be(x.UserRoleText == providerOnlyRole));
     }
 
+    [Fact]
+    public async Task GetServiceAccountRolesAsync_GetsExpectedData_with_BringYourOwnWallet_True_ExcludedRoles_Configured()
+    {
+        // Arrange
+
+        var data = _fixture.CreateMany<UserRoleWithDescriptionTransferData>(15).ToImmutableArray();
+
+        var externalRole = data[0].UserRoleText;
+        var providerOnlyRole = data[1].UserRoleText;
+
+        var options = Options.Create(new ServiceAccountSettings
+        {
+            ClientId = ClientId,
+            DimUserRoles = [new(ClientId, [externalRole]), new("OtherClientId", [data[2].UserRoleText])],
+            UserRolesAccessibleByProviderOnly = [new(ClientId, [providerOnlyRole]), new("OtherClientId", [data[3].UserRoleText])]
+        });
+
+        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(A<Guid>._, A<string>._, A<string>._))
+            .Returns(data.ToAsyncEnumerable());
+
+        A.CallTo(() => _bringYourOwnWalletBusinessLogic.IsBringYourOwnWallet(A<Guid>._))
+            .Returns(true);
+
+        A.CallTo(() => _bringYourOwnWalletBusinessLogic.GetExcludedUserRoles())
+            .Returns([data[2].UserRoleId]);
+
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
+
+        var sut = new TechnicalUserBusinessLogic(null!, _portalRepositories, options, null!, _identityService, null!, _bringYourOwnWalletBusinessLogic);
+
+        // Act
+        var result = await sut.GetServiceAccountRolesAsync(null).ToListAsync();
+
+        // Assert
+        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(_identity.CompanyId, ClientId, Constants.DefaultLanguage)).MustHaveHappenedOnceExactly();
+
+        result.Should()
+            .HaveCount(14)
+            .And.AllSatisfy(x => data.Should().Contain(new UserRoleWithDescriptionTransferData(x.UserRoleId, x.UserRoleText, x.RoleDescription)))
+            .And.AllSatisfy(x => x.RoleType.Should().Be(x.UserRoleText == externalRole ? UserRoleType.External : UserRoleType.Internal))
+            .And.AllSatisfy(x => x.ProviderOnly.Should().Be(x.UserRoleText == providerOnlyRole));
+    }
+
+    [Fact]
+    public async Task GetServiceAccountRolesAsync_GetsExpectedData_with_BringYourOwnWallet_False_ExcludeRoles_Configured()
+    {
+        // Arrange
+
+        var data = _fixture.CreateMany<UserRoleWithDescriptionTransferData>(15).ToImmutableArray();
+
+        var externalRole = data[0].UserRoleText;
+        var providerOnlyRole = data[1].UserRoleText;
+
+        var options = Options.Create(new ServiceAccountSettings
+        {
+            ClientId = ClientId,
+            DimUserRoles = [new(ClientId, [externalRole]), new("OtherClientId", [data[2].UserRoleText])],
+            UserRolesAccessibleByProviderOnly = [new(ClientId, [providerOnlyRole]), new("OtherClientId", [data[3].UserRoleText])]
+        });
+
+        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(A<Guid>._, A<string>._, A<string>._))
+            .Returns(data.ToAsyncEnumerable());
+
+        A.CallTo(() => _bringYourOwnWalletBusinessLogic.IsBringYourOwnWallet(A<Guid>._))
+            .Returns(false);
+
+        A.CallTo(() => _bringYourOwnWalletBusinessLogic.GetExcludedUserRoles())
+            .Returns([data[2].UserRoleId]);
+
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
+
+        var sut = new TechnicalUserBusinessLogic(null!, _portalRepositories, options, null!, _identityService, null!, _bringYourOwnWalletBusinessLogic);
+
+        // Act
+        var result = await sut.GetServiceAccountRolesAsync(null).ToListAsync();
+
+        // Assert
+        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(_identity.CompanyId, ClientId, Constants.DefaultLanguage)).MustHaveHappenedOnceExactly();
+
+        result.Should()
+            .HaveCount(15)
+            .And.AllSatisfy(x => data.Should().Contain(new UserRoleWithDescriptionTransferData(x.UserRoleId, x.UserRoleText, x.RoleDescription)))
+            .And.AllSatisfy(x => x.RoleType.Should().Be(x.UserRoleText == externalRole ? UserRoleType.External : UserRoleType.Internal))
+            .And.AllSatisfy(x => x.ProviderOnly.Should().Be(x.UserRoleText == providerOnlyRole));
+    }
+
+    [Fact]
+    public async Task GetServiceAccountRolesAsync_GetsExpectedData_with_BringYourOwnWallet_True_ExcludedRoles_NotConfigured()
+    {
+        // Arrange
+
+        var data = _fixture.CreateMany<UserRoleWithDescriptionTransferData>(15).ToImmutableArray();
+
+        var externalRole = data[0].UserRoleText;
+        var providerOnlyRole = data[1].UserRoleText;
+
+        var options = Options.Create(new ServiceAccountSettings
+        {
+            ClientId = ClientId,
+            DimUserRoles = [new(ClientId, [externalRole]), new("OtherClientId", [data[2].UserRoleText])],
+            UserRolesAccessibleByProviderOnly = [new(ClientId, [providerOnlyRole]), new("OtherClientId", [data[3].UserRoleText])]
+        });
+
+        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(A<Guid>._, A<string>._, A<string>._))
+            .Returns(data.ToAsyncEnumerable());
+
+        A.CallTo(() => _bringYourOwnWalletBusinessLogic.IsBringYourOwnWallet(A<Guid>._))
+            .Returns(true);
+
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
+
+        var sut = new TechnicalUserBusinessLogic(null!, _portalRepositories, options, null!, _identityService, null!, _bringYourOwnWalletBusinessLogic);
+
+        // Act
+        var result = await sut.GetServiceAccountRolesAsync(null).ToListAsync();
+
+        // Assert
+        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(_identity.CompanyId, ClientId, Constants.DefaultLanguage)).MustHaveHappenedOnceExactly();
+
+        result.Should()
+            .HaveCount(15)
+            .And.AllSatisfy(x => data.Should().Contain(new UserRoleWithDescriptionTransferData(x.UserRoleId, x.UserRoleText, x.RoleDescription)))
+            .And.AllSatisfy(x => x.RoleType.Should().Be(x.UserRoleText == externalRole ? UserRoleType.External : UserRoleType.Internal))
+            .And.AllSatisfy(x => x.ProviderOnly.Should().Be(x.UserRoleText == providerOnlyRole));
+    }
+
     #endregion
 
     #region HandleServiceAccountCreationCallback

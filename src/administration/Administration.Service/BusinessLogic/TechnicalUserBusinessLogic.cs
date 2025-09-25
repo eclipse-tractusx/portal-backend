@@ -339,23 +339,32 @@ public class TechnicalUserBusinessLogic(
             portalRepositories.GetInstance<ITechnicalUserRepository>().GetOwnTechnicalUsers(_identityData.CompanyId, clientId, isOwner, filterUserStatusIds));
     }
 
-    public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName)
+    public async IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName)
     {
         var externalRoleNames = _settings.DimUserRoles.Where(role => role.ClientId == _settings.ClientId).SelectMany(role => role.UserRoleNames).ToImmutableHashSet();
         var providerOnlyRoleNames = _settings.UserRolesAccessibleByProviderOnly.Where(role => role.ClientId == _settings.ClientId).SelectMany(role => role.UserRoleNames).ToImmutableHashSet();
+        var isByow = await bringYourOwnWalletBusinessLogic.IsBringYourOwnWallet(_identityData.CompanyId);
 
-        return portalRepositories.GetInstance<IUserRolesRepository>()
+        var rolesAsync = portalRepositories.GetInstance<IUserRolesRepository>()
             .GetServiceAccountRolesAsync(
                 _identityData.CompanyId,
                 _settings.ClientId,
-                languageShortName ?? Constants.DefaultLanguage)
-            .Select(x => new UserRoleWithDescription(
+                languageShortName ?? Constants.DefaultLanguage);
+
+        await foreach (var x in rolesAsync)
+        {
+            if (isByow && bringYourOwnWalletBusinessLogic.GetExcludedUserRoles().Any(roleId => roleId == x.UserRoleId))
+            {
+                continue;
+            }
+            yield return new UserRoleWithDescription(
                 x.UserRoleId,
                 x.UserRoleText,
                 x.RoleDescription,
                 externalRoleNames.Contains(x.UserRoleText) ? UserRoleType.External : UserRoleType.Internal,
                 providerOnlyRoleNames.Contains(x.UserRoleText)
-            ));
+            );
+        }
     }
 
     public async Task HandleServiceAccountCreationCallback(Guid processId, AuthenticationDetail callbackData)
