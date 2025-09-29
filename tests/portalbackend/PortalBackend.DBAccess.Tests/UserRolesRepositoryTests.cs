@@ -223,9 +223,10 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         data.IsValid.Should().BeTrue();
         data.IsActive.Should().BeTrue();
-        data.AppRoleDetails.Should().HaveCount(2)
+        data.AppRoleDetails.Should().HaveCount(3)
             .And.Satisfy(
                 x => x.RoleId == new Guid("efc20368-9e82-46ff-b88f-6495b9810253") && x.Role == "EarthCommerce.AdministratorRC_QAS2" && x.Descriptions.Count() == 2 && x.Descriptions.Any(x => x.LanguageCode == "de") && x.Descriptions.Any(x => x.LanguageCode == "en"),
+                x => x.RoleId == new Guid("afc20368-9e82-46ff-b88f-6495b9810254") && x.Role == "EarthCommerce.ManagerRC_QAS2" && x.Descriptions.Count() == 2 && x.Descriptions.Any(x => x.LanguageCode == "de") && x.Descriptions.Any(x => x.LanguageCode == "en"),
                 x => x.RoleId == new Guid("aabcdfeb-6669-4c74-89f0-19cda090873f") && x.Role == "EarthCommerce.Advanced.BuyerRC_QAS2" && x.Descriptions.Count() == 2 && x.Descriptions.Any(x => x.LanguageCode == "de") && x.Descriptions.Any(x => x.LanguageCode == "en"));
     }
 
@@ -275,9 +276,10 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         data.IsValid.Should().BeTrue();
         data.IsProvider.Should().BeTrue();
-        data.AppRoleDetails.Should().HaveCount(2)
+        data.AppRoleDetails.Should().HaveCount(3)
             .And.Satisfy(
                 x => x.RoleId == new Guid("efc20368-9e82-46ff-b88f-6495b9810253") && x.Role == "EarthCommerce.AdministratorRC_QAS2" && x.Descriptions.Count() == 2 && x.Descriptions.Any(x => x.LanguageCode == "de") && x.Descriptions.Any(x => x.LanguageCode == "en"),
+                x => x.RoleId == new Guid("afc20368-9e82-46ff-b88f-6495b9810254") && x.Role == "EarthCommerce.ManagerRC_QAS2" && x.Descriptions.Count() == 2 && x.Descriptions.Any(x => x.LanguageCode == "de") && x.Descriptions.Any(x => x.LanguageCode == "en"),
                 x => x.RoleId == new Guid("aabcdfeb-6669-4c74-89f0-19cda090873f") && x.Role == "EarthCommerce.Advanced.BuyerRC_QAS2" && x.Descriptions.Count() == 2 && x.Descriptions.Any(x => x.LanguageCode == "de") && x.Descriptions.Any(x => x.LanguageCode == "en"));
     }
 

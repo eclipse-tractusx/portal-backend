@@ -39,6 +39,7 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
         ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
         Technicalusers = new HashSet<TechnicalUser>();
         ConnectorAssignedOfferSubscriptions = new HashSet<ConnectorAssignedOfferSubscription>();
+        IdentityAssignedRoles = new HashSet<IdentityAssignedRole>();
     }
 
     /// <summary>
@@ -140,4 +141,5 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     public virtual ICollection<ConnectorAssignedOfferSubscription> ConnectorAssignedOfferSubscriptions { get; private set; }
     public virtual ICollection<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; private set; }
     public virtual ICollection<TechnicalUser> Technicalusers { get; private set; }
+    public virtual ICollection<IdentityAssignedRole> IdentityAssignedRoles { get; private set; }
 }

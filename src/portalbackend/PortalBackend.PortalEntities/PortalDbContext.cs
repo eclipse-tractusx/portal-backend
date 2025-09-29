@@ -89,6 +89,7 @@ public class PortalDbContext(DbContextOptions<PortalDbContext> options, IAuditHa
     public virtual DbSet<AuditConsent20230412> AuditConsent20230412 { get; set; } = default!;
     public virtual DbSet<AuditConsent20231115> AuditConsent20231115 { get; set; } = default!;
     public virtual DbSet<AuditIdentityAssignedRole20230522> AuditIdentityAssignedRole20230522 { get; set; } = default!;
+    public virtual DbSet<AuditIdentityAssignedRole20250929> AuditIdentityAssignedRole20250929 { get; set; } = default!;
     public virtual DbSet<AuditProviderCompanyDetail20230614> AuditProviderCompanyDetail20230614 { get; set; } = default!;
     public virtual DbSet<AuditProviderCompanyDetail20231115> AuditProviderCompanyDetail20231115 { get; set; } = default!;
     public virtual DbSet<AuditProviderCompanyDetail20250415> AuditProviderCompanyDetail20241210 { get; set; } = default!;
@@ -903,7 +904,12 @@ public class PortalDbContext(DbContextOptions<PortalDbContext> options, IAuditHa
                 .HasForeignKey(d => d.IdentityId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<IdentityAssignedRole, AuditIdentityAssignedRole20230522>();
+            entity
+                .HasOne(d => d.OfferSubscription)
+                .WithMany(e => e.IdentityAssignedRoles)
+                .HasForeignKey(d => d.OfferSubscriptionId);
+
+            entity.HasAuditV1Triggers<IdentityAssignedRole, AuditIdentityAssignedRole20250929>();
         });
 
         modelBuilder.Entity<CompanyUserAssignedBusinessPartner>()

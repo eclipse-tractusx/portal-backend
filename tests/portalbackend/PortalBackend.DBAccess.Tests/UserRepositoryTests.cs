@@ -421,11 +421,17 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var results = await sut.GetUserAssignedIdentityProviderForNetworkRegistration(new Guid("67ace0a9-b6df-438b-935a-fe858b8598dd")).ToListAsync();
 
         // Assert
-        results.Should().ContainSingle()
-            .Which.Should().Match<CompanyUserIdentityProviderProcessData>(x =>
-                x.ProviderLinkData.Single().UserName == "drstrange" &&
+        results.Should().HaveCount(2)
+            .And.Satisfy(
+                x =>
                 x.Email == "test@email.com" &&
-                x.Bpn == "BPNL00000003AYRE");
+                x.Bpn == "BPNL00000003AYRE" &&
+                x.ProviderLinkData.Single().UserName == "drstrange",
+                x =>
+                x.Email == "test7@email.com" &&
+                x.Bpn == "BPNL00000003AYRE" &&
+                x.ProviderLinkData.Count() == 0
+            );
     }
 
     #endregion

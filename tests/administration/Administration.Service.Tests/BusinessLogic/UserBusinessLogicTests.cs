@@ -743,7 +743,7 @@ public class UserBusinessLogicTests
                 ("Supplier", supplierRoleId, false),
             }.ToAsyncEnumerable());
 
-        A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRole(A<Guid>._, A<Guid>._))
+        A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRole(A<Guid>._, A<Guid>._, A<Action<IdentityAssignedRole>?>._))
             .Invokes(x =>
             {
                 var companyUserId = x.Arguments.Get<Guid>("companyUserId");
@@ -1674,9 +1674,13 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userRepository.GetCoreOfferAssignedIamClientUserDataUntrackedAsync(A<Guid>.That.Matches(x => x == _validOfferId), A<Guid>.That.Matches(x => x == _companyUserId), A<Guid>.That.Matches(x => x == _adminCompanyId || x == _createdCentralCompanyId)))
             .Returns(new CoreOfferIamUserData(true, new[] { iamClientId }, true, "Tony", "Stark"));
 
-        A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRole(A<Guid>._, A<Guid>._))
-            .Invokes((Guid companyUserId, Guid companyUserRoleId) =>
-                _addedRoles.Add(new IdentityAssignedRole(companyUserId, companyUserRoleId)));
+        A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRole(A<Guid>._, A<Guid>._, A<Action<IdentityAssignedRole>?>._))
+            .Invokes((Guid companyUserId, Guid companyUserRoleId, Action<IdentityAssignedRole>? setOptionalParameters) =>
+            {
+                var assignedRoles = new IdentityAssignedRole(companyUserId, companyUserRoleId);
+                setOptionalParameters?.Invoke(assignedRoles);
+                _addedRoles.Add(assignedRoles);
+            });
 
         A.CallTo(() => _userRolesRepository.RemoveIdentityAssignedRoles(A<IEnumerable<IdentityAssignedRole>>._))
             .Invokes((IEnumerable<IdentityAssignedRole> roles) =>

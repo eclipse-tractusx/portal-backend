@@ -49,13 +49,12 @@ public class UserRolesRepository(PortalDbContext context)
         return roleDescriptions;
     }
 
-    public IdentityAssignedRole CreateIdentityAssignedRole(Guid companyUserId, Guid companyUserRoleId) =>
-        context.IdentityAssignedRoles.Add(
-            new IdentityAssignedRole(
-                companyUserId,
-                companyUserRoleId
-
-            )).Entity;
+    public IdentityAssignedRole CreateIdentityAssignedRole(Guid companyUserId, Guid companyUserRoleId, Action<IdentityAssignedRole>? setOptionalParameters = null)
+    {
+        var assignedRoles = context.IdentityAssignedRoles.Add(new IdentityAssignedRole(companyUserId, companyUserRoleId)).Entity;
+        setOptionalParameters?.Invoke(assignedRoles);
+        return assignedRoles;
+    }
 
     public void CreateIdentityAssignedRoleRange(IEnumerable<(Guid CompanyUserId, Guid CompanyUserRoleId)> companyUserRoleIds) =>
         context.IdentityAssignedRoles.AddRange(
