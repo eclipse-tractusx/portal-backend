@@ -40,7 +40,7 @@ public partial class KeycloakClient
             .PostJsonAsync(rep, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-    public async Task<IEnumerable<Realm>> GetRealmsAsync(string realm) =>
+    public virtual async Task<IEnumerable<Realm>> GetRealmsAsync(string realm) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms")
             .GetJsonAsync<IEnumerable<Realm>>()

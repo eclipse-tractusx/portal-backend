@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,15 +17,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
-public interface ISharedMultiKeycloakResolver
+public interface ISharedMultiKeycloakManager
 {
-    Task<KeycloakClient> GetKeycloakClient(string? realmName);
-    KeycloakClient GetKeycloakClient(SharedIdpInstanceDetail instance);
-    Task<KeycloakClient> GetKeycloakClient(string realmName, string clientId, string clientSecret);
-    Task<KeycloakClient> ResolveAndAssignKeycloak(string realm);
+    Task SyncMultiSharedIdpAsync();
 }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,15 +17,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.MultiSharedIdp.Executor;
 
-public interface ISharedMultiKeycloakResolver
+public static class MultiSharedIdpExtensions
 {
-    Task<KeycloakClient> GetKeycloakClient(string? realmName);
-    KeycloakClient GetKeycloakClient(SharedIdpInstanceDetail instance);
-    Task<KeycloakClient> GetKeycloakClient(string realmName, string clientId, string clientSecret);
-    Task<KeycloakClient> ResolveAndAssignKeycloak(string realm);
+    public static IEnumerable<ProcessStepTypeId>? GetMultiSharedIdpRetriggerStep(this ProcessStepTypeId processStepTypeId) =>
+        processStepTypeId switch
+        {
+            ProcessStepTypeId.SYNC_MULTI_SHARED_IDP => [ProcessStepTypeId.SYNC_MULTI_SHARED_IDP],
+            _ => throw new UnexpectedConditionException($"ProcessStepTypeId {processStepTypeId} is not supported for Process SYNC_MULTI_SHARED_IDP")
+        };
 }

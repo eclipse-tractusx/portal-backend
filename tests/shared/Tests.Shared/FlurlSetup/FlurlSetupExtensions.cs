@@ -112,6 +112,16 @@ public static class FlurlSetupExtensions
         return testClient;
     }
 
+#pragma warning disable IDE0060 // Remove unused parameter: For mocking this parameter is required
+    public static HttpTest WithGetRealmsAsync(this HttpTest testClient, string realm, IEnumerable<Realm> realms)
+#pragma warning restore IDE0060 // Remove unused parameter
+    {
+        testClient.ForCallsTo($"*/admin/realms")
+            .WithVerb(HttpMethod.Get)
+            .RespondWithJson(realms);
+        return testClient;
+    }
+
     public static HttpTest WithGetUsersAsync(this HttpTest testClient, IEnumerable<User> users)
     {
         testClient.ForCallsTo("*/admin/realms/*/users")

@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -1129,6 +1130,136 @@ public class IdentityProviderBusinessLogic(
                                                                                                                     }
                                                                                                             );
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+    }
+
+    public async Task<SharedIdpInstanceResponseData> UpdateSharedIdpInstanceDetails(
+    Guid sharedIdpInstanceId,
+    SharedIdpInstanceUpdateRequestData sharedIdpInstanceRequestData)
+    {
+        var identityProviderRepository = portalRepositories.GetInstance<IIdentityProviderRepository>();
+
+        if (sharedIdpInstanceRequestData.MaxRealmCount <= 0)
+        {
+            throw ControllerArgumentException.Create(
+                AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_UNEXPECT_VAL_FOR_MAX_REALM_COUNT);
+        }
+
+        if (!await identityProviderRepository.IsSharedIdpInstanceExists(sharedIdpInstanceId))
+        {
+            throw ConflictException.Create(
+                AdministrationIdentityProviderErrors.IDENTITY_CONFLICT_SHARED_IDP_INSTANCE_NOT_EXISTS,
+                [new(nameof(sharedIdpInstanceId), sharedIdpInstanceId.ToString())]);
+        }
+
+        var cryptoHelper = _multiKeycloakSettings.EncryptionConfigs
+            .GetCryptoHelper(_multiKeycloakSettings.EncryptionConfigIndex);
+
+        (var secret, var initializationVector) =
+            sharedIdpInstanceRequestData.ClientSecret is not null
+                ? cryptoHelper.Encrypt(sharedIdpInstanceRequestData.ClientSecret)
+                : (null, null);
+
+        var updatedEntity = identityProviderRepository.AttachAndModifySharedIdpInstanceDetail(
+            sharedIdpInstanceId,
+            null,
+            sharedIdpInstance => ApplySharedIdpUpdates(
+                sharedIdpInstance,
+                sharedIdpInstanceRequestData,
+                secret,
+                initializationVector,
+                _multiKeycloakSettings.EncryptionConfigIndex));
+
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+
+        return new SharedIdpInstanceResponseData(
+            updatedEntity.Id,
+            updatedEntity.SharedIdpUrl,
+            updatedEntity.ClientId,
+            updatedEntity.UseAuthTrail,
+            updatedEntity.AuthRealm,
+            updatedEntity.RealmUsed,
+            updatedEntity.MaxRealmCount,
+            updatedEntity.IsRunning,
+            updatedEntity.DateCreated,
+            updatedEntity.DateLastChanged
+        );
+    }
+
+    private static void ApplySharedIdpUpdates(
+        SharedIdpInstanceDetail sharedIdpInstance,
+        SharedIdpInstanceUpdateRequestData request,
+        byte[]? secret,
+        byte[]? initializationVector,
+        int encryptionMode)
+    {
+        if (request.SharedIdpUrl != null)
+        {
+            sharedIdpInstance.SharedIdpUrl = request.SharedIdpUrl;
+        }
+        if (request.ClientId != null)
+        {
+            sharedIdpInstance.ClientId = request.ClientId;
+        }
+        if (secret != null)
+        {
+            sharedIdpInstance.ClientSecret = secret;
+        }
+        if (initializationVector != null)
+        {
+            sharedIdpInstance.InitializationVector = initializationVector;
+        }
+
+        sharedIdpInstance.EncryptionMode = encryptionMode;
+
+        if (request.UseAuthTrail.HasValue)
+        {
+            sharedIdpInstance.UseAuthTrail = request.UseAuthTrail.Value;
+        }
+        if (request.AuthRealm != null)
+        {
+            sharedIdpInstance.AuthRealm = request.AuthRealm;
+        }
+        if (request.MaxRealmCount.HasValue)
+        {
+            sharedIdpInstance.MaxRealmCount = request.MaxRealmCount.Value;
+        }
+        if (request.IsRunning.HasValue)
+        {
+            sharedIdpInstance.IsRunning = request.IsRunning.Value;
+        }
+
+        sharedIdpInstance.DateLastChanged = DateTimeOffset.UtcNow;
+    }
+
+    public async Task<IEnumerable<SharedIdpInstanceResponseData>> GetSharedIdpInstanceDetails()
+    {
+        var identityProviderRepository = portalRepositories.GetInstance<IIdentityProviderRepository>();
+
+        var sharedIdpInstanceDetails = await identityProviderRepository.GetAllSharedIdpInstanceDetails().ConfigureAwait(ConfigureAwaitOptions.None);
+
+        return sharedIdpInstanceDetails.Select(sia =>
+            new SharedIdpInstanceResponseData(
+            sia.Id,
+            sia.SharedIdpUrl,
+            sia.ClientId,
+            sia.UseAuthTrail,
+            sia.AuthRealm,
+            sia.RealmUsed,
+            sia.MaxRealmCount,
+            sia.IsRunning,
+            sia.DateCreated,
+            sia.DateLastChanged
+            )
+        );
+    }
+
+    public async Task<Guid> SyncSharedIdpRealmMapping()
+    {
+        var processStepRepository = portalRepositories.GetInstance<IPortalProcessStepRepository>();
+        var processId = processStepRepository.CreateProcess(ProcessTypeId.MULTI_SHARED_IDENTITY_PROVIDER).Id;
+        processStepRepository.CreateProcessStep(ProcessStepTypeId.SYNC_MULTI_SHARED_IDP, ProcessStepStatusId.TODO, processId);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        return processId;
     }
     private sealed record UserProfile(string? FirstName, string? LastName, string? Email);
 }

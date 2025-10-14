@@ -59,6 +59,17 @@ public class SharedMultiKeycloakResolver(IPortalRepositories portalRepositories,
         }
         return keycloakFactory.CreateKeycloakClient(SharedIDP, clientId, clientSecret);
     }
+
+    public KeycloakClient GetKeycloakClient(SharedIdpInstanceDetail instance)
+    {
+        if (!_settings.IsSharedIdpMultiInstancesEnabled)
+            throw new InvalidOperationException("Use GetKeycloakClient(SharedIdpInstanceDetail instance) method when multi instance is enabled");
+
+        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == instance.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {instance.EncryptionMode} is not configured");
+        var secret = CryptoHelper.Decrypt(instance.ClientSecret!, instance.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+
+        return KeycloakClient.CreateWithClientId(instance.SharedIdpUrl, instance.ClientId, secret, instance.UseAuthTrail, instance.AuthRealm);
+    }
     public async Task<KeycloakClient> ResolveAndAssignKeycloak(string realm)
     {
         if (_settings.IsSharedIdpMultiInstancesEnabled)

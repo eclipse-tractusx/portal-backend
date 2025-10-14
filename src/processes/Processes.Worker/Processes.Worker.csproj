@@ -44,6 +44,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../MultiSharedIdp.Executor/MultiSharedIdp.Executor.csproj" />    <ProjectReference Include="..\MultiSharedIdp.Executor\MultiSharedIdp.Executor.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Logging\Framework.Logging.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Processes.Worker.Library\Framework.Processes.Worker.Library.csproj" />
     <ProjectReference Include="..\DimUserProcess.Executor\DimUserProcess.Executor.csproj" />

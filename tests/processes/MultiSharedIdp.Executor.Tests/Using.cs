@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,15 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
-
-namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
-
-public interface ISharedMultiKeycloakResolver
-{
-    Task<KeycloakClient> GetKeycloakClient(string? realmName);
-    KeycloakClient GetKeycloakClient(SharedIdpInstanceDetail instance);
-    Task<KeycloakClient> GetKeycloakClient(string realmName, string clientId, string clientSecret);
-    Task<KeycloakClient> ResolveAndAssignKeycloak(string realm);
-}
+global using AutoFixture;
+global using AutoFixture.AutoFakeItEasy;
+global using FakeItEasy;
+global using FluentAssertions;
+global using Xunit;

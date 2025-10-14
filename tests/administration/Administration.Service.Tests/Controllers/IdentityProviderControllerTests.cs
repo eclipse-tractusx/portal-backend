@@ -79,4 +79,68 @@ public class IdentityProviderControllerTests
         //Assert
         A.CallTo(() => _logic.GetOwnIdentityProviderWithConnectedCompanies(id)).MustHaveHappenedOnceExactly();
     }
+
+    [Fact]
+    public async Task CreateSharedIdpInstanceDetails_WithValidData_CallsBusinessLogic()
+    {
+        // Arrange
+        var request = _fixture.Create<SharedIdpInstanceRequestData>();
+
+        // Act
+        await _controller.CreateSharedIdpInstanceDetails(request);
+
+        // Assert
+        A.CallTo(() => _logic.CreateSharedIdpInstanceDetails(request)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task UpdateSharedIdpInstanceDetails_WithValidData_CallsBusinessLogicAndReturnsResult()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var request = _fixture.Create<SharedIdpInstanceUpdateRequestData>();
+        var expectedResponse = _fixture.Create<SharedIdpInstanceResponseData>();
+
+        A.CallTo(() => _logic.UpdateSharedIdpInstanceDetails(id, request))
+            .Returns(expectedResponse);
+
+        // Act
+        var result = await _controller.UpdateSharedIdpInstanceDetails(id, request);
+
+        // Assert
+        result.Should().Be(expectedResponse);
+        A.CallTo(() => _logic.UpdateSharedIdpInstanceDetails(id, request)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetSharedIdpInstanceDetails_CallsBusinessLogicAndReturnsResult()
+    {
+        // Arrange
+        var expectedList = _fixture.CreateMany<SharedIdpInstanceResponseData>(3).ToList();
+        A.CallTo(() => _logic.GetSharedIdpInstanceDetails())
+            .Returns(expectedList);
+
+        // Act
+        var result = await _controller.GetSharedIdpInstanceDetails();
+
+        // Assert
+        result.Should().BeEquivalentTo(expectedList);
+        A.CallTo(() => _logic.GetSharedIdpInstanceDetails()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task SyncSharedIdpRealmMapping_CallsBusinessLogicAndReturnsProcessId()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        A.CallTo(() => _logic.SyncSharedIdpRealmMapping())
+            .Returns(processId);
+
+        // Act
+        var result = await _controller.SyncSharedIdpRealmMapping();
+
+        // Assert
+        result.Should().Be(processId);
+        A.CallTo(() => _logic.SyncSharedIdpRealmMapping()).MustHaveHappenedOnceExactly();
+    }
 }

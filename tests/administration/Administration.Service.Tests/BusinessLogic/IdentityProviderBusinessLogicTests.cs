@@ -28,6 +28,9 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -52,6 +55,7 @@ public class IdentityProviderBusinessLogicTests
     private readonly ICompanyRepository _companyRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityProviderRepository _identityProviderRepository;
+    private readonly IPortalProcessStepRepository _processStepRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IOptions<IdentityProviderSettings> _options;
@@ -86,6 +90,7 @@ public class IdentityProviderBusinessLogicTests
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
+        _processStepRepository = A.Fake<IPortalProcessStepRepository>();
         _identityService = A.Fake<IIdentityService>();
         _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
         _options = A.Fake<IOptions<IdentityProviderSettings>>();
@@ -155,6 +160,8 @@ public class IdentityProviderBusinessLogicTests
             .Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>())
             .Returns(_userRolesRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IPortalProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>()).Returns(_processStepRepository);
     }
 
     #region UploadOwnCompanyUsersIdentityProviderLinkDataAsync
@@ -2224,6 +2231,272 @@ public class IdentityProviderBusinessLogicTests
 
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task SyncSharedIdpRealmMapping_WithValid_CreatesProcessAndStepAndSaves()
+    {
+        // Arrange
+        var sut = new IdentityProviderBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            _errorMessageService,
+            _mailingProcessCreation,
+            _options,
+            _multiKeycloakOptions,
+            _logger);
+
+        var processId = Guid.NewGuid();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
+        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
+            .Invokes((ProcessTypeId processTypeId) =>
+            {
+                processes.Add(new Process(processId, processTypeId, Guid.NewGuid()));
+            })
+            .Returns(new Process(processId, default, default));
+        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
+            .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid _) =>
+            {
+                processSteps.Add(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
+            });
+        // Act
+        var result = await sut.SyncSharedIdpRealmMapping();
+
+        // Assert
+        processes.Should().NotBeNull()
+            .And.HaveCount(1).And.Satisfy(
+                p => p.ProcessTypeId == ProcessTypeId.MULTI_SHARED_IDENTITY_PROVIDER);
+        processSteps.Should().NotBeNull().And.HaveCount(1)
+            .And.Satisfy(
+                p => p.ProcessStepTypeId == ProcessStepTypeId.SYNC_MULTI_SHARED_IDP);
+
+        A.CallTo(() => _portalRepositories.SaveAsync())
+            .MustHaveHappenedOnceExactly();
+
+        result.Should().Be(processId);
+    }
+
+    [Fact]
+    public async Task UpdateSharedIdpInstanceDetails_WithInvalidMaxRealmCount_Throws()
+    {
+        // Arrange
+        var request = new SharedIdpInstanceUpdateRequestData(null, null, null, null, null, 0, null);
+        var sut = new IdentityProviderBusinessLogic(
+           _portalRepositories,
+           _provisioningManager,
+           _identityService,
+           _errorMessageService,
+           _mailingProcessCreation,
+           _options,
+           _multiKeycloakOptions,
+           _logger);
+
+        // Act
+        var act = async () => await sut.UpdateSharedIdpInstanceDetails(Guid.NewGuid(), request);
+
+        // Assert
+        await act.Should().ThrowAsync<ControllerArgumentException>()
+            .WithMessage(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_UNEXPECT_VAL_FOR_MAX_REALM_COUNT.ToString());
+    }
+
+    [Fact]
+    public async Task UpdateSharedIdpInstanceDetails_WhenInstanceNotExists_ThrowsConflict()
+    {
+        // Arrange
+        var sut = new IdentityProviderBusinessLogic(
+           _portalRepositories,
+           _provisioningManager,
+           _identityService,
+           _errorMessageService,
+           _mailingProcessCreation,
+           _options,
+           _multiKeycloakOptions,
+           _logger);
+
+        var instanceId = Guid.NewGuid();
+        var request = _fixture.Build<SharedIdpInstanceUpdateRequestData>()
+            .With(x => x.MaxRealmCount, 5)
+            .Create();
+
+        A.CallTo(() => _identityProviderRepository.IsSharedIdpInstanceExists(instanceId))
+            .Returns(false);
+
+        // Act
+        var act = async () => await sut.UpdateSharedIdpInstanceDetails(instanceId, request);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>()
+            .WithMessage(AdministrationIdentityProviderErrors.IDENTITY_CONFLICT_SHARED_IDP_INSTANCE_NOT_EXISTS.ToString() + "*");
+    }
+
+    [Fact]
+    public async Task UpdateSharedIdpInstanceDetails_WithValidData_UpdatesAndReturnsResponse()
+    {
+        // Arrange
+        var sut = new IdentityProviderBusinessLogic(
+           _portalRepositories,
+           _provisioningManager,
+           _identityService,
+           _errorMessageService,
+           _mailingProcessCreation,
+           _options,
+           _multiKeycloakOptions,
+           _logger);
+
+        var instanceId = Guid.NewGuid();
+        var request = _fixture.Build<SharedIdpInstanceUpdateRequestData>()
+            .With(x => x.MaxRealmCount, 10)
+            .With(x => x.SharedIdpUrl, "https://updated.example.org")
+            .With(x => x.ClientId, "client-updated")
+            .With(x => x.ClientSecret, "secret-value")
+            .With(x => x.UseAuthTrail, true)
+            .With(x => x.AuthRealm, "auth-updated")
+            .With(x => x.IsRunning, true)
+            .Create();
+
+        A.CallTo(() => _identityProviderRepository.IsSharedIdpInstanceExists(instanceId))
+            .Returns(true);
+
+        var updatedEntity = new SharedIdpInstanceDetail(instanceId,
+            request.SharedIdpUrl!,
+            request.ClientId!,
+            [1, 2],
+            new byte[16],
+            1,
+            DateTimeOffset.UtcNow)
+        {
+            UseAuthTrail = true,
+            AuthRealm = request.AuthRealm,
+            MaxRealmCount = request.MaxRealmCount!.Value,
+            IsRunning = request.IsRunning!.Value,
+            RealmUsed = 3,
+            DateLastChanged = DateTimeOffset.UtcNow
+        };
+
+        A.CallTo(() => _identityProviderRepository.AttachAndModifySharedIdpInstanceDetail(instanceId, null, A<Action<SharedIdpInstanceDetail>>._))
+            .Returns(updatedEntity);
+
+        // Act
+        var result = await sut.UpdateSharedIdpInstanceDetails(instanceId, request);
+
+        // Assert
+        result.Id.Should().Be(instanceId);
+        result.SharedIdpUrl.Should().Be("https://updated.example.org");
+        result.ClientId.Should().Be("client-updated");
+        result.UseAuthTrail.Should().BeTrue();
+        result.AuthRealm.Should().Be("auth-updated");
+        result.MaxRealmCount.Should().Be(10);
+        result.IsRunning.Should().BeTrue();
+
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task UpdateSharedIdpInstanceDetails_AllFieldsSet_ExecutesLambda()
+    {
+        // Arrange
+        var sut = new IdentityProviderBusinessLogic(
+           _portalRepositories,
+           _provisioningManager,
+           _identityService,
+           _errorMessageService,
+           _mailingProcessCreation,
+           _options,
+           _multiKeycloakOptions,
+           _logger);
+
+        var instanceId = Guid.NewGuid();
+        var request = new SharedIdpInstanceUpdateRequestData(
+            SharedIdpUrl: "https://updated.example.org",
+            ClientId: "client-updated",
+            ClientSecret: "secret-value",
+            UseAuthTrail: true,
+            AuthRealm: "auth-updated",
+            MaxRealmCount: 5,
+            IsRunning: true
+        );
+
+        A.CallTo(() => _identityProviderRepository.IsSharedIdpInstanceExists(instanceId))
+            .Returns(true);
+
+        var updatedEntity = new SharedIdpInstanceDetail(instanceId,
+            request.SharedIdpUrl!,
+            request.ClientId!,
+            [1, 2, 3],
+            new byte[16],
+            1,
+            DateTimeOffset.UtcNow)
+        {
+            UseAuthTrail = request.UseAuthTrail!.Value,
+            AuthRealm = request.AuthRealm,
+            MaxRealmCount = request.MaxRealmCount!.Value,
+            IsRunning = request.IsRunning!.Value,
+            RealmUsed = 3,
+            DateLastChanged = DateTimeOffset.UtcNow
+        };
+
+        A.CallTo(() => _identityProviderRepository.AttachAndModifySharedIdpInstanceDetail(instanceId, null, A<Action<SharedIdpInstanceDetail>>._))
+            .Invokes((Guid id, Action<SharedIdpInstanceDetail>? init, Action<SharedIdpInstanceDetail> setOptional) =>
+            {
+                // Actually execute the lambda to cover the code
+                setOptional(updatedEntity);
+            })
+            .Returns(updatedEntity);
+
+        // Act
+        var result = await sut.UpdateSharedIdpInstanceDetails(instanceId, request);
+
+        // Assert
+        result.SharedIdpUrl.Should().Be(request.SharedIdpUrl);
+        result.ClientId.Should().Be(request.ClientId);
+        result.UseAuthTrail.Should().BeTrue();
+        result.AuthRealm.Should().Be(request.AuthRealm);
+        result.MaxRealmCount.Should().Be(request.MaxRealmCount);
+        result.IsRunning.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetSharedIdpInstanceDetails_WithInstances_ReturnsExpectedResponse()
+    {
+        // Arrange
+        var sut = new IdentityProviderBusinessLogic(
+          _portalRepositories,
+          _provisioningManager,
+          _identityService,
+          _errorMessageService,
+          _mailingProcessCreation,
+          _options,
+          _multiKeycloakOptions,
+          _logger);
+        var instance = new SharedIdpInstanceDetail(Guid.NewGuid(),
+            "https://shared.example.org",
+            "clientX",
+            new byte[8],
+            new byte[16],
+            1,
+            DateTimeOffset.UtcNow)
+        {
+            UseAuthTrail = false,
+            AuthRealm = "authRealm",
+            MaxRealmCount = 5,
+            IsRunning = true,
+            RealmUsed = 2,
+            DateLastChanged = DateTimeOffset.UtcNow
+        };
+
+        A.CallTo(() => _identityProviderRepository.GetAllSharedIdpInstanceDetails())
+            .ReturnsLazily(() => Task.FromResult(new List<SharedIdpInstanceDetail> { instance }));
+
+        // Act
+        var result = await sut.GetSharedIdpInstanceDetails();
+
+        // Assert
+        result.Should().HaveCount(1);
+        result.First().SharedIdpUrl.Should().Be("https://shared.example.org");
+        result.First().ClientId.Should().Be("clientX");
+        result.First().MaxRealmCount.Should().Be(5);
     }
 
     #endregion

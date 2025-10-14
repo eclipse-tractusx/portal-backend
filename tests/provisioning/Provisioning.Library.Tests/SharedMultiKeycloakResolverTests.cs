@@ -175,4 +175,82 @@ public class SharedMultiKeycloakResolverTests
         await act.Should().ThrowAsync<ConfigurationException>()
             .WithMessage("EncryptionModeIndex 99 is not configured");
     }
+
+    [Fact]
+    public void GetKeycloakClient_MultiInstanceDisabled_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var settings = new MultiKeycloakSettings { IsSharedIdpMultiInstancesEnabled = false };
+        var sut = new SharedMultiKeycloakResolver(_portalRepositories, _keycloakFactory, Options.Create(settings));
+
+        var instance = new SharedIdpInstanceDetail(
+            Guid.NewGuid(),
+            "https://shared.example.org",
+            "clientX",
+            [1, 2, 3],
+            null,
+            1,
+            DateTimeOffset.UtcNow
+        );
+
+        // Act
+        Action act = () => sut.GetKeycloakClient(instance);
+
+        // Assert
+        act.Should().Throw<InvalidOperationException>()
+           .WithMessage("Use GetKeycloakClient(SharedIdpInstanceDetail instance) method when multi instance is enabled");
+    }
+
+    [Fact]
+    public void GetKeycloakClient_MissingEncryptionConfig_ThrowsConfigurationException()
+    {
+        // Arrange
+        var cryptoConfig = _options.Value.EncryptionConfigs.First();
+
+        var instance = new SharedIdpInstanceDetail(
+            Guid.NewGuid(),
+            "https://shared.example.org",
+            "clientX",
+            new byte[] { 1, 2, 3 },
+            new byte[] { 4, 5, 6 },
+            99, // no matching index
+            DateTimeOffset.UtcNow
+        );
+
+        // Act
+        Action act = () => _sut.GetKeycloakClient(instance);
+
+        // Assert
+        act.Should().Throw<ConfigurationException>()
+           .WithMessage("EncryptionModeIndex 99 is not configured");
+    }
+
+    [Fact]
+    public void GetKeycloakClient_ValidInstance_ReturnsKeycloakClient()
+    {
+        // Arrange
+        var cryptoConfig = _options.Value.EncryptionConfigs.First();
+        var (secret, vector) = CryptoHelper.Encrypt("test123", Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+
+        var instance = new SharedIdpInstanceDetail(
+            Guid.NewGuid(),
+            "https://shared.example.org",
+            "clientX",
+            secret,
+            vector,
+            1,
+            DateTimeOffset.UtcNow
+        )
+        {
+            UseAuthTrail = true,
+            AuthRealm = "auth-realm"
+        };
+
+        // Act
+        var client = _sut.GetKeycloakClient(instance);
+
+        // Assert
+        client.Should().NotBeNull();
+        client.Should().BeOfType<KeycloakClient>();
+    }
 }

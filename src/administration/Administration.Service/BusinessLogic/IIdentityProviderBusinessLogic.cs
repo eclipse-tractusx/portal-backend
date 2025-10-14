@@ -40,4 +40,7 @@ public interface IIdentityProviderBusinessLogic
     ValueTask DeleteOwnCompanyUserIdentityProviderDataAsync(Guid companyUserId, Guid identityProviderId);
     ValueTask<IdentityProviderDetailsWithConnectedCompanies> GetOwnIdentityProviderWithConnectedCompanies(Guid identityProviderId);
     Task CreateSharedIdpInstanceDetails(SharedIdpInstanceRequestData sharedIdpInstanceRequestData);
+    Task<SharedIdpInstanceResponseData> UpdateSharedIdpInstanceDetails(Guid sharedIdpInstanceId, SharedIdpInstanceUpdateRequestData sharedIdpInstanceRequestData);
+    Task<IEnumerable<SharedIdpInstanceResponseData>> GetSharedIdpInstanceDetails();
+    Task<Guid> SyncSharedIdpRealmMapping();
 }

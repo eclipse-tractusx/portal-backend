@@ -396,12 +396,45 @@ public class IdentityProviderRepository : IIdentityProviderRepository
     public Task<bool> IsSharedIdpInstanceExists(string sharedIdp)
             => _context.SharedIdpInstanceDetails
             .AnyAsync(item => item.SharedIdpUrl == sharedIdp);
+    public Task<bool> IsSharedIdpInstanceExists(Guid id)
+    => _context.SharedIdpInstanceDetails
+    .AnyAsync(item => item.Id == id);
 
     public async Task CreateSharedIdpInstanceDetails(string sharedIdpUrl, string clientId, byte[] secret, byte[] initializationVector, int encryptionConfigIndex, Action<SharedIdpInstanceDetail>? setOptionalFields)
-
     {
         var sharedIdpInstanceDetail = new SharedIdpInstanceDetail(Guid.NewGuid(), sharedIdpUrl, clientId, secret, initializationVector, encryptionConfigIndex, DateTimeOffset.UtcNow);
         setOptionalFields?.Invoke(sharedIdpInstanceDetail);
         await _context.SharedIdpInstanceDetails.AddAsync(sharedIdpInstanceDetail).ConfigureAwait(false);
+    }
+
+    public SharedIdpInstanceDetail AttachAndModifySharedIdpInstanceDetail(Guid id, Action<SharedIdpInstanceDetail>? initialize, Action<SharedIdpInstanceDetail> setOptionalParameters)
+    {
+        var sharedIdpInstanceDetail = new SharedIdpInstanceDetail(id, null!, null!, null!, null!, default, default);
+        initialize?.Invoke(sharedIdpInstanceDetail);
+        _context.Attach(sharedIdpInstanceDetail);
+        setOptionalParameters(sharedIdpInstanceDetail);
+        return sharedIdpInstanceDetail;
+    }
+
+    public void SyncSharedIdpRealmMappings(List<(Guid SharedIdpId, string RealmName)> mappings)
+    {
+        if (mappings.Count == 0)
+            return;
+
+        var inputKeys = mappings.ToHashSet(); // O(1) lookups for input
+        var existing = _context.SharedIdpRealmMappings.ToList();
+        var existingKeys = existing.Select(x => (x.SharedIdpInstanceDetailId, x.RealmName)).ToHashSet(); // O(1) lookups for existing
+
+        _context.SharedIdpRealmMappings.RemoveRange(existing.Where(x => !inputKeys.Contains((x.SharedIdpInstanceDetailId, x.RealmName))));
+        _context.SharedIdpRealmMappings.AddRange(mappings
+            .Where(x => !existingKeys.Contains(x))
+            .Select(x => new SharedIdpRealmMapping(x.SharedIdpId, x.RealmName)));
+
+        var realmCounts = mappings.GroupBy(x => x.SharedIdpId).ToDictionary(g => g.Key, g => g.Count());
+        _context.SharedIdpInstanceDetails.ToList().ForEach(d =>
+        {
+            d.RealmUsed = realmCounts.GetValueOrDefault(d.Id, 0);
+            d.DateLastChanged = DateTimeOffset.UtcNow;
+        });
     }
 }

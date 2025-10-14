@@ -46,7 +46,8 @@ public static class MultiKeycloakSettingsExtension
         services
              .AddTransient<IKeycloakFactory, KeycloakFactory>()
              .ConfigureKeycloakSettingsMap(config.GetSection("Keycloak"))
-             .AddTransient<ISharedMultiKeycloakResolver, SharedMultiKeycloakResolver>();
+             .AddTransient<ISharedMultiKeycloakResolver, SharedMultiKeycloakResolver>()
+             .AddTransient<ISharedMultiKeycloakManager, SharedMultiKeycloakManager>();
 
         var configSection = config.GetSection("MultiSharedKeycloak");
         services

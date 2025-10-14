@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
@@ -245,6 +246,139 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
         entity.UseAuthTrail.Should().BeTrue();
         entity.MaxRealmCount.Should().Be(5);
         entity.IsRunning.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SyncSharedIdpRealmMappings_WithNewMappings_AddsThem()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext();
+
+        var instance = new SharedIdpInstanceDetail(Guid.NewGuid(), "url", "client", [], [], 1, DateTimeOffset.UtcNow);
+        context.SharedIdpInstanceDetails.Add(instance);
+        context.SaveChanges();
+
+        var mappings = new List<(Guid, string)>
+        {
+            (instance.Id, "realm1"),
+            (instance.Id, "realm2")
+        };
+
+        // Act
+        sut.SyncSharedIdpRealmMappings(mappings);
+        context.SaveChanges();
+
+        // Assert
+        var dbMappings = context.SharedIdpRealmMappings.ToList();
+        dbMappings.Should().HaveCount(2);
+        dbMappings.Select(x => x.RealmName).Should().BeEquivalentTo("realm1", "realm2");
+
+        var updatedInstance = context.SharedIdpInstanceDetails.Find(instance.Id)!;
+        updatedInstance.RealmUsed.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task SyncSharedIdpRealmMappings_WithMixedMappings_AddsAndRemovesCorrectly()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext();
+
+        var instance = new SharedIdpInstanceDetail(Guid.NewGuid(), "url", "client", [], [], 1, DateTimeOffset.UtcNow);
+        context.SharedIdpInstanceDetails.Add(instance);
+        context.SharedIdpRealmMappings.AddRange(
+            new SharedIdpRealmMapping(instance.Id, "realm1"),
+            new SharedIdpRealmMapping(instance.Id, "realm2")
+        );
+        context.SaveChanges();
+
+        var newMappings = new List<(Guid, string)>
+        {
+            (instance.Id, "realm2"), // keep
+            (instance.Id, "realm3")  // add
+        };
+
+        // Act
+        sut.SyncSharedIdpRealmMappings(newMappings);
+        context.SaveChanges();
+
+        // Assert
+        var dbMappings = context.SharedIdpRealmMappings.ToList();
+        dbMappings.Should().HaveCount(2);
+        dbMappings.Select(x => x.RealmName).Should().BeEquivalentTo("realm2", "realm3");
+
+        context.SharedIdpInstanceDetails.Find(instance.Id)!.RealmUsed.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task IsSharedIdpInstanceExists_WhenEntityExists_ReturnsTrue()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext();
+        var id = Guid.NewGuid();
+        var entity = new SharedIdpInstanceDetail(
+            id,
+            "https://shared.example.org",
+            "client-1",
+            [1],
+            new byte[16],
+            1,
+            DateTimeOffset.UtcNow
+        );
+        context.SharedIdpInstanceDetails.Add(entity);
+        await context.SaveChangesAsync();
+
+        // Act
+        var result = await sut.IsSharedIdpInstanceExists(id);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task IsSharedIdpInstanceExists_WhenEntityDoesNotExist_ReturnsFalse()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.IsSharedIdpInstanceExists(Guid.NewGuid());
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task AttachAndModifySharedIdpInstanceDetail_SetsPropertiesCorrectly()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext();
+        var id = Guid.NewGuid();
+
+        // Act
+        var result = sut.AttachAndModifySharedIdpInstanceDetail(
+            id,
+            s =>
+            {
+                s.SharedIdpUrl = "https://init.example.org";
+                s.ClientId = "init-client";
+            },
+            s =>
+            {
+                s.SharedIdpUrl = "https://updated.example.org";
+                s.ClientId = "updated-client";
+                s.UseAuthTrail = true;
+                s.DateLastChanged = DateTimeOffset.UtcNow;
+            });
+
+        // Assert
+        result.Id.Should().Be(id);
+        result.SharedIdpUrl.Should().Be("https://updated.example.org");
+        result.ClientId.Should().Be("updated-client");
+        result.UseAuthTrail.Should().BeTrue();
+
+        // Verify it's tracked by DbContext
+        context.ChangeTracker.Entries<SharedIdpInstanceDetail>()
+                .Should().ContainSingle(e => e.Entity.Id == id && e.State == EntityState.Modified);
     }
 
     #endregion

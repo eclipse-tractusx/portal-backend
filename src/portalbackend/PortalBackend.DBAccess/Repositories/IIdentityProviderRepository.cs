@@ -67,5 +67,8 @@ public interface IIdentityProviderRepository
     SharedIdpRealmMapping CreateSharedIdpRealmMapping(Guid instanceId, string realmName);
     Task<List<SharedIdpInstanceDetail>> GetAllSharedIdpInstanceDetails();
     Task<bool> IsSharedIdpInstanceExists(string sharedIdp);
+    Task<bool> IsSharedIdpInstanceExists(Guid id);
     Task CreateSharedIdpInstanceDetails(string sharedIdpUrl, string clientId, byte[] secret, byte[] initializationVector, int encryptionConfigIndex, Action<SharedIdpInstanceDetail>? setOptionalFields);
+    SharedIdpInstanceDetail AttachAndModifySharedIdpInstanceDetail(Guid id, Action<SharedIdpInstanceDetail>? initialize, Action<SharedIdpInstanceDetail> setOptionalParameters);
+    void SyncSharedIdpRealmMappings(List<(Guid SharedIdpId, string RealmName)> mappings);
 }

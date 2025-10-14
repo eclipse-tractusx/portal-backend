@@ -20,3 +20,5 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record SharedIdpInstanceRequestData(string SharedIdpUrl, string ClientId, string ClientSecret, bool UseAuthTrail, string? AuthRealm, int MaxRealmCount);
+public record SharedIdpInstanceUpdateRequestData(string? SharedIdpUrl, string? ClientId, string? ClientSecret, bool? UseAuthTrail, string? AuthRealm, int? MaxRealmCount, bool? IsRunning);
+public record SharedIdpInstanceResponseData(Guid Id, string SharedIdpUrl, string ClientId, bool UseAuthTrail, string? AuthRealm, int RealmUsed, int MaxRealmCount, bool IsRunning, DateTimeOffset DateCreated, DateTimeOffset? DateLastChanged);

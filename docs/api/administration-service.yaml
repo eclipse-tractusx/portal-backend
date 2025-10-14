@@ -2547,8 +2547,10 @@ paths:
     post:
       tags:
         - IdentityProvider
-      summary: ' (Authorization required - Roles: register_multi_shared_idp)'
+      summary: 'Creates a shared IDP instance detail entry (Authorization required - Roles: register_multi_shared_idp)'
+      description: 'Example: POST: api/administration/identityprovider/operator/multi-shared-idp'
       requestBody:
+        description: shared idp instance details
         content:
           application/json:
             schema:
@@ -2561,17 +2563,163 @@ paths:
               $ref: '#/components/schemas/SharedIdpInstanceRequestData'
       responses:
         '200':
-          description: OK
+          description: Returns no content
           content:
             text/plain:
               schema:
-                $ref: '#/components/schemas/IdentityProviderUpdateStats'
+                $ref: '#/components/schemas/NoContentResult'
             application/json:
               schema:
-                $ref: '#/components/schemas/IdentityProviderUpdateStats'
+                $ref: '#/components/schemas/NoContentResult'
             text/json:
               schema:
-                $ref: '#/components/schemas/IdentityProviderUpdateStats'
+                $ref: '#/components/schemas/NoContentResult'
+        '400':
+          description: max realm count is not correct
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: shared idp instance url already exist.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/administration/identityprovider/operator/multi-shared-idp/{sharedIdpInstanceId}':
+    put:
+      tags:
+        - IdentityProvider
+      summary: 'Updates a shared IDP instance detail entry (Authorization required - Roles: update_multi_shared_idp)'
+      description: 'Example: PUT: api/administration/identityprovider/operator/multi-shared-idp/{sharedIdpInstanceId}'
+      parameters:
+        - name: sharedIdpInstanceId
+          in: path
+          description: id of shared idp instance>
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: shared idp instance details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SharedIdpInstanceUpdateRequestData'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/SharedIdpInstanceUpdateRequestData'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/SharedIdpInstanceUpdateRequestData'
+      responses:
+        '200':
+          description: Returns updated shared idp instance details
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/SharedIdpInstanceResponseData'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SharedIdpInstanceResponseData'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/SharedIdpInstanceResponseData'
+        '400':
+          description: max realm count is not correct
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: shared idp instance id does not exist.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/administration/identityprovider/operator/multi-shared-idps:
+    get:
+      tags:
+        - IdentityProvider
+      summary: 'Gets all shared IDP instance detail entries (Authorization required - Roles: view_multi_shared_idp)'
+      description: 'Example: GET: api/administration/identityprovider/operator/multi-shared-idps'
+      responses:
+        '200':
+          description: Returns all shared idp instance details
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SharedIdpInstanceResponseData'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SharedIdpInstanceResponseData'
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SharedIdpInstanceResponseData'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/administration/identityprovider/operator/sync-multi-shared-idp-realm-mapping:
+    get:
+      tags:
+        - IdentityProvider
+      summary: 'Syncs the realm mapping for shared IDP instance detail entries (Authorization required - Roles: sync_multi_shared_idp)'
+      description: 'Example: GET: api/administration/identityprovider/operator/sync-multi-shared-idp-realm-mapping'
+      responses:
+        '200':
+          description: Returns the process id of the sync operation
+          content:
+            text/plain:
+              schema:
+                type: string
+                format: uuid
+            application/json:
+              schema:
+                type: string
+                format: uuid
+            text/json:
+              schema:
+                type: string
+                format: uuid
         '500':
           description: Internal Server Error
         '401':
@@ -7817,6 +7965,7 @@ components:
         - DELETE_CENTRAL_IDENTITY_PROVIDER
         - RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER
         - DELETE_IDENTITY_PROVIDER
+        - SYNC_MULTI_SHARED_IDP
         - SELF_DESCRIPTION_CONNECTOR_CREATION
         - SELF_DESCRIPTION_COMPANY_CREATION
         - RETRIGGER_SELF_DESCRIPTION_CONNECTOR_CREATION
@@ -7999,6 +8148,63 @@ components:
         maxRealmCount:
           type: integer
           format: int32
+      additionalProperties: false
+    SharedIdpInstanceResponseData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sharedIdpUrl:
+          type: string
+        clientId:
+          type: string
+        useAuthTrail:
+          type: boolean
+        authRealm:
+          type: string
+          nullable: true
+        realmUsed:
+          type: integer
+          format: int32
+        maxRealmCount:
+          type: integer
+          format: int32
+        isRunning:
+          type: boolean
+        dateCreated:
+          type: string
+          format: date-time
+        dateLastChanged:
+          type: string
+          format: date-time
+          nullable: true
+      additionalProperties: false
+    SharedIdpInstanceUpdateRequestData:
+      type: object
+      properties:
+        sharedIdpUrl:
+          type: string
+          nullable: true
+        clientId:
+          type: string
+          nullable: true
+        clientSecret:
+          type: string
+          nullable: true
+        useAuthTrail:
+          type: boolean
+          nullable: true
+        authRealm:
+          type: string
+          nullable: true
+        maxRealmCount:
+          type: integer
+          format: int32
+          nullable: true
+        isRunning:
+          type: boolean
+          nullable: true
       additionalProperties: false
     TechnicalUserCreationInfo:
       type: object

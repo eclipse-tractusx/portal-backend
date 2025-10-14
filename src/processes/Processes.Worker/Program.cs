@@ -37,6 +37,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.IdentityProviderProvisioning
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.MultiSharedIdp.Executor;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity.DependencyInjection;
@@ -74,6 +75,7 @@ try
                 .AddDimUserProcessExecutor(hostContext.Configuration.GetSection("ApplicationChecklist"))
                 .AddTransient<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>, IdentityProviderProvisioningProcessTypeExecutor>()
                 .AddTransient<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>, UserProvisioningProcessTypeExecutor>()
+                .AddTransient<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>, MultiSharedIdpProcessTypeExecutor>()
                 .AddSelfDescriptionCreationProcessExecutor(hostContext.Configuration);
 
             if (hostContext.HostingEnvironment.IsDevelopment())

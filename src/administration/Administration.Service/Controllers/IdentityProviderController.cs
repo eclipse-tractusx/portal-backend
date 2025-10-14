@@ -375,11 +375,78 @@ public class IdentityProviderController(IIdentityProviderBusinessLogic businessL
         return NoContent();
     }
 
+    /// <summary>
+    /// Creates a shared IDP instance detail entry
+    /// </summary>
+    /// <param name="sharedIdpInstanceRequestData">shared idp instance details</param>
+    /// <returns>Returns no content</returns>
+    /// <remarks>
+    /// Example: POST: api/administration/identityprovider/operator/multi-shared-idp
+    /// </remarks>
+    /// <response code="200">Returns no content</response>
+    /// <response code="400">max realm count is not correct</response>
+    /// <response code="409">shared idp instance url already exist.</response>
     [HttpPost]
     [Authorize(Roles = "register_multi_shared_idp")]
     [Route("operator/multi-shared-idp")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [ProducesResponseType(typeof(IdentityProviderUpdateStats), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task CreateSharedIdpInstanceDetails([FromBody] SharedIdpInstanceRequestData sharedIdpInstanceRequestData) =>
         businessLogic.CreateSharedIdpInstanceDetails(sharedIdpInstanceRequestData);
+
+    /// <summary>
+    /// Updates a shared IDP instance detail entry
+    /// </summary>
+    /// <param name="sharedIdpInstanceId">id of shared idp instance></param>
+    /// <param name="sharedIdpInstanceRequestData">shared idp instance details</param>
+    /// <returns>Returns updated shared idp instance details</returns>
+    /// <remarks>
+    /// Example: PUT: api/administration/identityprovider/operator/multi-shared-idp/{sharedIdpInstanceId}
+    /// </remarks>
+    /// <response code="200">Returns updated shared idp instance details</response>
+    /// <response code="400">max realm count is not correct</response>
+    /// <response code="409">shared idp instance id does not exist.</response>
+    [HttpPut]
+    [Authorize(Roles = "update_multi_shared_idp")]
+    [Route("operator/multi-shared-idp/{sharedIdpInstanceId}")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(typeof(SharedIdpInstanceResponseData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<SharedIdpInstanceResponseData> UpdateSharedIdpInstanceDetails([FromRoute] Guid sharedIdpInstanceId, [FromBody] SharedIdpInstanceUpdateRequestData sharedIdpInstanceRequestData) =>
+    await businessLogic.UpdateSharedIdpInstanceDetails(sharedIdpInstanceId, sharedIdpInstanceRequestData);
+
+    /// <summary>
+    /// Gets all shared IDP instance detail entries
+    /// </summary>
+    /// <returns>Returns all shared idp instance details</returns>
+    /// <remarks>
+    /// Example: GET: api/administration/identityprovider/operator/multi-shared-idps
+    /// </remarks>
+    /// <response code="200">Returns all shared idp instance details</response>
+    [HttpGet]
+    [Authorize(Roles = "view_multi_shared_idp")]
+    [Route("operator/multi-shared-idps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(typeof(IEnumerable<SharedIdpInstanceResponseData>), StatusCodes.Status200OK)]
+    public Task<IEnumerable<SharedIdpInstanceResponseData>> GetSharedIdpInstanceDetails() =>
+    businessLogic.GetSharedIdpInstanceDetails();
+
+    /// <summary>
+    /// Syncs the realm mapping for shared IDP instance detail entries
+    /// </summary>
+    /// <returns>Returns the process id of the sync operation</returns>
+    /// <remarks>
+    /// Example: GET: api/administration/identityprovider/operator/sync-multi-shared-idp-realm-mapping
+    /// </remarks>
+    /// <response code="200">Returns the process id of the sync operation</response>
+    [HttpGet]
+    [Authorize(Roles = "sync_multi_shared_idp")]
+    [Route("operator/sync-multi-shared-idp-realm-mapping")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    public Task<Guid> SyncSharedIdpRealmMapping() =>
+        businessLogic.SyncSharedIdpRealmMapping();
 }
