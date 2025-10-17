@@ -334,14 +334,14 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
                 ))
             .SingleAsync();
 
-    public Task<(bool HasCompanyRole, Guid? OnboardingServiceProviderDetailId, OspDetails? OspDetails)> GetCallbackEditData(Guid companyId, CompanyRoleId companyRoleId) =>
+    public Task<(bool HasCompanyRole, Guid? OnboardingServiceProviderDetailId, OspCallbackDetails? OspDetails)> GetCallbackEditData(Guid companyId, CompanyRoleId companyRoleId) =>
         context.Companies.Where(c => c.Id == companyId)
-            .Select(c => new ValueTuple<bool, Guid?, OspDetails?>(
+            .Select(c => new ValueTuple<bool, Guid?, OspCallbackDetails?>(
                 c.CompanyAssignedRoles.Any(role => role.CompanyRoleId == companyRoleId),
                 c.OnboardingServiceProviderDetail!.Id,
                 c.OnboardingServiceProviderDetail == null
                     ? null
-                    : new OspDetails(
+                    : new OspCallbackDetails(
                         c.OnboardingServiceProviderDetail.CallbackUrl,
                         c.OnboardingServiceProviderDetail.AuthUrl,
                         c.OnboardingServiceProviderDetail.ClientId,

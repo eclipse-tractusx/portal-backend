@@ -80,7 +80,7 @@ public class NetworkBusinessLogic(
         var processId = processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION).Id;
         processStepRepository.CreateProcessStepRange(new[]
         {
-            (ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, processId),
+            (ProcessStepTypeId.TRIGGER_CALLBACK_OSP_CREATED, ProcessStepStatusId.TODO, processId),
             (ProcessStepTypeId.MANUAL_DECLINE_OSP, ProcessStepStatusId.TODO, processId)
         });
 

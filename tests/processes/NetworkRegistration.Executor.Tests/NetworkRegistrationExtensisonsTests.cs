@@ -25,7 +25,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Exec
 public class NetworkRegistrationExtensisonsTests
 {
     [Theory]
+    [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_CREATED, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_CREATED)]
     [InlineData(ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER)]
+    [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_INVITED, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_INVITED)]
     [InlineData(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, ProcessStepTypeId.RETRIGGER_REMOVE_KEYCLOAK_USERS)]
     [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_SUBMITTED)]
     [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_DECLINED)]

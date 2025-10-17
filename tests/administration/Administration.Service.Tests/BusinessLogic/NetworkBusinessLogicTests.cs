@@ -621,7 +621,7 @@ public class NetworkBusinessLogicTests
             .Which.Should().Match<Process>(
                 x => x.ProcessTypeId == ProcessTypeId.PARTNER_REGISTRATION);
         processSteps.Should().HaveCount(2).And.Satisfy(
-                x => x.ProcessStepStatusId == ProcessStepStatusId.TODO && x.ProcessStepTypeId == ProcessStepTypeId.SYNCHRONIZE_USER,
+                x => x.ProcessStepStatusId == ProcessStepStatusId.TODO && x.ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_CREATED,
                 x => x.ProcessStepStatusId == ProcessStepStatusId.TODO && x.ProcessStepTypeId == ProcessStepTypeId.MANUAL_DECLINE_OSP);
         companyApplications.Should().ContainSingle()
             .Which.Should().Match<CompanyApplication>(x =>
@@ -763,7 +763,7 @@ public class NetworkBusinessLogicTests
             .Which.Should().Match<Process>(x =>
                 x.ProcessTypeId == ProcessTypeId.PARTNER_REGISTRATION);
         processSteps.Should().HaveCount(2).And.Satisfy(
-            x => x.ProcessStepStatusId == ProcessStepStatusId.TODO && x.ProcessStepTypeId == ProcessStepTypeId.SYNCHRONIZE_USER,
+            x => x.ProcessStepStatusId == ProcessStepStatusId.TODO && x.ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_CREATED,
             x => x.ProcessStepStatusId == ProcessStepStatusId.TODO && x.ProcessStepTypeId == ProcessStepTypeId.MANUAL_DECLINE_OSP);
         companyApplications.Should().ContainSingle()
             .Which.Should().Match<CompanyApplication>(x =>
@@ -792,18 +792,23 @@ public class NetworkBusinessLogicTests
 
     #region RetriggerSynchronizeUser
 
-    [Fact]
-    public async Task RetriggerSynchronizeUser_CallsExpected()
+    [Theory]
+    [InlineData(ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_CREATED)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_INVITED)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_SUBMITTED)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_APPROVED)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_DECLINED)]
+    public async Task RetriggerSynchronizeUser_CallsExpected(ProcessStepTypeId processStepTypeId)
     {
         // Arrange
         var externalId = Guid.NewGuid().ToString();
-        const ProcessStepTypeId ProcessStepId = ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER;
 
         // Act
-        await _sut.RetriggerProcessStep(externalId, ProcessStepId);
+        await _sut.RetriggerProcessStep(externalId, processStepTypeId);
 
         // Assert
-        A.CallTo(() => _networkRegistrationProcessHelper.TriggerProcessStep(externalId, ProcessStepId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _networkRegistrationProcessHelper.TriggerProcessStep(externalId, processStepTypeId)).MustHaveHappenedOnceExactly();
     }
 
     #endregion

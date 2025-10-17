@@ -34,7 +34,9 @@ public class NetworkRegistrationProcessHelper(
     {
         var nextStep = stepToTrigger switch
         {
+            ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_CREATED => ProcessStepTypeId.TRIGGER_CALLBACK_OSP_CREATED,
             ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER => ProcessStepTypeId.SYNCHRONIZE_USER,
+            ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_INVITED => ProcessStepTypeId.TRIGGER_CALLBACK_OSP_INVITED,
             ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_APPROVED => ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED,
             ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_DECLINED => ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED,
             ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_SUBMITTED => ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED,

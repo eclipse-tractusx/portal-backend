@@ -116,9 +116,9 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
 
         await CreateMailProcess(GetUserMailInformation(companyAssignedIdentityProviders), ospName).ConfigureAwait(ConfigureAwaitOptions.None);
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
-            null,
+            [ProcessStepTypeId.TRIGGER_CALLBACK_OSP_INVITED],
             ProcessStepStatusId.DONE,
-            false,
+            true,
             null);
     }
 

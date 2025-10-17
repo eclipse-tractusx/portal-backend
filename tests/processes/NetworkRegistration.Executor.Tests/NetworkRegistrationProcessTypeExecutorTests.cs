@@ -59,11 +59,17 @@ public class NetworkRegistrationProcessTypeExecutorTests
         _sut.GetProcessTypeId().Should().Be(ProcessTypeId.PARTNER_REGISTRATION);
     }
 
-    [Fact]
-    public void IsExecutableStepTypeId_WithValid_ReturnsExpected()
+    [Theory]
+    [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_CREATED)]
+    [InlineData(ProcessStepTypeId.SYNCHRONIZE_USER)]
+    [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_INVITED)]
+    [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED)]
+    [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED)]
+    [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED)]
+    public void IsExecutableStepTypeId_WithValid_ReturnsExpected(ProcessStepTypeId processStepTypeId)
     {
         // Assert
-        _sut.IsExecutableStepTypeId(ProcessStepTypeId.SYNCHRONIZE_USER).Should().BeTrue();
+        _sut.IsExecutableStepTypeId(processStepTypeId).Should().BeTrue();
     }
 
     [Theory]
@@ -109,8 +115,10 @@ public class NetworkRegistrationProcessTypeExecutorTests
     public void GetExecutableStepTypeIds_ReturnsExpected()
     {
         // Assert
-        _sut.GetExecutableStepTypeIds().Should().HaveCount(5).And.Satisfy(
+        _sut.GetExecutableStepTypeIds().Should().HaveCount(7).And.Satisfy(
+            x => x == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_CREATED,
             x => x == ProcessStepTypeId.SYNCHRONIZE_USER,
+            x => x == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_INVITED,
             x => x == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED,
             x => x == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED,
             x => x == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED,
@@ -121,7 +129,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
     public async Task IsLockRequested_ReturnsExpected()
     {
         // Act
-        var result = await _sut.IsLockRequested(ProcessStepTypeId.SYNCHRONIZE_USER);
+        var result = await _sut.IsLockRequested(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_CREATED);
 
         // Assert
         result.Should().BeFalse();
@@ -194,14 +202,14 @@ public class NetworkRegistrationProcessTypeExecutorTests
 
         // Arrange
         A.CallTo(() => _networkRegistrationHandler.SynchronizeUser(networkRegistrationId))
-            .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(null, ProcessStepStatusId.DONE, false, null));
+            .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>([ProcessStepTypeId.TRIGGER_CALLBACK_OSP_INVITED], ProcessStepStatusId.DONE, true, null));
 
         // Act
         var result = await _sut.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_USER, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert
-        result.Modified.Should().BeFalse();
-        result.ScheduleStepTypeIds.Should().BeNull();
+        result.Modified.Should().BeTrue();
+        result.ScheduleStepTypeIds.Should().ContainSingle().And.Satisfy(x => x == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_INVITED);
         result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.ProcessMessage.Should().BeNull();
         result.SkipStepTypeIds.Should().BeNull();
@@ -239,6 +247,8 @@ public class NetworkRegistrationProcessTypeExecutorTests
     }
 
     [Theory]
+    [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_CREATED)]
+    [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_INVITED)]
     [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED)]
     [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED)]
     [InlineData(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED)]
@@ -258,15 +268,25 @@ public class NetworkRegistrationProcessTypeExecutorTests
         initializeResult.ScheduleStepTypeIds.Should().BeNull();
 
         // Arrange
+        var nextStep = processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_CREATED ? [ProcessStepTypeId.SYNCHRONIZE_USER] : Enumerable.Empty<ProcessStepTypeId>();
         A.CallTo(() => _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(networkRegistrationId, processStepTypeId, CancellationToken.None))
-            .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(null, ProcessStepStatusId.DONE, false, null));
+            .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(nextStep, ProcessStepStatusId.DONE, false, null));
 
         // Act
         var result = await _sut.ExecuteProcessStep(processStepTypeId, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert
         result.Modified.Should().BeFalse();
-        result.ScheduleStepTypeIds.Should().BeNull();
+
+        if (processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_CREATED)
+        {
+            result.ScheduleStepTypeIds.Should().ContainSingle().And.Satisfy(x => x == ProcessStepTypeId.SYNCHRONIZE_USER);
+        }
+        else
+        {
+            result.ScheduleStepTypeIds.Should().BeNullOrEmpty();
+        }
+
         result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.ProcessMessage.Should().BeNull();
         result.SkipStepTypeIds.Should().BeNull();

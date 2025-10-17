@@ -78,7 +78,7 @@ public class OnboardingServiceProviderBusinessLogicTests
         // Arrange
         var networkRegistrationId = Guid.NewGuid();
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED))
-            .Returns<(OspDetails?, string, string?, Guid, IEnumerable<string>)>(default);
+            .Returns<(OspCallbackDetails?, OspCallbackData)>(default);
 
         // Act
         var Act = () => _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, CancellationToken.None);
@@ -95,8 +95,9 @@ public class OnboardingServiceProviderBusinessLogicTests
     {
         // Arrange
         var networkRegistrationId = Guid.NewGuid();
+        var callbackData = new OspCallbackData(Guid.NewGuid().ToString(), null!, Guid.NewGuid(), _fixture.CreateMany<string>(2), Guid.NewGuid(), DateTime.UtcNow, DateTime.UtcNow, DateTime.UtcNow, "Test", _fixture.CreateMany<string>(2));
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED))
-            .Returns((null, _fixture.Create<string>(), null, Guid.NewGuid(), _fixture.CreateMany<string>()));
+            .Returns((null, callbackData));
 
         // Act
         var result = await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, CancellationToken.None);
@@ -115,9 +116,10 @@ public class OnboardingServiceProviderBusinessLogicTests
         var networkRegistrationId = Guid.NewGuid();
         var secret = Encoding.UTF8.GetBytes(_fixture.Create<string>());
         const string Bpn = "BPNL00000001TEST";
-        var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret, null, 0);
+        var details = new OspCallbackDetails("https://callback.url", "https://auth.url", "test1", secret, null, 0);
+        var callbackData = new OspCallbackData(Guid.NewGuid().ToString(), Bpn, Guid.NewGuid(), _fixture.CreateMany<string>(2), Guid.NewGuid(), DateTime.UtcNow, DateTime.UtcNow, DateTime.UtcNow, "Test", _fixture.CreateMany<string>(2));
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED))
-            .Returns((details, Guid.NewGuid().ToString(), Bpn, Guid.NewGuid(), _fixture.CreateMany<string>(2)));
+            .Returns((details, callbackData));
 
         // Act
         async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, CancellationToken.None);
@@ -134,9 +136,11 @@ public class OnboardingServiceProviderBusinessLogicTests
         var networkRegistrationId = Guid.NewGuid();
         var secret = Encoding.UTF8.GetBytes(_fixture.Create<string>());
         const string Bpn = "BPNL00000001TEST";
-        var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret, null, 0);
+        var date = DateTime.UtcNow;
+        var details = new OspCallbackDetails("https://callback.url", "https://auth.url", "test1", secret, null, 0);
+        var callbackData = new OspCallbackData(Guid.NewGuid().ToString(), Bpn, Guid.NewGuid(), Enumerable.Empty<string>(), Guid.NewGuid(), date, date, date, "Test", _fixture.CreateMany<string>(2));
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.AWAIT_START_AUTOSETUP))
-            .Returns((details, Guid.NewGuid().ToString(), Bpn, Guid.NewGuid(), Enumerable.Empty<string>()));
+            .Returns((details, callbackData));
 
         // Act
         async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.AWAIT_START_AUTOSETUP, CancellationToken.None);
@@ -161,9 +165,13 @@ public class OnboardingServiceProviderBusinessLogicTests
         var externalId = Guid.NewGuid().ToString();
         var applicationId = new Guid("2b965267-555c-4834-a323-09b7858c29ae");
         var networkRegistrationId = Guid.NewGuid();
-        var details = new OspDetails(CallbackUrl, "https://auth.url", "test1", Convert.FromBase64String(clientSecret), initialVector == null ? null : Convert.FromBase64String(initialVector), index);
+        var companyId = Guid.NewGuid();
+        var date = DateTime.UtcNow;
+        var companyRoles = _fixture.CreateMany<string>(2);
+        var details = new OspCallbackDetails(CallbackUrl, "https://auth.url", "test1", Convert.FromBase64String(clientSecret), initialVector == null ? null : Convert.FromBase64String(initialVector), index);
+        var callbackData = new OspCallbackData(externalId, Bpn, applicationId, processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED ? Enumerable.Repeat("this is a test", 1) : Enumerable.Empty<string>(), companyId, date, date, date, "Test", companyRoles);
         A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, processStepTypeId))
-            .Returns((details, externalId, Bpn, applicationId, processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED ? Enumerable.Repeat("this is a test", 1) : Enumerable.Empty<string>()));
+            .Returns((details, callbackData));
 
         // Act
         var result = await _sut.TriggerProviderCallback(networkRegistrationId, processStepTypeId, CancellationToken.None);
@@ -171,7 +179,7 @@ public class OnboardingServiceProviderBusinessLogicTests
         // Assert
         A.CallTo(() => _onboardingServiceProviderService.TriggerProviderCallback(
                 new OspTriggerDetails(CallbackUrl, "https://auth.url", "test1", "Sup3rS3cureTest!"),
-                new OnboardingServiceProviderCallbackData(externalId, applicationId, Bpn, applicationStatusId, message),
+                new OnboardingServiceProviderCallbackData(externalId, applicationId, companyId, Bpn, applicationStatusId, message, date, date, date, "Test", companyRoles),
                 A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         result.nextStepTypeIds.Should().BeEmpty();

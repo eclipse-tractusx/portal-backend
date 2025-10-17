@@ -86,7 +86,9 @@ public class NetworkRegistrationProcessHelperTests
     }
 
     [Theory]
+    [InlineData(ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_CREATED, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_CREATED)]
     [InlineData(ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER, ProcessStepTypeId.SYNCHRONIZE_USER)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_INVITED, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_INVITED)]
     [InlineData(ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_APPROVED, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED)]
     [InlineData(ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_DECLINED, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED)]
     [InlineData(ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_SUBMITTED, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED)]

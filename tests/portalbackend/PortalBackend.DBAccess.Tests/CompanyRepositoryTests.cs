@@ -822,7 +822,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.OnboardingServiceProviderDetailId.Should().Be(new Guid("6e293a28-da95-432a-b10c-9cec44de09e9"));
         result.OspDetails.Should().NotBeNull()
-            .And.Match<OspDetails>(x =>
+            .And.Match<OspCallbackDetails>(x =>
                 x.CallbackUrl == url &&
                 x.EncryptionMode == 1 &&
                 x.InitializationVector == null

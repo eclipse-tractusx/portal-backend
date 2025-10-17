@@ -34,7 +34,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.
 public record OnboardingServiceProviderCallbackData(
     [property: JsonPropertyName("externalId")] string ExternalId,
     [property: JsonPropertyName("applicationId")] Guid ApplicationId,
+    [property: JsonPropertyName("companyId")] Guid CompanyId,
     [property: JsonPropertyName("bpn")] string? Bpn,
-    [property: JsonPropertyName("status")] CompanyApplicationStatusId? Status,
-    [property: JsonPropertyName("message")] string? Message
+    [property: JsonPropertyName("applicationStatus")] CompanyApplicationStatusId? Status,
+    [property: JsonPropertyName("message")] string? Message,
+    [property: JsonPropertyName("applicationDateCreated")] DateTimeOffset ApplicationDateCreated,
+    [property: JsonPropertyName("dateCreated")] DateTimeOffset DateCreated,
+    [property: JsonPropertyName("lastChangedDate")] DateTimeOffset? LastChangedDate,
+    [property: JsonPropertyName("companyName")] string? CompanyName,
+    [property: JsonPropertyName("companyRoles")] IEnumerable<string>? CompanyRoles
 );

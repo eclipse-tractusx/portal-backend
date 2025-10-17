@@ -142,6 +142,48 @@ public class NetworkController(INetworkBusinessLogic logic)
     /// </summary>
     /// <param name="externalId" example="">Id of the externalId that should be triggered</param>
     /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/network/{externalId}/retrigger-callback-osp-created
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No registration found for the externalId.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{externalId}/retrigger-callback-osp-created")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerCallbackOspCreated([FromRoute] string externalId)
+    {
+        await logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_CREATED).ConfigureAwait(ConfigureAwaitOptions.None);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step
+    /// </summary>
+    /// <param name="externalId" example="">Id of the externalId that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/network/{externalId}/retrigger-callback-osp-invited
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No registration found for the externalId.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{externalId}/retrigger-callback-osp-invited")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerCallbackOspInvited([FromRoute] string externalId)
+    {
+        await logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_INVITED).ConfigureAwait(ConfigureAwaitOptions.None);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step
+    /// </summary>
+    /// <param name="externalId" example="">Id of the externalId that should be triggered</param>
+    /// <returns>NoContent</returns>
     /// Example: POST: api/administration/registration/network/{externalId}/retrigger-remove-keycloak-user
     /// <response code="204">Empty response on success.</response>
     /// <response code="404">No registration found for the externalId.</response>
