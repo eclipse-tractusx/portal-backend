@@ -632,7 +632,7 @@ public class DimBusinessLogicTests
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
-        ex.Message.Should().Be("Company is not ACTIVE or company application is not in state CONFIRMED or Wallet is not created");
+        ex.Message.Should().Be($"No Wallet was found for the given bpn: {BPN}");
     }
 
     #endregion

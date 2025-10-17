@@ -398,9 +398,7 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
     public Task<Guid> GetCopmanyActiveWalletId(string bpn) =>
         context.Companies
             .Where(x => x.BusinessPartnerNumber == bpn &&
-                x.CompanyStatusId == CompanyStatusId.ACTIVE &&
-                x.CompanyWalletData != null
-                && x.CompanyApplications.Any(ca => ca.ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED))
+                x.CompanyWalletData != null)
             .Select(x => x.CompanyWalletData!.Id)
             .SingleOrDefaultAsync();
 

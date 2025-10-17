@@ -267,7 +267,7 @@ public class DimBusinessLogic : IDimBusinessLogic
         var companyWalletId = await _portalRepositories.GetInstance<ICompanyRepository>().GetCopmanyActiveWalletId(bpn).ConfigureAwait(ConfigureAwaitOptions.None);
         if (companyWalletId == Guid.Empty)
         {
-            throw new ConflictException("Company is not ACTIVE or company application is not in state CONFIRMED or Wallet is not created");
+            throw new ConflictException($"No Wallet was found for the given bpn: {bpn}");
         }
 
         if (!await ValidateSchema(data.DidDocument, cancellationToken))
