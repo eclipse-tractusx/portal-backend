@@ -120,7 +120,7 @@ public interface IUserRepository
     /// </summary>
     /// <param name="companyUserId">Id of the user</param>
     /// <returns>The bpn of the company for the user</returns>
-    Task<string?> GetCompanyBpnForIamUserAsync(Guid companyUserId);
+    Task<string?> GetBusinessPartnerNumberAsync(Guid companyUserId);
 
     Identity AttachAndModifyIdentity(Guid identityId, Action<Identity>? initialize, Action<Identity> modify);
     void AttachAndModifyIdentities(IEnumerable<(Guid IdentityId, Action<Identity>? Initialize, Action<Identity> Modify)> identities);

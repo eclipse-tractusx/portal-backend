@@ -226,14 +226,14 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetCompanyBpnForIamUserAsync
 
     [Fact]
-    public async Task GetCompanyBpnForIamUserAsync_WithExistingUser_ReturnsExpected()
+    public async Task GetBusinessPartnerNumberAsync_WithExistingUser_ReturnsExpected()
     {
         // Arrange
         var sut = await CreateSut();
 
         // Act
         var result = await sut
-            .GetCompanyBpnForIamUserAsync(_validCompanyUser)
+            .GetBusinessPartnerNumberAsync(_validCompanyUser)
             ;
 
         // Assert

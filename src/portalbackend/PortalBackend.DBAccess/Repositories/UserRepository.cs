@@ -445,11 +445,11 @@ public class UserRepository : IUserRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<string?> GetCompanyBpnForIamUserAsync(Guid companyUserId) =>
-        _dbContext.CompanyUsers
-            .Where(x => x.Id == companyUserId)
-            .Select(x => x.Identity!.Company!.BusinessPartnerNumber)
-            .SingleOrDefaultAsync();
+    public Task<string?> GetBusinessPartnerNumberAsync(Guid companyId) =>
+    _dbContext.Companies
+        .Where(c => c.Id == companyId)
+        .Select(c => c.BusinessPartnerNumber)
+        .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public Identity AttachAndModifyIdentity(Guid identityId, Action<Identity>? initialize, Action<Identity> modify)

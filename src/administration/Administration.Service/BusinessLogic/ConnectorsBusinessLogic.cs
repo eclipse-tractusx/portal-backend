@@ -458,7 +458,7 @@ public class ConnectorsBusinessLogic(
         var bpn = connector.Type == ConnectorTypeId.CONNECTOR_AS_A_SERVICE
             ? connector.Bpn
             : await portalRepositories.GetInstance<IUserRepository>()
-                .GetCompanyBpnForIamUserAsync(_identityData.IdentityId)
+                .GetBusinessPartnerNumberAsync(_identityData.CompanyId)
                 .ConfigureAwait(ConfigureAwaitOptions.None);
         if (string.IsNullOrWhiteSpace(bpn))
         {
