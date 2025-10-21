@@ -230,9 +230,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var (sut, context) = await CreateSutWithContext();
-
         var companyId = new Guid("857b93b1-8fcb-4141-81b0-ae81950d489e");
-
         var company = new Company(
             companyId,
             "Test Company",
@@ -246,12 +244,19 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         context.Companies.Add(company);
         await context.SaveChangesAsync();
 
-        // Act
-        var result = await sut.GetBusinessPartnerNumberAsync(companyId);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Should().Be("BPNL00000003CRHK");
+        try
+        {
+            // Act
+            var result = await sut.GetBusinessPartnerNumberAsync(companyId);
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().Be("BPNL00000003CRHK");
+        }
+        finally
+        {
+            context.Companies.Remove(company);
+            await context.SaveChangesAsync();
+        }
     }
 
     #endregion
