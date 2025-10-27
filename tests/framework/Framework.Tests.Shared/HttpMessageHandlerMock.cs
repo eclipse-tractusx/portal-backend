@@ -21,39 +21,31 @@ using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 
-public class HttpMessageHandlerMock : HttpMessageHandler
+public class HttpMessageHandlerMock(
+    HttpStatusCode statusCode,
+    HttpContent? httpContent = null,
+    Exception? ex = null,
+    bool isRequestUri = false)
+    : HttpMessageHandler
 {
-    private readonly HttpStatusCode _statusCode;
-    private readonly Exception? _ex;
-    private readonly HttpContent? _httpContent;
-    private readonly bool _isRequestUri;
-
-    public HttpMessageHandlerMock(HttpStatusCode statusCode, HttpContent? httpContent = null, Exception? ex = null, bool isRequestUri = false)
-    {
-        _statusCode = statusCode;
-        _httpContent = httpContent;
-        _ex = ex;
-        _isRequestUri = isRequestUri;
-    }
-
     protected override Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
         RequestMessage = request;
 
-        if (_ex != null)
+        if (ex != null)
         {
-            throw _ex;
+            throw ex;
         }
 
-        var httpResponseMessage = new HttpResponseMessage(_statusCode)
+        var httpResponseMessage = new HttpResponseMessage(statusCode)
         {
-            RequestMessage = _isRequestUri ? request : null
+            RequestMessage = isRequestUri ? request : null
         };
-        if (_httpContent != null)
+        if (httpContent != null)
         {
-            httpResponseMessage.Content = _httpContent;
+            httpResponseMessage.Content = httpContent;
         }
 
         return Task.FromResult(httpResponseMessage);
