@@ -270,11 +270,6 @@ public class DimBusinessLogic : IDimBusinessLogic
             throw new ConflictException($"No Wallet was found for the given bpn: {bpn}");
         }
 
-        if (!await ValidateSchema(data.DidDocument, cancellationToken))
-        {
-            throw new ConflictException("Did Document did not match the expected schema");
-        }
-
         _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyWalletData(companyWalletId, w => { }, w => w.DidDocument = data.DidDocument);
     }
 }

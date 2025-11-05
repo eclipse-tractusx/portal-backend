@@ -581,25 +581,6 @@ public class DimBusinessLogicTests
     }
 
     [Fact]
-    public async Task UpdateDidDocument_WithInvalidDidDocument_ThrowsConflictException()
-    {
-        // Arrange
-        var data = _fixture.Create<DidDocumentData>();
-        A.CallTo(() => _companyRepository.CheckBpnExists(BPN))
-            .Returns(true);
-        A.CallTo(() => _companyRepository.GetCopmanyActiveWalletId(BPN))
-            .Returns(Guid.NewGuid());
-
-        async Task Act() => await _logic.UpdateDidDocument(BPN, data, CancellationToken.None);
-
-        // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-
-        // Assert
-        ex.Message.Should().Be("Did Document did not match the expected schema");
-    }
-
-    [Fact]
     public async Task UpdateDidDocument_BpnNotFound_ThrowsNotFoundException()
     {
         // Arrange
