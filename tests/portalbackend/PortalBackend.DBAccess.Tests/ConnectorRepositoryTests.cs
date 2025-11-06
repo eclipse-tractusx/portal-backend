@@ -407,6 +407,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result!.Status.Should().Be(ConnectorStatusId.PENDING);
         result.Type.Should().Be(ConnectorTypeId.COMPANY_CONNECTOR);
+        result.CountryAlpha2Code.Should().Be("DE");
     }
 
     [Fact]

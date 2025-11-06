@@ -190,7 +190,7 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                             ps.ProcessStepStatusId == ProcessStepStatusId.TODO &&
                             processStepsToFilter.Contains(ps.ProcessStepTypeId)),
                     connector.TechnicalUser.ExternalTechnicalUserCreationData == null ? null : connector.TechnicalUser.ExternalTechnicalUserCreationData!.ProcessId),
-                connector.Host!.Address!.CountryAlpha2Code
+                connector.Provider!.Address!.CountryAlpha2Code
             )).SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -203,8 +203,9 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                 c.ProviderId == companyId,
                 c.ConnectorUrl,
                 c.Provider!.BusinessPartnerNumber,
+                c.Provider!.Address!.CountryAlpha2Code,
                 c.SelfDescriptionDocumentId,
-                c.Host!.SelfDescriptionDocumentId))
+                c.Provider!.SelfDescriptionDocumentId))
             .SingleOrDefaultAsync();
 
     public void DeleteConnector(Guid connectorId) =>

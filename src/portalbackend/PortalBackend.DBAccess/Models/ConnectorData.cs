@@ -76,7 +76,7 @@ public record DeleteConnectorData(
     UserStatusId? UserStatusId,
     Guid? ServiceAccountId,
     DeleteServiceAccountData DeleteServiceAccountData,
-    string Location
+    string? Location
 );
 public record ConnectorOfferSubscription(Guid AssignedOfferSubscriptionIds, OfferSubscriptionStatusId OfferSubscriptionStatus);
 
