@@ -46,7 +46,7 @@ public class CompanyUsersViewTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut.CompanyUsersView.ToListAsync();
-        result.Should().HaveCount(13);
+        result.Should().HaveCount(14);
     }
 
     [Fact]

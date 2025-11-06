@@ -40,7 +40,8 @@ public interface IUserRolesBusinessLogic
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="companyUserId"></param>
+    /// <param name="subscriptionId"></param>
     /// <param name="roles"></param>
     /// <returns>messages</returns>
-    Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync(Guid appId, Guid companyUserId, IEnumerable<string> roles);
+    Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync(Guid appId, Guid companyUserId, Guid subscriptionId, IEnumerable<string> roles);
 }

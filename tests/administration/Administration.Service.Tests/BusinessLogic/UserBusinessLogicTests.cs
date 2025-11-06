@@ -66,6 +66,7 @@ public class UserBusinessLogicTests
     private readonly string _iamUserId;
     private readonly string _createdCentralIamUserId;
     private readonly Guid _companyUserId;
+    private readonly Guid _subscriptionId;
     private readonly Guid _companyId;
     private readonly Guid _validOfferId;
     private readonly Guid _offerWithoutNameId;
@@ -115,6 +116,7 @@ public class UserBusinessLogicTests
         _iamUserId = _fixture.Create<string>();
         _createdCentralIamUserId = _fixture.Create<string>();
         _companyUserId = Guid.NewGuid();
+        _subscriptionId = Guid.NewGuid();
         _companyId = Guid.NewGuid();
         _validOfferId = _fixture.Create<Guid>();
         _offerWithoutNameId = _fixture.Create<Guid>();
@@ -708,7 +710,7 @@ public class UserBusinessLogicTests
             "Buyer",
             "Supplier"
         };
-        await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, userRoles);
+        await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, _subscriptionId, userRoles);
 
         // Assert
         _addedRoles.Should().HaveCount(2);
@@ -729,7 +731,7 @@ public class UserBusinessLogicTests
         var supplierRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47663");
         A.CallTo(() => _identity.IdentityId).Returns(_createdCentralUserId);
         A.CallTo(() => _identity.CompanyId).Returns(_createdCentralCompanyId);
-        A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(_validOfferId, _companyUserId, A<Guid>._))
+        A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(_validOfferId, _companyUserId, _subscriptionId, A<Guid>._))
             .Returns(new OfferIamUserData(true, new[] { iamClientId, iamClientId1 }, true, "The offer", "Tony", "Stark"));
 
         A.CallTo(() => _userRolesRepository.GetAssignedAndMatchingAppRoles(A<Guid>._, A<IEnumerable<string>>._, A<Guid>._))
@@ -741,7 +743,7 @@ public class UserBusinessLogicTests
                 ("Supplier", supplierRoleId, false),
             }.ToAsyncEnumerable());
 
-        A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRole(A<Guid>._, A<Guid>._))
+        A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRole(A<Guid>._, A<Guid>._, A<Action<IdentityAssignedRole>?>._))
             .Invokes(x =>
             {
                 var companyUserId = x.Arguments.Get<Guid>("companyUserId");
@@ -768,7 +770,7 @@ public class UserBusinessLogicTests
             "Buyer",
             "Supplier"
         };
-        await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, userRoles);
+        await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, _subscriptionId, userRoles);
 
         // Assert
         _addedRoles.Should().HaveCount(2);
@@ -787,7 +789,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(_createdCentralCompanyId);
         A.CallTo(() => _provisioningManager.GetUserByUserName(_companyUserId.ToString()))
             .Returns(_iamUserId);
-        A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(_validOfferId, _companyUserId, A<Guid>._))
+        A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(_validOfferId, _companyUserId, _subscriptionId, A<Guid>._))
             .Returns(new OfferIamUserData(true, new[] { iamClientId, iamClientId1 }, true, "The offer", "Tony", "Stark"));
 
         A.CallTo(() => _userRolesRepository.GetAssignedAndMatchingAppRoles(A<Guid>._, A<IEnumerable<string>>._, A<Guid>._))
@@ -817,7 +819,7 @@ public class UserBusinessLogicTests
             "Buyer",
             "Supplier"
         };
-        async Task Act() => await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, userRoles);
+        async Task Act() => await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, _subscriptionId, userRoles);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -845,7 +847,7 @@ public class UserBusinessLogicTests
         {
             "Company Admin"
         };
-        await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, userRoles);
+        await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, _subscriptionId, userRoles);
 
         // Assert
         A.CallTo(() => _userRolesRepository.RemoveIdentityAssignedRoles(A<IEnumerable<IdentityAssignedRole>>.That.Matches(x => x.Count() == 1))).MustHaveHappenedOnceExactly();
@@ -876,7 +878,7 @@ public class UserBusinessLogicTests
             "NotExisting",
             "Buyer"
         };
-        async Task Action() => await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, userRoles);
+        async Task Action() => await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, _subscriptionId, userRoles);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -908,7 +910,7 @@ public class UserBusinessLogicTests
             "Buyer",
             "Supplier"
         };
-        async Task Action() => await sut.ModifyAppUserRolesAsync(_validOfferId, companyUserId, userRoles);
+        async Task Action() => await sut.ModifyAppUserRolesAsync(_validOfferId, companyUserId, _subscriptionId, userRoles);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
@@ -940,7 +942,7 @@ public class UserBusinessLogicTests
             "Buyer",
             "Supplier"
         };
-        async Task Action() => await sut.ModifyAppUserRolesAsync(invalidAppId, _companyUserId, userRoles);
+        async Task Action() => await sut.ModifyAppUserRolesAsync(invalidAppId, _companyUserId, _subscriptionId, userRoles);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -971,7 +973,7 @@ public class UserBusinessLogicTests
             "Buyer",
             "Supplier"
         };
-        async Task Action() => await sut.ModifyAppUserRolesAsync(_offerWithoutNameId, _companyUserId, userRoles);
+        async Task Action() => await sut.ModifyAppUserRolesAsync(_offerWithoutNameId, _companyUserId, _subscriptionId, userRoles);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
@@ -1637,13 +1639,13 @@ public class UserBusinessLogicTests
         var buyerRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
         var supplierRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47663");
         var unassignableRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47664");
-        A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(_validOfferId, _companyUserId, A<Guid>.That.Matches(x => x == _adminCompanyId || x == _createdCentralCompanyId)))
+        A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(_validOfferId, _companyUserId, _subscriptionId, A<Guid>.That.Matches(x => x == _adminCompanyId || x == _createdCentralCompanyId)))
             .Returns(new OfferIamUserData(true, new[] { iamClientId }, true, "The offer", "Tony", "Stark"));
-        A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(_offerWithoutNameId, _companyUserId, A<Guid>.That.Matches(x => x == _adminCompanyId || x == _createdCentralCompanyId)))
+        A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(_offerWithoutNameId, _companyUserId, _subscriptionId, A<Guid>.That.Matches(x => x == _adminCompanyId || x == _createdCentralCompanyId)))
             .Returns(new OfferIamUserData(true, new[] { iamClientId }, true, null, "Tony", "Stark"));
-        A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _validOfferId || x == _offerWithoutNameId), _companyUserId, _adminCompanyId))
+        A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _validOfferId || x == _offerWithoutNameId), _companyUserId, _subscriptionId, _adminCompanyId))
             .Returns(new OfferIamUserData(false, Enumerable.Empty<string>(), true, null, "Tony", "Stark"));
-        A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(_validOfferId, A<Guid>.That.Not.Matches(x => x == _companyUserId), _adminCompanyId))
+        A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(_validOfferId, A<Guid>.That.Not.Matches(x => x == _companyUserId), _subscriptionId, _adminCompanyId))
             .Returns(new OfferIamUserData(true, new[] { iamClientId }, false, "The offer", "Tony", "Stark"));
         A.CallTo(() => _provisioningManager.GetUserByUserName(_companyUserId.ToString()))
             .Returns(_iamUserId);
@@ -1672,9 +1674,13 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userRepository.GetCoreOfferAssignedIamClientUserDataUntrackedAsync(A<Guid>.That.Matches(x => x == _validOfferId), A<Guid>.That.Matches(x => x == _companyUserId), A<Guid>.That.Matches(x => x == _adminCompanyId || x == _createdCentralCompanyId)))
             .Returns(new CoreOfferIamUserData(true, new[] { iamClientId }, true, "Tony", "Stark"));
 
-        A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRole(A<Guid>._, A<Guid>._))
-            .Invokes((Guid companyUserId, Guid companyUserRoleId) =>
-                _addedRoles.Add(new IdentityAssignedRole(companyUserId, companyUserRoleId)));
+        A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRole(A<Guid>._, A<Guid>._, A<Action<IdentityAssignedRole>?>._))
+            .Invokes((Guid companyUserId, Guid companyUserRoleId, Action<IdentityAssignedRole>? setOptionalParameters) =>
+            {
+                var assignedRoles = new IdentityAssignedRole(companyUserId, companyUserRoleId);
+                setOptionalParameters?.Invoke(assignedRoles);
+                _addedRoles.Add(assignedRoles);
+            });
 
         A.CallTo(() => _userRolesRepository.RemoveIdentityAssignedRoles(A<IEnumerable<IdentityAssignedRole>>._))
             .Invokes((IEnumerable<IdentityAssignedRole> roles) =>
