@@ -4,7 +4,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
-## 2.6.0-RC1
+## 2.6.0
 
 ### Feature
 
@@ -15,7 +15,6 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 * **Connector**
   * remove pending subsciptions from managed connectors [#1418](https://github.com/eclipse-tractusx/portal-backend/issues/1418)
-  * add connector type check for validate technical user [#1427](https://github.com/eclipse-tractusx/portal-backend/pull/1427)
 
 * **Subscription Configuration**
   * switch auth and service url in subscription payload [#1403](https://github.com/eclipse-tractusx/portal-backend/pull/1403)
@@ -29,13 +28,16 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 * **Error Handling**
   * adjust conflict exception error message [#1395](https://github.com/eclipse-tractusx/portal-backend/issues/1395)
-  * add exception handling for connector without tech user [#1411](https://github.com/eclipse-tractusx/portal-backend/pull/1411)
   * fix json deserialization errors resulting in Error 500 [#1423](https://github.com/eclipse-tractusx/portal-backend/pull/1423)
 
 ### Technical Support
 
 * **Dependencies**
   * updated app dependencies [#1370](https://github.com/eclipse-tractusx/portal-backend/pull/1370), [#1389](https://github.com/eclipse-tractusx/portal-backend/pull/1389), [#1361](https://github.com/eclipse-tractusx/portal-backend/pull/1361), [#1408](https://github.com/eclipse-tractusx/portal-backend/pull/1408), [#1416](https://github.com/eclipse-tractusx/portal-backend/pull/1416)
+
+### Known Knowns
+
+* Please refer to the **[list of open bugs](https://github.com/eclipse-tractusx/portal-backend/issues?q=is%3Aopen+is%3Aissue+label%3Abug)**.
 
 ## 2.5.0
 
