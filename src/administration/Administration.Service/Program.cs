@@ -64,6 +64,11 @@ await WebAppHelper
         builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
             .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
+        builder.Services
+            .AddTransient<IBringYourOwnWalletBusinessLogic, BringYourOwnWalletBusinessLogic>()
+            .Configure<BringYourOwnWalletSettings>(
+                builder.Configuration.GetSection("BringYourOwnWallet"));
+
         builder.Services.AddTransient<ITechnicalUserBusinessLogic, TechnicalUserBusinessLogic>()
             .ConfigureServiceAccountSettings(builder.Configuration.GetSection("ServiceAccount"));
 

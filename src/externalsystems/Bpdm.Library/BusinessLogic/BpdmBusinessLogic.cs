@@ -151,17 +151,24 @@ public class BpdmBusinessLogic(
             });
 
         var registrationValidationFailed = context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == ApplicationChecklistEntryStatusId.FAILED;
+        var createWalletOrTransmitCustomerDidStep = await CreateWalletOrBpnCredentialStepAsync(context.ApplicationId);
 
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
             registrationValidationFailed
                 ? null
-                : new[] { CreateWalletStep() },
+                : new[] { createWalletOrTransmitCustomerDidStep },
             new[] { ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL },
             true,
             null);
     }
 
     private ProcessStepTypeId CreateWalletStep() => _settings.UseDimWallet ? ProcessStepTypeId.CREATE_DIM_WALLET : ProcessStepTypeId.CREATE_IDENTITY_WALLET;
+
+    private async Task<ProcessStepTypeId> CreateWalletOrBpnCredentialStepAsync(Guid applicationId)
+    {
+        var isWalletCustomerProvider = await portalRepositories.GetInstance<ICompanyRepository>().IsBringYourOwnWallet(applicationId);
+        return isWalletCustomerProvider ? ProcessStepTypeId.TRANSMIT_BPN_DID : CreateWalletStep();
+    }
 }
