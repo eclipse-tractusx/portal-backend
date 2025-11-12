@@ -24,4 +24,8 @@ public interface ITokenService
     Task<HttpClient> GetAuthorizedClient(string clientName, KeyVaultAuthSettings settings, CancellationToken cancellationToken);
 
     Task<HttpClient> GetAuthorizedClient<T>(KeyVaultAuthSettings settings, CancellationToken cancellationToken);
+
+    Task<HttpClient> GetBasicAuthorizedClient<T>(BasicAuthSettings settings, CancellationToken cancellationToken);
+
+    Task<HttpClient> GetBasicAuthorizedClient(string clientName, BasicAuthSettings settings, CancellationToken cancellationToken);
 }

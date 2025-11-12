@@ -32,9 +32,7 @@ public static class HttpClientExtensions
     public static IServiceCollection AddCustomHttpClientWithAuthentication<T>(this IServiceCollection services, IEnumerable<(string clientName, string baseAddress)> clientDetails) where T : class
     {
         foreach (var (clientName, baseAddress) in clientDetails)
-        {
             services.AddCustomHttpClientWithAuthentication<T>(clientName, baseAddress);
-        }
         return services;
     }
 
@@ -43,9 +41,7 @@ public static class HttpClientExtensions
         services.AddHttpClient(clientName, c =>
         {
             if (!string.IsNullOrEmpty(baseAddress))
-            {
                 c.BaseAddress = new Uri(baseAddress);
-            }
         }).AddHttpMessageHandler<LoggingHandler<T>>();
 
         services.AddHttpClient($"{clientName}Auth").AddHttpMessageHandler<LoggingHandler<T>>();
