@@ -290,16 +290,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Processes.Worker.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Processes.Library", "framework\Framework.Processes.Library\Framework.Processes.Library.csproj", "{28007753-C8F8-43B0-A1C3-8FDC22727F44}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DBAccess", "portalbackend_cfx\DBAccess\DBAccess.csproj", "{28978AAD-3295-4E9C-BC25-F82234776C13}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entities", "portalbackend_cfx\Entities\Entities.csproj", "{4EEDFC69-6BA2-42E2-A2A0-C866FEDFBB50}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migrations", "portalbackend_cfx\Migrations\Migrations.csproj", "{3B62C9D3-A866-44A8-A291-62533FA7F5CA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortalBackendCfx.DBAccess.Tests", "..\tests\portalbackend_cfx\PortalBackendCfx.DBAccess.Tests\PortalBackendCfx.DBAccess.Tests.csproj", "{B572A74B-DA26-47D8-BFDB-2377976AE58B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortalBackendCfx.Migrations.Tests", "..\tests\portalbackend_cfx\PortalBackendCfx.Migrations.Tests\PortalBackendCfx.Migrations.Tests.csproj", "{B6CAAF8E-0F61-480A-B35B-6D55666EC5CF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiSharedIdp.Executor", "processes\MultiSharedIdp.Executor\MultiSharedIdp.Executor.csproj", "{BCBD187D-F196-46FA-BA11-79E043C798CC}"
 EndProject
 Global

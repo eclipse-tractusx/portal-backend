@@ -1,3 +1,4 @@
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -53,6 +54,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "process_step_types",
+                columns: new[] { "id", "label" },
+                values: new object[] { 707, "SYNC_MULTI_SHARED_IDP" });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "process_types",
+                columns: new[] { "id", "label" },
+                values: new object[] { 11, "MULTI_SHARED_IDENTITY_PROVIDER" });
         }
 
         /// <inheritdoc />
@@ -65,6 +78,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             migrationBuilder.DropTable(
                 name: "shared_idp_instance_details",
                 schema: "portal");
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 707);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_types",
+                keyColumn: "id",
+                keyValue: 11);
         }
     }
 }
