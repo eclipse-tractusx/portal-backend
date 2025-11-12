@@ -37,7 +37,9 @@ public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor<Proce
     private readonly IOnboardingServiceProviderBusinessLogic _onboardingServiceProviderBusinessLogic;
 
     private readonly IEnumerable<ProcessStepTypeId> _executableProcessSteps = ImmutableArray.Create(
+        ProcessStepTypeId.TRIGGER_CALLBACK_OSP_CREATED,
         ProcessStepTypeId.SYNCHRONIZE_USER,
+        ProcessStepTypeId.TRIGGER_CALLBACK_OSP_INVITED,
         ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED,
         ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED,
         ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED,
@@ -88,7 +90,11 @@ public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor<Proce
         {
             (nextStepTypeIds, stepStatusId, modified, processMessage) = processStepTypeId switch
             {
+                ProcessStepTypeId.TRIGGER_CALLBACK_OSP_CREATED => await _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(_networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_CREATED, cancellationToken)
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.SYNCHRONIZE_USER => await _networkRegistrationHandler.SynchronizeUser(_networkRegistrationId)
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
+                ProcessStepTypeId.TRIGGER_CALLBACK_OSP_INVITED => await _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(_networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_INVITED, cancellationToken)
                     .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED => await _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(_networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, cancellationToken)
                     .ConfigureAwait(ConfigureAwaitOptions.None),

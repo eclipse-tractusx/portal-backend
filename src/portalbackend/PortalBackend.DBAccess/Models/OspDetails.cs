@@ -19,7 +19,7 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record OspDetails
+public record OspCallbackDetails
 (
     string CallbackUrl,
     string AuthUrl,
@@ -27,4 +27,18 @@ public record OspDetails
     byte[] ClientSecret,
     byte[]? InitializationVector,
     int EncryptionMode
+);
+
+public record OspCallbackData
+(
+    string ExternalId,
+    string BusinessPartnerNumber,
+    Guid ApplicationId,
+    IEnumerable<string> Comments,
+    Guid CompanyId,
+    DateTimeOffset ApplicationDateCreated,
+    DateTimeOffset DateCreated,
+    DateTimeOffset? ApplicationDateLastChanged,
+    string CompanyName,
+    IEnumerable<string> CompanyAssignedRoles
 );

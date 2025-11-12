@@ -205,11 +205,16 @@ public class NetworkRepositoryTests
 
         // Assert
         result.Should().NotBe(default);
-        result.OspDetails.Should().BeNull();
-        result.ExternalId.Should().Be(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2").ToString());
-        result.ApplicationId.Should().Be(new Guid("7f31e08c-4420-4eac-beab-9540fbd55595"));
-        result.Comments.Should().BeEmpty();
-        result.Bpn.Should().Be("BPNL00000003AYRE");
+        result.ospCallbackDetails.Should().BeNull();
+        result.ospCallbackData.ExternalId.Should().Be(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2").ToString());
+        result.ospCallbackData.ApplicationId.Should().Be(new Guid("7f31e08c-4420-4eac-beab-9540fbd55595"));
+        result.ospCallbackData.Comments.Should().BeEmpty();
+        result.ospCallbackData.BusinessPartnerNumber.Should().Be("BPNL00000003AYRE");
+        result.ospCallbackData.CompanyName.Should().Be("Bayerische Motorenwerke AG");
+        result.ospCallbackData.CompanyAssignedRoles.Should().NotBeNullOrEmpty().And.Satisfy(
+            x => x == "ACTIVE_PARTICIPANT",
+            x => x == "APP_PROVIDER"
+        );
     }
 
     [Fact]
@@ -223,11 +228,8 @@ public class NetworkRepositoryTests
 
         // Assert
         result.Should().Be(default);
-        result.OspDetails.Should().BeNull();
-        result.ExternalId.Should().BeNull();
-        result.ApplicationId.Should().Be(Guid.Empty);
-        result.Comments.Should().BeNull();
-        result.Bpn.Should().BeNull();
+        result.ospCallbackDetails.Should().BeNull();
+        result.ospCallbackData.Should().BeNull();
     }
 
     #endregion

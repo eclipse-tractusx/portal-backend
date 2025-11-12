@@ -28,7 +28,9 @@ public static class NetworkRegistrationExtensisons
     public static IEnumerable<ProcessStepTypeId> GetNetworkRetriggerStep(this ProcessStepTypeId processStepTypeId) =>
         processStepTypeId switch
         {
+            ProcessStepTypeId.TRIGGER_CALLBACK_OSP_CREATED => new[] { ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_CREATED },
             ProcessStepTypeId.SYNCHRONIZE_USER => new[] { ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER },
+            ProcessStepTypeId.TRIGGER_CALLBACK_OSP_INVITED => new[] { ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_INVITED },
             ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED => new[] { ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_SUBMITTED },
             ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED => new[] { ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_DECLINED },
             ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED => new[] { ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_APPROVED },

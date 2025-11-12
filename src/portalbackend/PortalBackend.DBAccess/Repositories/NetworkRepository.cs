@@ -86,31 +86,38 @@ public class NetworkRepository : INetworkRepository
                 ))
             .SingleOrDefaultAsync();
 
-    public Task<(OspDetails? OspDetails, string ExternalId, string? Bpn, Guid ApplicationId, IEnumerable<string> Comments)> GetCallbackData(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId) =>
+    public Task<(OspCallbackDetails? ospCallbackDetails, OspCallbackData ospCallbackData)> GetCallbackData(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId) =>
         _context.NetworkRegistrations
             .Where(x => x.Id == networkRegistrationId)
-            .Select(x => new ValueTuple<OspDetails?, string, string?, Guid, IEnumerable<string>>(
+            .Select(x => new ValueTuple<OspCallbackDetails?, OspCallbackData>(
                 x.OnboardingServiceProvider!.OnboardingServiceProviderDetail == null
                     ? null
-                    : new OspDetails(
+                    : new OspCallbackDetails(
                         x.OnboardingServiceProvider.OnboardingServiceProviderDetail.CallbackUrl,
                         x.OnboardingServiceProvider.OnboardingServiceProviderDetail.AuthUrl,
                         x.OnboardingServiceProvider.OnboardingServiceProviderDetail.ClientId,
                         x.OnboardingServiceProvider.OnboardingServiceProviderDetail.ClientSecret,
                         x.OnboardingServiceProvider.OnboardingServiceProviderDetail.InitializationVector,
                         x.OnboardingServiceProvider.OnboardingServiceProviderDetail.EncryptionMode),
-                x.ExternalId,
-                x.OnboardingServiceProvider.BusinessPartnerNumber,
-                x.ApplicationId,
-                processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED
-                    ? x.Process!.ProcessSteps
-                        .Where(p =>
-                            p.ProcessStepTypeId == ProcessStepTypeId.MANUAL_VERIFY_REGISTRATION &&
-                            p.ProcessStepStatusId == ProcessStepStatusId.FAILED &&
-                            p.Message != null)
-                        .Select(step => step.Message!)
-                    : new List<string>()))
-            .SingleOrDefaultAsync();
+                new OspCallbackData(
+                    x.ExternalId,
+                    x.OnboardingServiceProvider.BusinessPartnerNumber!,
+                    x.ApplicationId,
+                    processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED
+                        ? x.Process!.ProcessSteps
+                            .Where(p =>
+                                p.ProcessStepTypeId == ProcessStepTypeId.MANUAL_VERIFY_REGISTRATION &&
+                                p.ProcessStepStatusId == ProcessStepStatusId.FAILED &&
+                                p.Message != null)
+                            .Select(step => step.Message!)
+                        : new List<string>(),
+                    x.CompanyId,
+                    x.CompanyApplication!.DateCreated,
+                    x.DateCreated,
+                    x.CompanyApplication.DateLastChanged,
+                    x.Company!.Name,
+                    x.Company.CompanyAssignedRoles.Select(car => car.CompanyRole!.Label))
+            )).SingleOrDefaultAsync();
 
     public Task<string?> GetOspCompanyName(Guid networkRegistrationId) =>
         _context.NetworkRegistrations.Where(x => x.Id == networkRegistrationId)

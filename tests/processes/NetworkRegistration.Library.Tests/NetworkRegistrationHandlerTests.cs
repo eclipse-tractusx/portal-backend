@@ -242,10 +242,10 @@ public class NetworkRegistrationHandlerTests
         A.CallTo(() => _mailingProcessCreation.CreateMailProcess("foo@bar.com", "OspWelcomeMail", A<IReadOnlyDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp2")))
             .MustHaveHappenedOnceExactly();
 
-        result.modified.Should().BeFalse();
+        result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
-        result.nextStepTypeIds.Should().BeNull();
+        result.nextStepTypeIds.Should().ContainSingle().And.Satisfy(x => x == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_INVITED);
     }
 
     #endregion
