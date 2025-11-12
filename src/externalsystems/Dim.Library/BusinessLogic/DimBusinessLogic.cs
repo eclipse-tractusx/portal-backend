@@ -255,4 +255,21 @@ public class DimBusinessLogic : IDimBusinessLogic
         var result = schema.Evaluate(content);
         return result.IsValid;
     }
+
+    public async Task UpdateDidDocument(string bpn, DidDocumentData data, CancellationToken cancellationToken)
+    {
+        var bpnExists = await _portalRepositories.GetInstance<ICompanyRepository>().CheckBpnExists(bpn);
+        if (!bpnExists)
+        {
+            throw new NotFoundException($"Company with bpn {bpn} does not exist");
+        }
+
+        var companyWalletId = await _portalRepositories.GetInstance<ICompanyRepository>().GetCopmanyActiveWalletId(bpn).ConfigureAwait(ConfigureAwaitOptions.None);
+        if (companyWalletId == Guid.Empty)
+        {
+            throw new ConflictException($"No Wallet was found for the given bpn: {bpn}");
+        }
+
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyWalletData(companyWalletId, w => { }, w => w.DidDocument = data.DidDocument);
+    }
 }

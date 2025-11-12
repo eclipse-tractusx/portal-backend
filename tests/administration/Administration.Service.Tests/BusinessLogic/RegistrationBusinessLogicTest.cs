@@ -1369,4 +1369,24 @@ public class RegistrationBusinessLogicTest
     }
 
     #endregion
+
+    #region UpdateDidDocument
+
+    [Fact]
+    public async Task UpdateDidDocumentAsync_WithValidData_CallsExpected()
+    {
+        // Arrange
+        var data = new DidDocumentData(_fixture.Create<JsonDocument>());
+
+        // Act
+        await _logic.UpdateDidDocumentAsync(BusinessPartnerNumber, data, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _dimBusinessLogic.UpdateDidDocument(BusinessPartnerNumber, data, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
 }
