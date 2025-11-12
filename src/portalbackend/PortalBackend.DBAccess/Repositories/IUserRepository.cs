@@ -116,11 +116,11 @@ public interface IUserRepository
     IAsyncEnumerable<(bool IsApplicationCompany, bool IsApplicationPending, string? BusinessPartnerNumber, Guid CompanyId)> GetBpnForIamUserUntrackedAsync(Guid applicationId, string businessPartnerNumber);
 
     /// <summary>
-    /// Gets the users company bpn for the user
+    /// Gets the company bpn for the user
     /// </summary>
-    /// <param name="companyUserId">Id of the user</param>
+    /// <param name="companyId">Id of the company</param>
     /// <returns>The bpn of the company for the user</returns>
-    Task<string?> GetCompanyBpnForIamUserAsync(Guid companyUserId);
+    Task<string?> GetBusinessPartnerNumberAsync(Guid companyId);
 
     Identity AttachAndModifyIdentity(Guid identityId, Action<Identity>? initialize, Action<Identity> modify);
     void AttachAndModifyIdentities(IEnumerable<(Guid IdentityId, Action<Identity>? Initialize, Action<Identity> Modify)> identities);

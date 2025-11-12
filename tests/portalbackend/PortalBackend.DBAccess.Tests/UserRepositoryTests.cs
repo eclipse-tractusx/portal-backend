@@ -223,22 +223,40 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetCompanyBpnForIamUserAsync
+    #region GetCompanyBpnForCompany
 
     [Fact]
-    public async Task GetCompanyBpnForIamUserAsync_WithExistingUser_ReturnsExpected()
+    public async Task GetBusinessPartnerNumberAsync_WithExistingUser_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut();
+        var (sut, context) = await CreateSutWithContext();
+        var companyId = new Guid("857b93b1-8fcb-4141-81b0-ae81950d489e");
+        var company = new Company(
+            companyId,
+            "Test Company",
+            CompanyStatusId.ACTIVE,
+            DateTimeOffset.UtcNow
+        )
+        {
+            BusinessPartnerNumber = "BPNL00000003CRHK"
+        };
 
-        // Act
-        var result = await sut
-            .GetCompanyBpnForIamUserAsync(_validCompanyUser)
-            ;
+        context.Companies.Add(company);
+        await context.SaveChangesAsync();
 
-        // Assert
-        result.Should().NotBeNull();
-        result.Should().Be("BPNL00000003CRHK");
+        try
+        {
+            // Act
+            var result = await sut.GetBusinessPartnerNumberAsync(companyId);
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().Be("BPNL00000003CRHK");
+        }
+        finally
+        {
+            context.Companies.Remove(company);
+            await context.SaveChangesAsync();
+        }
     }
 
     #endregion
