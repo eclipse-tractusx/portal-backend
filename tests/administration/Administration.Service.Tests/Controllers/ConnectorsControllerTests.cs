@@ -127,6 +127,22 @@ public class ConnectorsControllerTests
     }
 
     [Fact]
+    public async Task GetCompanyProvidedConnectorsForCurrentUserAsync_WithValidData_ReturnsExpectedResult()
+    {
+        //Arrange
+        var paginationResponse = new Pagination.Response<ConnectorData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<ConnectorData>(5));
+        A.CallTo(() => _logic.GetAllProvidedConnectorsData(A<int>._, A<int>._))
+            .Returns(paginationResponse);
+
+        //Act
+        var result = await _controller.GetCompanyProvidedConnectorsForCurrentUserAsync();
+
+        //Assert
+        A.CallTo(() => _logic.GetAllProvidedConnectorsData(0, 15)).MustHaveHappenedOnceExactly();
+        result.Content.Should().HaveCount(5);
+    }
+
+    [Fact]
     public async Task GetCompanyConnectorByIdForCurrentUserAsync_WithValidData_ReturnsExpectedResult()
     {
         //Arrange

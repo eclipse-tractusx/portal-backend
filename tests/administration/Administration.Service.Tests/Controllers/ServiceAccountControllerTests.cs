@@ -17,9 +17,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -75,6 +78,20 @@ public class ServiceAccountControllerTests
     }
 
     [Fact]
+    public async Task DeleteServiceAccount_CallsExpected()
+    {
+        // Arrange
+        var serviceAccountId = Guid.NewGuid();
+
+        // Act
+        var result = await _controller.DeleteServiceAccount(serviceAccountId);
+
+        // Assert
+        A.CallTo(() => _logic.DeleteOwnCompanyServiceAccountAsync(serviceAccountId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
     public async Task GetServiceAccountRolesAsync_CallsExpected()
     {
         // Arrange
@@ -93,6 +110,66 @@ public class ServiceAccountControllerTests
     }
 
     [Fact]
+    public async Task ServiceAccountCreationCallback_CallsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        var callbackData = _fixture.Create<AuthenticationDetail>();
+
+        // Act
+        var result = await _controller.ServiceAccountCreationCallback(processId, callbackData);
+
+        // Assert
+        A.CallTo(() => _logic.HandleServiceAccountCreationCallback(processId, callbackData)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<OkResult>();
+    }
+
+    [Fact]
+    public async Task RetriggerCreateDimTechnicalUser_CallsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        var callbackData = _fixture.Create<AuthenticationDetail>();
+
+        // Act
+        var result = await _controller.RetriggerCreateDimTechnicalUser(processId);
+
+        // Assert
+        A.CallTo(() => _logic.RetriggerDimTechnicalUser(processId, ProcessStepTypeId.RETRIGGER_CREATE_DIM_TECHNICAL_USER)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<OkResult>();
+    }
+
+    [Fact]
+    public async Task RetriggerDeleteDimTechnicalUser_CallsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        var callbackData = _fixture.Create<AuthenticationDetail>();
+
+        // Act
+        var result = await _controller.RetriggerDeleteDimTechnicalUser(processId);
+
+        // Assert
+        A.CallTo(() => _logic.RetriggerDimTechnicalUser(processId, ProcessStepTypeId.RETRIGGER_DELETE_DIM_TECHNICAL_USER)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<OkResult>();
+    }
+
+    [Fact]
+    public async Task ServiceAccountDeletionCallback_CallsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        var callbackData = _fixture.Create<AuthenticationDetail>();
+
+        // Act
+        var result = await _controller.ServiceAccountDeletionCallback(processId);
+
+        // Assert
+        A.CallTo(() => _logic.HandleServiceAccountDeletionCallback(processId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<OkResult>();
+    }
+
+    [Fact]
     public async Task GetServiceAccountDetails_CallsExpected()
     {
         // Arrange
@@ -104,6 +181,33 @@ public class ServiceAccountControllerTests
         // Assert
         A.CallTo(() => _logic.GetOwnCompanyServiceAccountDetailsAsync(serviceAcountId)).MustHaveHappenedOnceExactly();
 
+    }
+
+    [Fact]
+    public async Task PutServiceAccountDetails_CallsExpected()
+    {
+        // Arrange
+        var serviceAcountId = _fixture.Create<Guid>();
+        var serviceAccountDetails = _fixture.Create<ServiceAccountEditableDetails>();
+
+        // Act
+        var result = await _controller.PutServiceAccountDetails(serviceAcountId, serviceAccountDetails);
+
+        // Assert
+        A.CallTo(() => _logic.UpdateOwnCompanyServiceAccountDetailsAsync(serviceAcountId, serviceAccountDetails)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task ResetServiceAccountCredentials_CallsExpected()
+    {
+        // Arrange
+        var serviceAcountId = _fixture.Create<Guid>();
+
+        // Act
+        var result = await _controller.ResetServiceAccountCredentials(serviceAcountId);
+
+        // Assert
+        A.CallTo(() => _logic.ResetOwnCompanyServiceAccountSecretAsync(serviceAcountId)).MustHaveHappenedOnceExactly();
     }
 
     [Theory]

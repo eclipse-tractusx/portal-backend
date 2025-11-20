@@ -81,6 +81,19 @@ public class DocumentsControllerTests
     }
 
     [Fact]
+    public async Task DeleteDocumentAsync_WithValidRequest_ReturnsExpected()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+
+        // Act
+        await _controller.DeleteDocumentAsync(documentId);
+
+        // Assert
+        A.CallTo(() => _logic.DeleteDocumentAsync(documentId)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
     public async Task GetDocumentSeedData_WithValidId_ReturnsData()
     {
         //Arrange

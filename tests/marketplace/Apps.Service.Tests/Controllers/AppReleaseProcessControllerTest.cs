@@ -294,6 +294,16 @@ public class AppReleaseProcessControllerTest
     }
 
     [Fact]
+    public void GetPrivacyPolicyDataAsync_ReturnsExpectedCount()
+    {
+        //Act
+        var result = _controller.GetPrivacyPolicyDataAsync();
+
+        //Assert
+        A.CallTo(() => _logic.GetPrivacyPolicyDataAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
     public async Task DeclineAppRequest_ReturnsNoContent()
     {
         //Arrange

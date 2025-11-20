@@ -50,6 +50,20 @@ public class InvitationControllerTests
     }
 
     [Fact]
+    public async Task RetriggerCreateCentralIdp_ReturnsExpected()
+    {
+        // Arrange
+        var processId = _fixture.Create<Guid>();
+
+        // Act
+        var result = await _controller.RetriggerCreateCentralIdp(processId);
+
+        // Assert
+        result.StatusCode.Should().Be(204);
+        A.CallTo(() => _logic.RetriggerCreateCentralIdp(processId)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
     public async Task RetriggerCreateSharedIdpServiceAccount_ReturnsExpected()
     {
         // Arrange
@@ -61,6 +75,21 @@ public class InvitationControllerTests
         // Assert
         result.StatusCode.Should().Be(204);
         A.CallTo(() => _logic.RetriggerCreateSharedIdpServiceAccount(processId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerAddRealmRole_ReturnsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+
+        // Act
+        var result = await _controller.RetriggerAddRealmRole(processId);
+
+        // Assert
+        result.StatusCode.Should().Be(204);
+        A.CallTo(() => _logic.RetriggerAddRealmRole(processId))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -136,6 +165,21 @@ public class InvitationControllerTests
         // Assert
         result.StatusCode.Should().Be(204);
         A.CallTo(() => _logic.RetriggerCreateDatabaseIdp(processId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerInviteSharedClient_ReturnsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+
+        // Act
+        var result = await _controller.RetriggerInviteSharedClient(processId);
+
+        // Assert
+        result.StatusCode.Should().Be(204);
+        A.CallTo(() => _logic.RetriggerInviteSharedClient(processId))
             .MustHaveHappenedOnceExactly();
     }
 

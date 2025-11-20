@@ -57,4 +57,18 @@ public class MailControllerTest
         A.CallTo(() => _logic.SendMail(mailData)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
+
+    [Fact]
+    public async Task RetriggerSendMail_ReturnsExpectedCount()
+    {
+        //Arrange
+        var processId = _fixture.Create<Guid>();
+
+        //Act
+        var result = await _controller.RetriggerSendMail(processId);
+
+        //Assert
+        A.CallTo(() => _logic.RetriggerSendMail(processId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
 }

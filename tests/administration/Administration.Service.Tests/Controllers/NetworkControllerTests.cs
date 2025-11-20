@@ -113,6 +113,51 @@ public class NetworkControllerTests
     }
 
     [Fact]
+    public async Task RetriggerCallbackOspCreated_ReturnsExpected()
+    {
+        // Arrange
+        var externalId = Guid.NewGuid().ToString();
+
+        // Act
+        var result = await _controller.RetriggerCallbackOspCreated(externalId);
+
+        // Assert
+        result.StatusCode.Should().Be(204);
+        A.CallTo(() => _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_CREATED))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerCallbackOspInvited_ReturnsExpected()
+    {
+        // Arrange
+        var externalId = Guid.NewGuid().ToString();
+
+        // Act
+        var result = await _controller.RetriggerCallbackOspInvited(externalId);
+
+        // Assert
+        result.StatusCode.Should().Be(204);
+        A.CallTo(() => _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_INVITED))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerRemoveKeycloakUser_ReturnsExpected()
+    {
+        // Arrange
+        var externalId = Guid.NewGuid().ToString();
+
+        // Act
+        var result = await _controller.RetriggerRemoveKeycloakUser(externalId);
+
+        // Assert
+        result.StatusCode.Should().Be(204);
+        A.CallTo(() => _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_REMOVE_KEYCLOAK_USERS))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
     public async Task GetOspCompanyApplicationDetailsAsync_ReturnsCompanyApplicationDetails()
     {
         //Arrange
