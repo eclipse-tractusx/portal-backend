@@ -20,6 +20,11 @@
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
@@ -78,5 +83,142 @@ public class IdentityProviderControllerTests
 
         //Assert
         A.CallTo(() => _logic.GetOwnIdentityProviderWithConnectedCompanies(id)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyIdentityProviderDetails_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        var displayName = _fixture.Create<string>();
+        var alias = _fixture.Create<string>();
+        var data = _fixture.CreateMany<IdentityProviderDetails>(3);
+        A.CallTo(() => _logic.GetOwnCompanyIdentityProvidersAsync(displayName, alias))
+            .Returns(data.ToAsyncEnumerable());
+
+        //Act
+        var result = await _controller.GetOwnCompanyIdentityProviderDetails(displayName, alias);
+
+        //Assert
+        A.CallTo(() => _logic.GetOwnCompanyIdentityProvidersAsync(displayName, alias)).MustHaveHappenedOnceExactly();
+        result.Should().HaveSameCount(data).And.ContainInOrder(data);
+    }
+
+    [Fact]
+    public async Task CreateOwnCompanyIdentityProvider_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        var iamIdentityProvider = _fixture.Create<IamIdentityProviderProtocol>();
+        var identityProviderType = _fixture.Create<IdentityProviderTypeId>();
+        var displayName = _fixture.Create<string>();
+
+        //Act
+        await _controller.CreateOwnCompanyIdentityProvider(iamIdentityProvider, identityProviderType, displayName);
+
+        //Assert
+        A.CallTo(() => _logic.CreateOwnCompanyIdentityProviderAsync(iamIdentityProvider, identityProviderType, displayName)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task SetOwnCompanyIdentityProviderStatus_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        var identityProviderId = Guid.NewGuid();
+        var enabled = _fixture.Create<bool>();
+
+        //Act
+        await _controller.SetOwnCompanyIdentityProviderStatus(identityProviderId, enabled);
+
+        //Assert
+        A.CallTo(() => _logic.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, enabled)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyUsersIdentityProviderDataAsync_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        var identityProviderIds = _fixture.Create<IEnumerable<Guid>>();
+        var unlinkedUsersOnly = _fixture.Create<bool>();
+
+        //Act
+        _controller.GetOwnCompanyUsersIdentityProviderDataAsync(identityProviderIds, unlinkedUsersOnly);
+
+        //Assert
+        A.CallTo(() => _logic.GetOwnCompanyUsersIdentityProviderDataAsync(identityProviderIds, unlinkedUsersOnly)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyUsersIdentityProviderFileAsync_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        var identityProviderIds = _fixture.Create<IEnumerable<Guid>>();
+        var unlinkedUsersOnly = _fixture.Create<bool>();
+        const string fileName = "test.pdf";
+        const string contentType = "application/pdf";
+        var encoding = Encoding.UTF8;
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", "application/pdf");
+        var stream = file.OpenReadStream();
+        A.CallTo(() => _logic.GetOwnCompanyUsersIdentityProviderLinkDataStream(identityProviderIds, unlinkedUsersOnly))
+            .Returns((stream, contentType, fileName, encoding));
+
+        //Act
+        _controller.GetOwnCompanyUsersIdentityProviderFileAsync(identityProviderIds, unlinkedUsersOnly);
+
+        //Assert
+        A.CallTo(() => _logic.GetOwnCompanyUsersIdentityProviderLinkDataStream(identityProviderIds, unlinkedUsersOnly)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task UploadOwnCompanyUsersIdentityProviderFileAsync_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", "application/pdf");
+
+        //Act
+        await _controller.UploadOwnCompanyUsersIdentityProviderFileAsync(file, CancellationToken.None);
+
+        //Assert
+        A.CallTo(() => _logic.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(file, CancellationToken.None)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task CreateOrUpdateOwnCompanyUserIdentityProviderDataAsync_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        var companyUserId = Guid.NewGuid();
+        var identityProviderId = Guid.NewGuid();
+        var userLinkData = _fixture.Create<UserLinkData>();
+
+        //Act
+        await _controller.CreateOrUpdateOwnCompanyUserIdentityProviderDataAsync(companyUserId, identityProviderId, userLinkData);
+
+        //Assert
+        A.CallTo(() => _logic.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, userLinkData)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task DeleteOwnCompanyUserIdentityProviderDataAsync_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        var companyUserId = Guid.NewGuid();
+        var identityProviderId = Guid.NewGuid();
+
+        //Act
+        await _controller.DeleteOwnCompanyUserIdentityProviderDataAsync(companyUserId, identityProviderId);
+
+        //Assert
+        A.CallTo(() => _logic.DeleteOwnCompanyUserIdentityProviderDataAsync(companyUserId, identityProviderId)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyIdentityProvider_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        var identityProviderId = Guid.NewGuid();
+
+        //Act
+        await _controller.GetOwnCompanyIdentityProvider(identityProviderId);
+
+        //Assert
+        A.CallTo(() => _logic.GetOwnCompanyIdentityProviderAsync(identityProviderId)).MustHaveHappenedOnceExactly();
     }
 }

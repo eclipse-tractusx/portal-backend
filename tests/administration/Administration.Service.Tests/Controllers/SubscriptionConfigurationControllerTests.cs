@@ -107,6 +107,17 @@ public class SubscriptionConfigurationControllerTests
     }
 
     [Fact]
+    public async Task RetriggerCreateDimTechnicalUser_WithValidData_ReturnsNoContent()
+    {
+        //Act
+        var result = await _controller.RetriggerCreateDimTechnicalUser(OfferSubscriptionId);
+
+        //Assert
+        A.CallTo(() => _logic.RetriggerCreateDimTechnicalUser(OfferSubscriptionId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
     public async Task SetCompanyDetail_WithValidData_ReturnsNoContent()
     {
         //Arrange
