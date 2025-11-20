@@ -28,6 +28,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
@@ -72,6 +74,37 @@ public class RegistrationControllerTest
         A.CallTo(() => _logic.GetCompanyApplicationDetailsAsync(0, 15, null, null)).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
         result.Content.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetAllCompanyApplicationsDetailsAsync_ReturnsCompanyApplicationDetails()
+    {
+        //Arrange
+        var paginationResponse = new Pagination.Response<CompanyApplicationWithCompanyUserDetails>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CompanyApplicationWithCompanyUserDetails>(5));
+        A.CallTo(() => _logic.GetAllCompanyApplicationsDetailsAsync(0, 15, null))
+                  .Returns(paginationResponse);
+
+        //Act
+        var result = await _controller.GetAllCompanyApplicationsDetailsAsync(0, 15, null);
+
+        //Assert
+        A.CallTo(() => _logic.GetAllCompanyApplicationsDetailsAsync(0, 15, null)).MustHaveHappenedOnceExactly();
+        Assert.IsType<Pagination.Response<CompanyApplicationWithCompanyUserDetails>>(result);
+        result.Content.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task UpdateCompanyBpn_ReturnsCompanyApplicationDetails()
+    {
+        //Arrange
+        var applicationId = Guid.NewGuid();
+        var bpn = _fixture.Create<string>();
+
+        //Act
+        await _controller.UpdateCompanyBpn(applicationId, bpn);
+
+        //Assert
+        A.CallTo(() => _logic.UpdateCompanyBpn(applicationId, bpn)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -341,6 +374,76 @@ public class RegistrationControllerTest
     }
 
     [Fact]
+    public async Task RetriggerTransmitBpnDid_ReturnsExpectedResult()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+
+        // Act
+        var result = await _controller.RetriggerTransmitBpnDid(applicationId);
+
+        // Assert
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_TRANSMIT_DID_BPN)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task RetriggerBpnCredential_ReturnsExpectedResult()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+
+        // Act
+        var result = await _controller.RetriggerBpnCredential(applicationId);
+
+        // Assert
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL, ProcessStepTypeId.RETRIGGER_REQUEST_BPN_CREDENTIAL)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task RetriggerMembershipCredential_ReturnsExpectedResult()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+
+        // Act
+        var result = await _controller.RetriggerMembershipCredential(applicationId);
+
+        // Assert
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL, ProcessStepTypeId.RETRIGGER_REQUEST_MEMBERSHIP_CREDENTIAL)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task ProcessIssuerBpnResponse_ReturnsExpectedResult()
+    {
+        // Arrange
+        var responseData = _fixture.Create<IssuerResponseData>();
+
+        // Act
+        var result = await _controller.ProcessIssuerBpnResponse(responseData, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _logic.ProcessIssuerBpnResponseAsync(responseData, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task ProcessIssuerMembershipResponse_ReturnsExpectedResult()
+    {
+        // Arrange
+        var responseData = _fixture.Create<IssuerResponseData>();
+
+        // Act
+        var result = await _controller.ProcessIssuerMembershipResponse(responseData, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _logic.ProcessIssuerMembershipResponseAsync(responseData, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
     public async Task RetriggerDeleteIdpSharedRealm_ReturnsExpectedResult()
     {
         // Arrange
@@ -393,6 +496,76 @@ public class RegistrationControllerTest
 
         // Assert
         A.CallTo(() => _logic.RetriggerDeleteCentralUser(processId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task RetriggerAssignInitialRoles_ReturnsExpectedResult()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+
+        // Act
+        var result = await _controller.RetriggerAssignInitialRoles(applicationId);
+
+        // Assert
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ProcessStepTypeId.RETRIGGER_ASSIGN_INITIAL_ROLES)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task RetriggerAssignBpn_ReturnsExpectedResult()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+
+        // Act
+        var result = await _controller.RetriggerAssignBpn(applicationId);
+
+        // Assert
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ProcessStepTypeId.RETRIGGER_ASSIGN_BPN_TO_USERS)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task RetriggerRemoveRegistrationRoles_ReturnsExpectedResult()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+
+        // Act
+        var result = await _controller.RetriggerRemoveRegistrationRoles(applicationId);
+
+        // Assert
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ProcessStepTypeId.RETRIGGER_REMOVE_REGISTRATION_ROLES)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task RetriggerSetTheme_ReturnsExpectedResult()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+
+        // Act
+        var result = await _controller.RetriggerSetTheme(applicationId);
+
+        // Assert
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ProcessStepTypeId.RETRIGGER_SET_THEME)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task RetriggerSetMembership_ReturnsExpectedResult()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+
+        // Act
+        var result = await _controller.RetriggerSetMembership(applicationId);
+
+        // Assert
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ProcessStepTypeId.RETRIGGER_SET_MEMBERSHIP)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 

@@ -16,6 +16,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
+using Flurl.Http;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
@@ -28,6 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
+using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
@@ -168,6 +170,98 @@ public class CompanyDataControllerTests
 
         // Assert
         A.CallTo(() => _logic.CreateUseCaseParticipation(data, "ac-token", A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task CreateCompanyCertificate_WithValidRequest_ReturnsExpected()
+    {
+        // Arrange
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.TISAX, file, "123", ["abc", "abca"], DateTime.UtcNow, DateTime.UtcNow, "abc");
+
+        // Act
+        var result = await _controller.CreateCompanyCertificate(data, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _logic.CreateCompanyCertificate(data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificatesByBpn_WithValidRequest_ReturnsExpected()
+    {
+        // Arrange
+        var bpn = "BPN12345678912";
+        var companyRoleConsentDatas = _fixture.CreateMany<CompanyCertificateBpnData>(3);
+        A.CallTo(() => _logic.GetCompanyCertificatesByBpn(bpn))
+            .Returns(companyRoleConsentDatas.ToAsyncEnumerable());
+
+        // Act
+        var result = _controller.GetCompanyCertificatesByBpn(bpn).ToEnumerable();
+
+        // Assert
+        A.CallTo(() => _logic.GetCompanyCertificatesByBpn(bpn)).MustHaveHappenedOnceExactly();
+        result.Should().HaveSameCount(companyRoleConsentDatas).And.ContainInOrder(companyRoleConsentDatas);
+
+    }
+
+    [Fact]
+    public async Task GetAllCompanyCertificatesAsync_WithValidRequest_ReturnsExpected()
+    {
+        //Arrange
+        var paginationResponse = new Pagination.Response<CompanyCertificateData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CompanyCertificateData>(5));
+        A.CallTo(() => _logic.GetAllCompanyCertificatesAsync(0, 15, null, null, null))
+            .Returns(paginationResponse);
+
+        // Act
+        var result = await _controller.GetAllCompanyCertificatesAsync();
+
+        // Assert
+        A.CallTo(() => _logic.GetAllCompanyCertificatesAsync(0, 15, null, null, null)).MustHaveHappenedOnceExactly();
+        result.Content.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateSpecificDocumentContentFileAsync_WithValidRequest_ReturnsExpected()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        A.CallTo(() => _logic.GetCompanyCertificateDocumentByCompanyIdAsync(documentId))
+            .Returns(("filename", Encoding.ASCII.GetBytes("content"), "application/pdf"));
+
+        // Act
+        await _controller.GetCompanyCertificateSpecificDocumentContentFileAsync(documentId);
+
+        // Assert
+        A.CallTo(() => _logic.GetCompanyCertificateDocumentByCompanyIdAsync(documentId)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentContentFileAsync_WithValidRequest_ReturnsExpected()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        A.CallTo(() => _logic.GetCompanyCertificateDocumentAsync(documentId))
+            .Returns(("filename", Encoding.ASCII.GetBytes("content"), "application/pdf"));
+
+        // Act
+        await _controller.GetCompanyCertificateDocumentContentFileAsync(documentId);
+
+        // Assert
+        A.CallTo(() => _logic.GetCompanyCertificateDocumentAsync(documentId)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task DeleteCompanyCertificate_WithValidRequest_ReturnsExpected()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+
+        // Act
+        await _controller.DeleteCompanyCertificate(documentId);
+
+        // Assert
+        A.CallTo(() => _logic.DeleteCompanyCertificateAsync(documentId)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
