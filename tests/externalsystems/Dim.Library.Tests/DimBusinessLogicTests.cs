@@ -359,41 +359,7 @@ public class DimBusinessLogicTests
             ImmutableDictionary.CreateRange(new[] { KeyValuePair.Create<ApplicationChecklistEntryTypeId, ValueTuple<ApplicationChecklistEntryStatusId, string?>>(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, new(ApplicationChecklistEntryStatusId.TO_DO, string.Empty)) }),
             Enumerable.Empty<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>());
 
-        const string jsonData = """
-                                        {
-                                            "@context": [
-                                                "https://www.w3.org/ns/did/v1",
-                                                "https://w3id.org/security/suites/jws-2020/v1"
-                                            ],
-                                            "id": "did:web:portal-backend.int.catena-x.net:api:administration:staticdata:did:BPNL000000006TCJ",
-                                            "service": [
-                                                {
-                                                    "type": "CredentialService",
-                                                    "serviceEndpoint": "https://dis-agent-prod.eu10.dim.cloud.sap/api/v1.0.0/iatp",
-                                                    "id": "did:web:portal-backend.int.catena-x.net:api:administration:staticdata:did:BPNL000000006TCJ#CredentialService"
-                                                }
-                                            ],
-                                            "verificationMethod": [
-                                                {
-                                                    "id": "did:web:portal-backend.int.catena-x.net:api:administration:staticdata:did:BPNL000000006TCJ#keys-1c1e0ef5-fa61-4030-9a32-6636f6dd1ea2",
-                                                    "type": "JsonWebKey2020",
-                                                    "controller": "did:web:portal-backend.int.catena-x.net:api:administration:staticdata:did:BPNL000000006TCJ",
-                                                    "publicKeyJwk": {
-                                                        "kty": "EC",
-                                                        "crv": "secp256k1",
-                                                        "x": "RnrgNQgLvDooE7z7J1fMPFoHyJtnQ0FifgebMO7pEmk",
-                                                        "y": "Z45urmCvyQp7AJzX7_JaRFQSGO-0U8zutUTCrGA1XR8"
-                                                    }
-                                                }
-                                            ],
-                                            "authentication": [
-                                                "did:web:portal-backend.int.catena-x.net:api:administration:staticdata:did:BPNL000000006TCJ#keys-1c1e0ef5-fa61-4030-9a32-6636f6dd1ea2"
-                                            ],
-                                            "assertionMethod": [],
-                                            "keyAgreement": []
-                                        }
-                                """;
-        var didDocument = JsonDocument.Parse(jsonData);
+        var didDocument = CreateDidDocument();
         var data = _fixture.Build<DimWalletData>()
             .With(x => x.DidDocument, didDocument)
             .With(x => x.Did, "did:web:example.org:did:BPNL0000000000XX")
@@ -589,4 +555,124 @@ public class DimBusinessLogicTests
     }
 
     #endregion
+
+    #region UpdateDidDocument
+
+    [Fact]
+    public async Task UpdateDidDocument_WithValidDidDocument_NoErrors()
+    {
+        // Arrange
+        var didDocument = CreateDidDocument();
+        var walletId = Guid.NewGuid();
+        var data = _fixture.Build<DidDocumentData>()
+            .With(x => x.DidDocument, didDocument)
+            .Create();
+        A.CallTo(() => _companyRepository.CheckBpnExists(BPN))
+            .Returns(true);
+        A.CallTo(() => _companyRepository.GetCopmanyActiveWalletId(BPN))
+            .Returns(walletId);
+
+        // Act
+        await _logic.UpdateDidDocument(BPN, data, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _companyRepository.AttachAndModifyWalletData(walletId, A<Action<CompanyWalletData>>._, A<Action<CompanyWalletData>>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task UpdateDidDocument_WithInvalidDidDocument_ThrowsConflictException()
+    {
+        // Arrange
+        var data = _fixture.Create<DidDocumentData>();
+        A.CallTo(() => _companyRepository.CheckBpnExists(BPN))
+            .Returns(true);
+        A.CallTo(() => _companyRepository.GetCopmanyActiveWalletId(BPN))
+            .Returns(Guid.NewGuid());
+
+        async Task Act() => await _logic.UpdateDidDocument(BPN, data, CancellationToken.None);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        ex.Message.Should().Be("Did Document did not match the expected schema");
+    }
+
+    [Fact]
+    public async Task UpdateDidDocument_BpnNotFound_ThrowsNotFoundException()
+    {
+        // Arrange
+        var data = _fixture.Create<DidDocumentData>();
+        A.CallTo(() => _companyRepository.CheckBpnExists(BPN))
+            .Returns(false);
+
+        async Task Act() => await _logic.UpdateDidDocument(BPN, data, CancellationToken.None);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+
+        // Assert
+        ex.Message.Should().Be($"Company with bpn {BPN} does not exist");
+    }
+
+    [Fact]
+    public async Task UpdateDidDocument_CompanyInvalidStatus_ThrowsConflictException()
+    {
+        // Arrange
+        var data = _fixture.Create<DidDocumentData>();
+        A.CallTo(() => _companyRepository.CheckBpnExists(BPN))
+            .Returns(true);
+        A.CallTo(() => _companyRepository.GetCopmanyActiveWalletId(BPN))
+            .Returns(Guid.Empty);
+
+        async Task Act() => await _logic.UpdateDidDocument(BPN, data, CancellationToken.None);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        ex.Message.Should().Be("Company is not ACTIVE or company application is not in state CONFIRMED or Wallet is not created");
+    }
+
+    #endregion
+
+    private static JsonDocument CreateDidDocument()
+    {
+        const string jsonData = """
+                                        {
+                                            "@context": [
+                                                "https://www.w3.org/ns/did/v1",
+                                                "https://w3id.org/security/suites/jws-2020/v1"
+                                            ],
+                                            "id": "did:web:portal-backend.int.catena-x.net:api:administration:staticdata:did:BPNL000000006TCJ",
+                                            "service": [
+                                                {
+                                                    "type": "CredentialService",
+                                                    "serviceEndpoint": "https://dis-agent-prod.eu10.dim.cloud.sap/api/v1.0.0/iatp",
+                                                    "id": "did:web:portal-backend.int.catena-x.net:api:administration:staticdata:did:BPNL000000006TCJ#CredentialService"
+                                                }
+                                            ],
+                                            "verificationMethod": [
+                                                {
+                                                    "id": "did:web:portal-backend.int.catena-x.net:api:administration:staticdata:did:BPNL000000006TCJ#keys-1c1e0ef5-fa61-4030-9a32-6636f6dd1ea2",
+                                                    "type": "JsonWebKey2020",
+                                                    "controller": "did:web:portal-backend.int.catena-x.net:api:administration:staticdata:did:BPNL000000006TCJ",
+                                                    "publicKeyJwk": {
+                                                        "kty": "EC",
+                                                        "crv": "secp256k1",
+                                                        "x": "RnrgNQgLvDooE7z7J1fMPFoHyJtnQ0FifgebMO7pEmk",
+                                                        "y": "Z45urmCvyQp7AJzX7_JaRFQSGO-0U8zutUTCrGA1XR8"
+                                                    }
+                                                }
+                                            ],
+                                            "authentication": [
+                                                "did:web:portal-backend.int.catena-x.net:api:administration:staticdata:did:BPNL000000006TCJ#keys-1c1e0ef5-fa61-4030-9a32-6636f6dd1ea2"
+                                            ],
+                                            "assertionMethod": [],
+                                            "keyAgreement": []
+                                        }
+                                """;
+        return JsonDocument.Parse(jsonData);
+    }
 }

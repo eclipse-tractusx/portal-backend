@@ -212,6 +212,29 @@ public class RegistrationController(IRegistrationBusinessLogic logic)
     }
 
     /// <summary>
+    /// Updates the Did Document for the wallet
+    /// </summary>
+    /// <param name="bpn">BusinessPartnerNumber for dim</param>
+    /// <param name="didDocumentData">Did Document for updating</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>NoContent</returns>
+    /// Example: PATCH: api/administration/registration/dim/{bpn}
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No application found for the bpn.</response>
+    /// <response code="409">Either the CompanyApplication is not in status Confirmed or the Company is not ACTIVE or Wallet does not exist.</response>
+    [HttpPatch]
+    [Authorize(Roles = "store_didDocument")]
+    [Route("dim/{bpn}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> UpdateDidDocument([FromRoute] string bpn, [FromBody] DidDocumentData didDocumentData, CancellationToken cancellationToken)
+    {
+        await logic.UpdateDidDocumentAsync(bpn, didDocumentData, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Gets the information of an applications checklist
     /// </summary>
     /// <param name="applicationId">Id of the application the checklist should be provided for</param>
