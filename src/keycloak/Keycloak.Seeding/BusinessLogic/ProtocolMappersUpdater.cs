@@ -21,6 +21,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMapper
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
+
 public static class ProtocolMappersUpdater
 {
     public static ProtocolMapper CreateProtocolMapper(string? id, ProtocolMapperModel x) =>

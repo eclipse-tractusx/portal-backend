@@ -20,6 +20,7 @@
 using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+
 public sealed class AsyncEnumerableStringStream : Stream
 {
     public AsyncEnumerableStringStream(IAsyncEnumerable<string> data, Encoding encoding) : base()
