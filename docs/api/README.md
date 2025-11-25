@@ -24,7 +24,7 @@ To execute the generation of the open api document the .csproj file of the proje
   <Target Name="openapi" AfterTargets="Build">
     <Message Text="generating openapi v$(Version)" Importance="high" />
     <Exec Command="dotnet tool restore" />
-    <Exec Command="dotnet tool run swagger tofile --yaml --output ../../../docs/api/$(AssemblyName).yaml $(OutputPath)$(AssemblyName).dll v$(Version)" EnvironmentVariables="DOTNET_ROLL_FORWARD=LatestMajor;SKIP_CONFIGURATION_VALIDATION=true;MVC_ROUTING_BASEPATH=api/administration" />
+    <Exec Command="dotnet tool run swagger tofile --yaml --output ../../../docs/api/$(AssemblyName).yaml $(OutputPath)$(AssemblyName).dll v$(Version)" EnvironmentVariables="DOTNET_ROLL_FORWARD=LatestMinor;SKIP_CONFIGURATION_VALIDATION=true;MVC_ROUTING_BASEPATH=api/administration" />
   </Target>
 ```
 
@@ -38,7 +38,7 @@ The `dotnet tool run swagger tofile` is executed with the following parameters:
 
 > **IMPORTANT**: the version set for the output must(!) match with the version which is specified in the `Program.cs` more under [Setup Program](#setup-program)
 
-1. `EnvironmentVariables="DOTNET_ROLL_FORWARD=LatestMajor;SKIP_CONFIGURATION_VALIDATION=true"` sets the environment variables to start up the program. With the variable `SKIP_CONFIGURATION_VALIDATION` the configuration validation is skipped when starting the application
+1. `EnvironmentVariables="DOTNET_ROLL_FORWARD=LatestMinor;SKIP_CONFIGURATION_VALIDATION=true"` sets the environment variables to start up the program. With the variable `SKIP_CONFIGURATION_VALIDATION` the configuration validation is skipped when starting the application
 
 ## Setup Program
 
