@@ -410,7 +410,7 @@ public class TechnicalUserBusinessLogic(
     {
         var processData = await portalRepositories.GetInstance<ITechnicalUserRepository>()
             .GetProcessDataForTechnicalUserDeletionCallback(processId,
-                [ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE])
+                [ProcessStepTypeId.AWAIT_DELETE_DIM_TECHNICAL_USER_RESPONSE])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         var context = processData.ProcessData.CreateManualProcessData(ProcessStepTypeId.AWAIT_DELETE_DIM_TECHNICAL_USER_RESPONSE,
