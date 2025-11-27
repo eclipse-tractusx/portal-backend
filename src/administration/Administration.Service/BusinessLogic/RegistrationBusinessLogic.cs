@@ -251,6 +251,7 @@ public sealed class RegistrationBusinessLogic(
             throw ConflictException.Create(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_BPN_OF_COMPANY_SET, new ErrorParameter[] { new("companyId", applicationCompanyData.CompanyId.ToString()) });
         }
 
+        var createWalletOrTransmitCustomerDidStep = await CreateWalletOrBpnCredentialStepAsync(applicationId);
         var context = await checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
@@ -269,7 +270,7 @@ public sealed class RegistrationBusinessLogic(
                     ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
                     ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL,
                     ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH,
-                    ProcessStepTypeId.CREATE_IDENTITY_WALLET
+                    createWalletOrTransmitCustomerDidStep
                 ])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
@@ -293,13 +294,18 @@ public sealed class RegistrationBusinessLogic(
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
             registrationValidationFailed
                 ? null
-                : new[] { CreateWalletStep() });
+                : new[] { createWalletOrTransmitCustomerDidStep });
 
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private ProcessStepTypeId CreateWalletStep() => _settings.UseDimWallet ? ProcessStepTypeId.CREATE_DIM_WALLET : ProcessStepTypeId.CREATE_IDENTITY_WALLET;
 
+    private async Task<ProcessStepTypeId> CreateWalletOrBpnCredentialStepAsync(Guid applicationId)
+    {
+        var isWalletCustomerProvider = await portalRepositories.GetInstance<ICompanyRepository>().IsBringYourOwnWallet(applicationId);
+        return isWalletCustomerProvider ? ProcessStepTypeId.TRANSMIT_BPN_DID : CreateWalletStep();
+    }
     /// <inheritdoc />
     public async Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, string bpn, CancellationToken cancellationToken)
     {
@@ -430,6 +436,7 @@ public sealed class RegistrationBusinessLogic(
     /// <inheritdoc />
     public async Task ApproveRegistrationVerification(Guid applicationId)
     {
+        var createWalletOrTransmitCustomerDidStep = await CreateWalletOrBpnCredentialStepAsync(applicationId);
         var context = await checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
@@ -437,7 +444,7 @@ public sealed class RegistrationBusinessLogic(
                 [ApplicationChecklistEntryStatusId.TO_DO],
                 ProcessStepTypeId.MANUAL_VERIFY_REGISTRATION,
                 [ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER],
-                [CreateWalletStep()])
+                [createWalletOrTransmitCustomerDidStep])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         var businessPartnerSuccess = context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == new ValueTuple<ApplicationChecklistEntryStatusId, string?>(ApplicationChecklistEntryStatusId.DONE, null);
@@ -450,7 +457,7 @@ public sealed class RegistrationBusinessLogic(
                 entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
             },
             businessPartnerSuccess
-                ? new[] { CreateWalletStep() }
+                ? new[] { createWalletOrTransmitCustomerDidStep }
                 : null);
 
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);

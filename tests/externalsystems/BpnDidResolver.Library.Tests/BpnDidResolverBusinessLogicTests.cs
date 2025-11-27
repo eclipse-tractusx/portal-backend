@@ -38,6 +38,7 @@ public class BpnDidResolverBusinessLogicTests
 
     private readonly IFixture _fixture;
     private readonly IApplicationRepository _applicationRepository;
+    private readonly ICompanyRepository _companyRepository;
     private readonly IBpnDidResolverService _bpnDidResolverService;
     private readonly IBpnDidResolverBusinessLogic _logic;
 
@@ -48,8 +49,10 @@ public class BpnDidResolverBusinessLogicTests
 
         var portalRepository = A.Fake<IPortalRepositories>();
         _applicationRepository = A.Fake<IApplicationRepository>();
+        _companyRepository = A.Fake<ICompanyRepository>();
         _bpnDidResolverService = A.Fake<IBpnDidResolverService>();
         A.CallTo(() => portalRepository.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
+        A.CallTo(() => portalRepository.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
 
         _logic = new BpnDidResolverBusinessLogic(portalRepository, _bpnDidResolverService);
     }
@@ -235,6 +238,31 @@ public class BpnDidResolverBusinessLogicTests
             .MustHaveHappenedOnceExactly();
         result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.ScheduleStepTypeIds.Should().ContainSingle(x => x == ProcessStepTypeId.REQUEST_BPN_CREDENTIAL);
+    }
+
+    [Fact]
+    public async Task TransmitDidAndBpn_WithBpnProcessInTodo_BringYourWalletTrue()
+    {
+        // Arrange
+        var checklist = new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
+            {
+                {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
+                {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.TO_DO},
+                {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO},
+            }
+            .ToImmutableDictionary();
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var did = "did:web:test:1234";
+        A.CallTo(() => _applicationRepository.GetDidAndBpnForApplicationId(ApplicationId))
+            .Returns(new ValueTuple<bool, string?, string?>(true, did, BPN));
+        A.CallTo(() => _companyRepository.IsBringYourOwnWallet(ApplicationId)).Returns(true);
+
+        // Act
+        await _logic.TransmitDidAndBpn(context, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _bpnDidResolverService.TransmitDidAndBpn(did, BPN, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion

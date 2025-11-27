@@ -89,5 +89,15 @@
     "company_status_id": 1,
     "address_id": "27418031-d6b5-442b-8802-3f653c6679f7",
     "self_description_document_id": null
+  },
+  {
+    "id": "554f23d5-669e-48ed-b06b-9a84dfa017c5",
+    "date_created": "2022-03-24 18:01:33.306000 +00:00",
+    "business_partner_number": "BPNL00000000BYOW",
+    "name": "Bring Your Own Wallet Company",
+    "shortname": "CX-Operator",
+    "company_status_id": 2,
+    "address_id": "b4db3945-19a7-4a50-97d6-e66e8dfd04fb",
+    "self_description_document_id": "00000000-0000-0000-0000-000000000009"
   }
 ]
