@@ -98,7 +98,6 @@ public class RegistrationControllerTest
         var documentTypeId = _fixture.Create<DocumentTypeId>();
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", "application/pdf");
 
-        var companyBpdmDetailData = _fixture.Create<CompanyBpdmDetailData>();
         A.CallTo(() => _registrationBusinessLogicFake.UploadDocumentAsync(applicationId, file, documentTypeId, CancellationToken.None));
 
         //Act
@@ -311,7 +310,7 @@ public class RegistrationControllerTest
         var documentId = Guid.NewGuid();
 
         //Act
-        var result = await _controller.DeleteRegistrationDocument(documentId);
+        await _controller.DeleteRegistrationDocument(documentId);
 
         //Assert
         A.CallTo(() => _registrationBusinessLogicFake.DeleteRegistrationDocumentAsync(documentId)).MustHaveHappenedOnceExactly();

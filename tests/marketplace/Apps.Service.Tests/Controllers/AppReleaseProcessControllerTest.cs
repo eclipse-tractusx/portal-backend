@@ -297,7 +297,7 @@ public class AppReleaseProcessControllerTest
     public void GetPrivacyPolicyDataAsync_ReturnsExpectedCount()
     {
         //Act
-        var result = _controller.GetPrivacyPolicyDataAsync();
+        _controller.GetPrivacyPolicyDataAsync();
 
         //Assert
         A.CallTo(() => _logic.GetPrivacyPolicyDataAsync()).MustHaveHappenedOnceExactly();

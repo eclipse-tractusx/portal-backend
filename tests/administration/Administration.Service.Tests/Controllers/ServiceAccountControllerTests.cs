@@ -129,7 +129,6 @@ public class ServiceAccountControllerTests
     {
         // Arrange
         var processId = Guid.NewGuid();
-        var callbackData = _fixture.Create<AuthenticationDetail>();
 
         // Act
         var result = await _controller.RetriggerCreateDimTechnicalUser(processId);
@@ -144,7 +143,6 @@ public class ServiceAccountControllerTests
     {
         // Arrange
         var processId = Guid.NewGuid();
-        var callbackData = _fixture.Create<AuthenticationDetail>();
 
         // Act
         var result = await _controller.RetriggerDeleteDimTechnicalUser(processId);
@@ -159,7 +157,6 @@ public class ServiceAccountControllerTests
     {
         // Arrange
         var processId = Guid.NewGuid();
-        var callbackData = _fixture.Create<AuthenticationDetail>();
 
         // Act
         var result = await _controller.ServiceAccountDeletionCallback(processId);
@@ -191,7 +188,7 @@ public class ServiceAccountControllerTests
         var serviceAccountDetails = _fixture.Create<ServiceAccountEditableDetails>();
 
         // Act
-        var result = await _controller.PutServiceAccountDetails(serviceAcountId, serviceAccountDetails);
+        await _controller.PutServiceAccountDetails(serviceAcountId, serviceAccountDetails);
 
         // Assert
         A.CallTo(() => _logic.UpdateOwnCompanyServiceAccountDetailsAsync(serviceAcountId, serviceAccountDetails)).MustHaveHappenedOnceExactly();
@@ -204,7 +201,7 @@ public class ServiceAccountControllerTests
         var serviceAcountId = _fixture.Create<Guid>();
 
         // Act
-        var result = await _controller.ResetServiceAccountCredentials(serviceAcountId);
+        await _controller.ResetServiceAccountCredentials(serviceAcountId);
 
         // Assert
         A.CallTo(() => _logic.ResetOwnCompanyServiceAccountSecretAsync(serviceAcountId)).MustHaveHappenedOnceExactly();
