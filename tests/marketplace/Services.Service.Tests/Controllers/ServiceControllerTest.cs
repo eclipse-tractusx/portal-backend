@@ -402,13 +402,27 @@ public class ServiceControllerTest
     public async Task UnsubscribeCompanyServiceSubscription_ReturnsNoContent()
     {
         //Arrange
-        var serviceId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
 
         //Act
-        var result = await _controller.UnsubscribeCompanyServiceSubscriptionAsync(serviceId);
+        var result = await _controller.UnsubscribeCompanyServiceSubscriptionAsync(subscriptionId);
 
         //Assert
-        A.CallTo(() => _logic.UnsubscribeOwnCompanyServiceSubscriptionAsync(serviceId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UnsubscribeOwnCompanyServiceSubscriptionAsync(subscriptionId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task ActivateCompanyAppSubscriptionAsync_ReturnsNoContent()
+    {
+        //Arrange
+        var subscriptionId = _fixture.Create<Guid>();
+
+        //Act
+        var result = await _controller.ActivateCompanyAppSubscriptionAsync(subscriptionId);
+
+        //Assert
+        A.CallTo(() => _logic.TriggerActivateOfferSubscription(subscriptionId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 }

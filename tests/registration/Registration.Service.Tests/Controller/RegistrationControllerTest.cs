@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Text;
 using Xunit;
@@ -68,6 +69,251 @@ public class RegistrationControllerTest
         //Assert
         A.CallTo(() => _registrationBusinessLogicFake.GetInvitedUsersAsync(id)).MustHaveHappenedOnceExactly();
         result.Should().HaveSameCount(invitedUserMapper).And.ContainInOrder(invitedUserMapper);
+    }
+
+    [Fact]
+    public async Task GetCompanyBpdmDetailDataAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var bpn = "THISBPNISVALID12";
+        var token = "ac-token";
+        var companyBpdmDetailData = _fixture.Create<CompanyBpdmDetailData>();
+        A.CallTo(() => _registrationBusinessLogicFake.GetCompanyBpdmDetailDataByBusinessPartnerNumber(bpn, token, CancellationToken.None))
+            .Returns(companyBpdmDetailData);
+
+        //Act
+        var result = await _controller.GetCompanyBpdmDetailDataAsync(bpn, CancellationToken.None);
+
+        //Assert
+        A.CallTo(() => _registrationBusinessLogicFake.GetCompanyBpdmDetailDataByBusinessPartnerNumber(bpn, token, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        result.Should().NotBeNull();
+        result.BusinessPartnerNumber.Should().Be(companyBpdmDetailData.BusinessPartnerNumber);
+    }
+
+    [Fact]
+    public async Task UploadDocumentAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var applicationId = Guid.NewGuid();
+        var documentTypeId = _fixture.Create<DocumentTypeId>();
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", "application/pdf");
+
+        A.CallTo(() => _registrationBusinessLogicFake.UploadDocumentAsync(applicationId, file, documentTypeId, CancellationToken.None));
+
+        //Act
+        var result = await _controller.UploadDocumentAsync(applicationId, documentTypeId, file, CancellationToken.None);
+
+        //Assert
+        A.CallTo(() => _registrationBusinessLogicFake.UploadDocumentAsync(applicationId, file, documentTypeId, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task GetClientRolesComposite_ReturnsExpectedResult()
+    {
+        //Arrange
+        var roles = _fixture.CreateMany<string>(3);
+        A.CallTo(() => _registrationBusinessLogicFake.GetClientRolesCompositeAsync())
+            .Returns(roles.ToAsyncEnumerable());
+
+        //Act
+        var result = _controller.GetClientRolesComposite().ToEnumerable();
+
+        //Assert
+        A.CallTo(() => _registrationBusinessLogicFake.GetClientRolesCompositeAsync()).MustHaveHappenedOnceExactly();
+        result.Should().HaveSameCount(roles).And.ContainInOrder(roles);
+    }
+
+    [Fact]
+    public async Task GetApplicationsDeclineData_ReturnsExpectedResult()
+    {
+        //Arrange
+        var companyApplicationDeclineData = _fixture.CreateMany<CompanyApplicationDeclineData>(3);
+        A.CallTo(() => _registrationBusinessLogicFake.GetApplicationsDeclineData())
+            .Returns(companyApplicationDeclineData);
+
+        //Act
+        var result = await _controller.GetApplicationsDeclineData();
+
+        //Assert
+        A.CallTo(() => _registrationBusinessLogicFake.GetApplicationsDeclineData()).MustHaveHappenedOnceExactly();
+        result.Should().HaveSameCount(companyApplicationDeclineData).And.ContainInOrder(companyApplicationDeclineData);
+    }
+
+    [Fact]
+    public async Task SetApplicationStatusAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var applicationId = Guid.NewGuid();
+        var companyApplicationStatusId = _fixture.Create<CompanyApplicationStatusId>();
+        A.CallTo(() => _registrationBusinessLogicFake.SetOwnCompanyApplicationStatusAsync(applicationId, companyApplicationStatusId))
+            .Returns(0);
+
+        //Act
+        var result = await _controller.SetApplicationStatusAsync(applicationId, companyApplicationStatusId);
+
+        //Assert
+        A.CallTo(() => _registrationBusinessLogicFake.SetOwnCompanyApplicationStatusAsync(applicationId, companyApplicationStatusId)).MustHaveHappenedOnceExactly();
+        result.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetApplicationStatusAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var applicationId = Guid.NewGuid();
+        var companyApplicationDeclineData = _fixture.Create<CompanyApplicationStatusId>();
+        A.CallTo(() => _registrationBusinessLogicFake.GetOwnCompanyApplicationStatusAsync(applicationId))
+            .Returns(companyApplicationDeclineData);
+
+        //Act
+        var result = await _controller.GetApplicationStatusAsync(applicationId);
+
+        //Assert
+        A.CallTo(() => _registrationBusinessLogicFake.GetOwnCompanyApplicationStatusAsync(applicationId)).MustHaveHappenedOnceExactly();
+        result.Should().Be(companyApplicationDeclineData);
+    }
+
+    [Fact]
+    public async Task GetCompanyDetailDataAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var applicationId = Guid.NewGuid();
+        var companyDetailData = _fixture.Create<CompanyDetailData>();
+        A.CallTo(() => _registrationBusinessLogicFake.GetCompanyDetailData(applicationId))
+            .Returns(companyDetailData);
+
+        //Act
+        var result = await _controller.GetCompanyDetailDataAsync(applicationId);
+
+        //Assert
+        A.CallTo(() => _registrationBusinessLogicFake.GetCompanyDetailData(applicationId)).MustHaveHappenedOnceExactly();
+        result.Should().Be(companyDetailData);
+    }
+
+    [Fact]
+    public async Task SetCompanyDetailDataAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var applicationId = Guid.NewGuid();
+        var companyDetailData = _fixture.Create<CompanyDetailData>();
+
+        //Act
+        await _controller.SetCompanyDetailDataAsync(applicationId, companyDetailData);
+
+        //Assert
+        A.CallTo(() => _registrationBusinessLogicFake.SetCompanyDetailDataAsync(applicationId, companyDetailData)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetAgreementConsentStatusesAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var applicationId = Guid.NewGuid();
+        var companyRoleAgreementConsents = _fixture.Create<CompanyRoleAgreementConsents>();
+        A.CallTo(() => _registrationBusinessLogicFake.GetRoleAgreementConsentsAsync(applicationId))
+            .Returns(companyRoleAgreementConsents);
+
+        //Act
+        var result = await _controller.GetAgreementConsentStatusesAsync(applicationId);
+
+        //Assert
+        A.CallTo(() => _registrationBusinessLogicFake.GetRoleAgreementConsentsAsync(applicationId)).MustHaveHappenedOnceExactly();
+        result.Should().Be(companyRoleAgreementConsents);
+    }
+
+    [Fact]
+    public async Task GetCompanyRoleAgreementDataAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var companyRoleAgreementData = _fixture.Create<CompanyRoleAgreementData>();
+        A.CallTo(() => _registrationBusinessLogicFake.GetCompanyRoleAgreementDataAsync())
+            .Returns(companyRoleAgreementData);
+
+        //Act
+        var result = await _controller.GetCompanyRoleAgreementDataAsync();
+
+        //Assert
+        A.CallTo(() => _registrationBusinessLogicFake.GetCompanyRoleAgreementDataAsync()).MustHaveHappenedOnceExactly();
+        result.Should().Be(companyRoleAgreementData);
+    }
+
+    [Fact]
+    public async Task SubmitRegistrationAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var applicationId = Guid.NewGuid();
+        A.CallTo(() => _registrationBusinessLogicFake.SubmitRegistrationAsync(applicationId))
+            .Returns(true);
+
+        //Act
+        var result = await _controller.SubmitRegistrationAsync(applicationId);
+
+        //Assert
+        A.CallTo(() => _registrationBusinessLogicFake.SubmitRegistrationAsync(applicationId)).MustHaveHappenedOnceExactly();
+        result.Should().Be(true);
+    }
+
+    [Fact]
+    public async Task SetInvitationStatusAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        A.CallTo(() => _registrationBusinessLogicFake.SetInvitationStatusAsync())
+            .Returns(1);
+
+        //Act
+        var result = await _controller.SetInvitationStatusAsync();
+
+        //Assert
+        A.CallTo(() => _registrationBusinessLogicFake.SetInvitationStatusAsync()).MustHaveHappenedOnceExactly();
+        result.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetRegistrationDataAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var applicationId = Guid.NewGuid();
+        var companyRegistrationData = _fixture.Create<CompanyRegistrationData>();
+        A.CallTo(() => _registrationBusinessLogicFake.GetRegistrationDataAsync(applicationId))
+            .Returns(companyRegistrationData);
+
+        //Act
+        var result = await _controller.GetRegistrationDataAsync(applicationId);
+
+        //Assert
+        A.CallTo(() => _registrationBusinessLogicFake.GetRegistrationDataAsync(applicationId)).MustHaveHappenedOnceExactly();
+        result.Should().Be(companyRegistrationData);
+    }
+
+    [Fact]
+    public async Task GetCompanyRolesAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var languageShortName = "en";
+        var companyRolesDetails = _fixture.CreateMany<CompanyRolesDetails>(3);
+        A.CallTo(() => _registrationBusinessLogicFake.GetCompanyRoles(languageShortName))
+            .Returns(companyRolesDetails.ToAsyncEnumerable());
+
+        //Act
+        var result = _controller.GetCompanyRolesAsync(languageShortName).ToEnumerable();
+
+        //Assert
+        A.CallTo(() => _registrationBusinessLogicFake.GetCompanyRoles(languageShortName)).MustHaveHappenedOnceExactly();
+        result.Should().HaveSameCount(companyRolesDetails).And.ContainInOrder(companyRolesDetails);
+    }
+
+    [Fact]
+    public async Task DeleteRegistrationDocument_ReturnsExpectedResult()
+    {
+        //Arrange
+        var documentId = Guid.NewGuid();
+
+        //Act
+        await _controller.DeleteRegistrationDocument(documentId);
+
+        //Assert
+        A.CallTo(() => _registrationBusinessLogicFake.DeleteRegistrationDocumentAsync(documentId)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]

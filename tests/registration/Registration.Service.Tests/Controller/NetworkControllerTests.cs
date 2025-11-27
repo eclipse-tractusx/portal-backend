@@ -54,4 +54,20 @@ public class NetworkControllerTests
         A.CallTo(() => _logic.Submit(A<PartnerSubmitData>._))
             .MustHaveHappenedOnceExactly();
     }
+
+    [Fact]
+    public async Task DeclineOsp_ReturnsExpected()
+    {
+        // Arrange
+        var data = _fixture.Create<DeclineOspData>();
+        var applicationId = Guid.NewGuid();
+
+        // Act
+        var result = await _controller.DeclineOsp(applicationId, data);
+
+        // Assert
+        result.StatusCode.Should().Be(200);
+        A.CallTo(() => _logic.DeclineOsp(A<Guid>._, A<DeclineOspData>._))
+            .MustHaveHappenedOnceExactly();
+    }
 }
