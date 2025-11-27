@@ -499,6 +499,7 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
             .Select(os => new OfferSubscriptionConnectorData(
                 os.Id,
                 os.Company!.Name,
+                os.Company!.Shortname,
                 os.Offer!.Name,
                 os.ConnectorAssignedOfferSubscriptions.Select(c => c.ConnectorId)
             ))
