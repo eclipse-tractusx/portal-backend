@@ -1305,7 +1305,7 @@ public class ConnectorsBusinessLogicTests
             .Create();
         A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, _identity.CompanyId))
             .Returns(data);
-        A.CallTo(() => _userRepository.GetCompanyBpnForIamUserAsync(_identity.IdentityId))
+        A.CallTo(() => _userRepository.GetBusinessPartnerNumberAsync(_identity.CompanyId))
             .Returns<string?>(null);
 
         // Act
