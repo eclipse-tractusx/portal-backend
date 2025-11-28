@@ -41,7 +41,7 @@ public class CompanyWalletData : IBaseEntity
 
     public Guid CompanyId { get; private set; }
 
-    public string Did { get; private set; }
+    public string Did { get; set; }
 
     public string ClientId { get; private set; }
 
@@ -49,10 +49,10 @@ public class CompanyWalletData : IBaseEntity
     public byte[]? InitializationVector { get; set; }
     public int EncryptionMode { get; set; }
 
-    public string AuthenticationServiceUrl { get; private set; }
+    public string AuthenticationServiceUrl { get; set; }
 
-    public virtual JsonDocument DidDocument { get; private set; }
+    public virtual JsonDocument DidDocument { get; set; }
 
     // Navigation properties
-    public virtual Company? Company { get; private set; }
+    public virtual Company? Company { get; set; }
 }

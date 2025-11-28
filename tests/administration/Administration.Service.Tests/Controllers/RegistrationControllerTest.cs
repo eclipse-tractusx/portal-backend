@@ -582,4 +582,17 @@ public class RegistrationControllerTest
         A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ProcessStepTypeId.RETRIGGER_SET_CX_MEMBERSHIP_IN_BPDM)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
+
+    [Fact]
+    public async Task UpdateDidDocument_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        var data = _fixture.Create<DidDocumentData>();
+
+        //Act
+        await _controller.UpdateDidDocument("bpn", data, CancellationToken.None);
+
+        //Assert
+        A.CallTo(() => _logic.UpdateDidDocumentAsync("bpn", data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+    }
 }

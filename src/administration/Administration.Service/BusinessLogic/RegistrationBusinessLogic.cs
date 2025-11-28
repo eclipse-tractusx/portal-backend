@@ -613,6 +613,14 @@ public sealed class RegistrationBusinessLogic(
         return result.Single();
     }
 
+    public async Task UpdateDidDocumentAsync(string bpn, DidDocumentData data, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Update the did document data {Data}", data.DidDocument.RootElement.GetRawText().Replace(Environment.NewLine, string.Empty));
+
+        await dimBusinessLogic.UpdateDidDocument(bpn, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+    }
+
     public Task RetriggerDeleteIdpSharedRealm(Guid processId) => ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM.TriggerProcessStep(processId, portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
     public Task RetriggerDeleteIdpSharedServiceAccount(Guid processId) => ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT.TriggerProcessStep(processId, portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
     public Task RetriggerDeleteCentralIdentityProvider(Guid processId) => ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER.TriggerProcessStep(processId, portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
