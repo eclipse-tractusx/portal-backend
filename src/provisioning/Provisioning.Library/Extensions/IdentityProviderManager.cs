@@ -76,11 +76,28 @@ public partial class ProvisioningManager
 
     private async ValueTask<IdentityProvider> SetIdentityProviderMetadataFromUrlAsync(IdentityProvider identityProvider, string url, CancellationToken cancellationToken)
     {
-        var metadata = await _centralIdp.ImportIdentityProviderFromUrlAsync(_settings.CentralRealm, url, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        IDictionary<string, object> metadata;
+        try
+        {
+            metadata = await _centralIdp
+                .ImportIdentityProviderFromUrlAsync(_settings.CentralRealm, url, cancellationToken)
+                .ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+        catch (Exception ex)
+        {
+            throw new ServiceException(
+                $"Failed to import identityprovider metadata: {ex.Message}",
+                HttpStatusCode.BadRequest
+            );
+        }
+
         if (!metadata.Any())
         {
-            throw new ServiceException("failed to import identityprovider metadata", HttpStatusCode.NotFound);
+            throw new ServiceException(
+                "Failed to import identityprovider metadata",
+                HttpStatusCode.NotFound);
         }
+
         var changed = CloneIdentityProvider(identityProvider);
         changed.Config ??= new Config();
         foreach (var (key, value) in metadata)
