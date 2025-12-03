@@ -98,12 +98,6 @@ public partial class ProvisioningManager
         {
             throw new ServiceException("failed to import identityprovider metadata", HttpStatusCode.NotFound);
         }
-        {
-            throw new ServiceException(
-                "Failed to import identity provider metadata",
-                HttpStatusCode.NotFound);
-        }
-
         var changed = CloneIdentityProvider(identityProvider);
         changed.Config ??= new Config();
         foreach (var (key, value) in metadata)
