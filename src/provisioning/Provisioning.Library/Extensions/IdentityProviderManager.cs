@@ -86,7 +86,10 @@ public partial class ProvisioningManager
                     cancellationToken)
                 .ConfigureAwait(ConfigureAwaitOptions.None);
         }
-        catch
+        catch (Exception ex) when (
+            ex is not OutOfMemoryException &&
+            ex is not StackOverflowException &&
+            ex is not AccessViolationException)
         {
             throw new ServiceException(
                 "The external identity provider service is currently unavailable.",
