@@ -76,25 +76,27 @@ public partial class ProvisioningManager
 
     private async ValueTask<IdentityProvider> SetIdentityProviderMetadataFromUrlAsync(IdentityProvider identityProvider, string url, CancellationToken cancellationToken)
     {
-        IDictionary<string, object> metadata;
+        IDictionary<string, object>? metadata;
         try
         {
             metadata = await _centralIdp
-                .ImportIdentityProviderFromUrlAsync(_settings.CentralRealm, url, cancellationToken)
+                .ImportIdentityProviderFromUrlAsync(
+                    _settings.CentralRealm,
+                    url,
+                    cancellationToken)
                 .ConfigureAwait(ConfigureAwaitOptions.None);
         }
-        catch (Exception ex)
+        catch
         {
             throw new ServiceException(
-                $"Failed to import identityprovider metadata: {ex.Message}",
-                HttpStatusCode.BadRequest
-            );
+                "The external identity provider service is currently unavailable.",
+                HttpStatusCode.BadGateway);
         }
 
         if (!metadata.Any())
         {
             throw new ServiceException(
-                "Failed to import identityprovider metadata",
+                "Failed to import identity provider metadata",
                 HttpStatusCode.NotFound);
         }
 
