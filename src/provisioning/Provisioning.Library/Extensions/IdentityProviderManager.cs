@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Flurl;
+using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
@@ -31,6 +32,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningManager
 {
+    private readonly ILogger<ProvisioningManager> _logger;
     private static readonly ImmutableDictionary<string, IamIdentityProviderClientAuthMethod> IdentityProviderClientAuthTypesIamClientAuthMethodDictionary = new Dictionary<string, IamIdentityProviderClientAuthMethod>()
     {
         { "private_key_jwt", IamIdentityProviderClientAuthMethod.JWT },
@@ -76,7 +78,7 @@ public partial class ProvisioningManager
 
     private async ValueTask<IdentityProvider> SetIdentityProviderMetadataFromUrlAsync(IdentityProvider identityProvider, string url, CancellationToken cancellationToken)
     {
-        IDictionary<string, object>? metadata;
+        IDictionary<string, object> metadata;
         try
         {
             metadata = await _centralIdp
@@ -86,16 +88,16 @@ public partial class ProvisioningManager
                     cancellationToken)
                 .ConfigureAwait(ConfigureAwaitOptions.None);
         }
-        catch (Exception ex) when (
-            ex is not OutOfMemoryException &&
-            ex is not StackOverflowException &&
-            ex is not AccessViolationException)
+        catch (Exception ex)
         {
-            throw new ServiceException(
-                "The external identity provider service is currently unavailable.",
-                HttpStatusCode.BadGateway);
+            _logger.LogError(ex, "connection to external sercvie failed.");
+
+            throw;
         }
         if (!metadata.Any())
+        {
+            throw new ServiceException("failed to import identityprovider metadata", HttpStatusCode.NotFound);
+        }
         {
             throw new ServiceException(
                 "Failed to import identity provider metadata",

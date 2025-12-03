@@ -65,7 +65,7 @@ public class BaseHttpExceptionHandler(IErrorMessageService errorMessageService)
         CreateErrorEntry<NotFoundException>(HttpStatusCode.NotFound),
         CreateErrorEntry<ConflictException>(HttpStatusCode.Conflict),
         CreateErrorEntry<ForbiddenException>(HttpStatusCode.Forbidden),
-        CreateErrorEntry<ServiceException>(HttpStatusCode.BadGateway, serviceException => (serviceException.Source, [serviceException.StatusCode == null ? "remote service call failed" : $"remote service returned status code: {(int)serviceException.StatusCode} {serviceException.StatusCode}", serviceException.Message])),
+        CreateErrorEntry<ServiceException>(HttpStatusCode.BadGateway, serviceException => (null, [serviceException.StatusCode == null ? "remote service call failed" : $"remote service returned status code: {(int)serviceException.StatusCode} {serviceException.StatusCode}", ""])),
         CreateErrorEntry<UnsupportedMediaTypeException>(HttpStatusCode.UnsupportedMediaType),
         CreateErrorEntry<ConfigurationException>(HttpStatusCode.InternalServerError, configurationException => (configurationException.Source, [$"Invalid service configuration: {configurationException.Message}"]))
     ]);
