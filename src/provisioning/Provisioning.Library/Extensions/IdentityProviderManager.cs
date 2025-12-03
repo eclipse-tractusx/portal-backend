@@ -92,7 +92,6 @@ public partial class ProvisioningManager
                 "The external identity provider service is currently unavailable.",
                 HttpStatusCode.BadGateway);
         }
-
         if (!metadata.Any())
         {
             throw new ServiceException(
