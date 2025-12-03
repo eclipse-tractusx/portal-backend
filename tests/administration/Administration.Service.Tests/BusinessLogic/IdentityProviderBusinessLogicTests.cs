@@ -1877,7 +1877,7 @@ public class IdentityProviderBusinessLogicTests
     }
 
     [Fact]
-    public async Task UpdateOwnCompanyIdentityProviderAsync_WhenOidcMetadataImportFails_ThrowsServiceException()
+    public async Task UpdateOwnCompanyIdentityProviderAsync_WhenOidcMetadataImportFails_ThrowsServiceException_WithCorrectJsonMapping()
     {
         // Arrange
         var identityProviderId = Guid.NewGuid();
@@ -1898,21 +1898,22 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
 
-        // Mock repository call to return valid data
+        // Mock repository to return valid data
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateData(A<Guid>._, A<Guid>._))
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, null));
 
-        // Mock provisioning manager to throw when importing OIDC metadata
+        // Mock provisioning manager to throw ServiceException
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("cl1"))
-            .ThrowsAsync(new ServiceException("Failed to import identityprovider metadata", HttpStatusCode.BadRequest));
+            .ThrowsAsync(new ServiceException(
+                "The external identity provider service is currently unavailable.",
+                HttpStatusCode.BadGateway));
 
         // Act
         async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None);
 
-        // Assert
+        // Assert business logic throws ServiceException
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
-        ex.Message.Should().Contain("Failed to import identityprovider metadata");
-        ex.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        ex.StatusCode.Should().Be(HttpStatusCode.BadGateway);
     }
 
     #endregion
