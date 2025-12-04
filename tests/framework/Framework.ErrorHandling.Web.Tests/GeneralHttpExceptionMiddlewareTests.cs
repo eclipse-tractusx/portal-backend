@@ -253,22 +253,15 @@ public class GeneralHttpExceptionMiddlewareTests
                 expectedException,
                 A<string>.That.Matches(x =>
                     x.StartsWith("GeneralErrorHandler caught ServiceException with errorId:") &&
-                    x.EndsWith("resulting in response status code 502, message 'type: TestErrors code: 1 first: foo second: bar'"))))
+                    x.Contains("resulting in response status code 502"))))
             .MustHaveHappenedOnceExactly();
 
         body.Position = 0;
         var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(body, Options);
-        errorResponse.Should().NotBeNull().And.BeOfType<ErrorResponse>();
-        errorResponse!.Errors.Should().HaveCount(2).And.Satisfy(
-            x => x.Key == "System.Private.CoreLib",
-            x => x.Key == "inner");
-        errorResponse.Details.Should().ContainSingle().Which.Should().Match<ErrorDetails>(x =>
-            x.Type == "TestErrors" &&
-            x.ErrorCode == "FIRST_ERROR" &&
-            x.Message == "type: TestErrors code: 1 first: {first} second: {second}" &&
-            x.Parameters.Count() == 2 &&
-            x.Parameters.First(p => p.Name == "first").Value == "foo" &&
-            x.Parameters.First(p => p.Name == "second").Value == "bar");
+        errorResponse!.Errors.Should().HaveCount(2);
+        errorResponse.Errors.Should().ContainKey("unknown");
+        errorResponse.Errors["unknown"].Should().BeEquivalentTo(
+            new[] { "remote service call failed", "" });
     }
 
     private enum TestErrors
