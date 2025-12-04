@@ -128,30 +128,12 @@ public class DimBusinessLogic : IDimBusinessLogic
 
         if (!ValidateDidFormat(data.Did, bpn))
         {
-            _checklistService.FinalizeChecklistEntryAndProcessSteps(
-                context,
-                null,
-                item =>
-                {
-                    item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
-                    item.Comment = "The did did not match the expected format";
-                },
-                null);
-            return;
+            throw new ArgumentException("The Did does not match the expected format");
         }
 
         if (!await ValidateSchema(data.DidDocument, cancellationToken))
         {
-            _checklistService.FinalizeChecklistEntryAndProcessSteps(
-                context,
-                null,
-                item =>
-                {
-                    item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
-                    item.Comment = "The did document did not match the expected schema";
-                },
-                null);
-            return;
+            throw new ArgumentException("The Did document does not match the expected format");
         }
 
         var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == _settings.EncryptionConfigIndex) ?? throw new ConfigurationException($"encryptionConfigIndex {_settings.EncryptionConfigIndex} is not configured");

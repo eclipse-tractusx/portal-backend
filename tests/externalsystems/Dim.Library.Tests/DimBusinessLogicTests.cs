@@ -312,13 +312,14 @@ public class DimBusinessLogicTests
             .Returns(context);
 
         // Act
-        await _logic.ProcessDimResponse(BPN, data, CancellationToken.None);
+        async Task Act() => await _logic.ProcessDimResponse(BPN, data, CancellationToken.None);
 
         // Assert
+        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
+        ex.Message.Should().Be("The Did does not match the expected format");
+
         A.CallTo(() => _companyRepository.CreateWalletData(A<Guid>._, A<string>._, A<JsonDocument>._, A<string>._, A<byte[]>._, A<byte[]?>._, A<int>._, A<string>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(context, null, A<Action<ApplicationChecklistEntry>>._, null))
-            .MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -338,13 +339,15 @@ public class DimBusinessLogicTests
             .Returns(context);
 
         // Act
-        await _logic.ProcessDimResponse(BPN, data, CancellationToken.None);
+        async Task Act() => await _logic.ProcessDimResponse(BPN, data, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
+        ex.Message.Should().Be("The Did document does not match the expected format");
 
         // Assert
         A.CallTo(() => _companyRepository.CreateWalletData(A<Guid>._, A<string>._, A<JsonDocument>._, A<string>._, A<byte[]>._, A<byte[]?>._, A<int>._, A<string>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(context, null, A<Action<ApplicationChecklistEntry>>._, null))
-            .MustHaveHappenedOnceExactly();
     }
 
     [Fact]
