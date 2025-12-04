@@ -28,8 +28,10 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 
-public class BaseHttpExceptionHandler(IErrorMessageService errorMessageService)
+public class BaseHttpExceptionHandler(IErrorMessageService errorMessageService, ILogger<BaseHttpExceptionHandler> logger)
 {
+
+    private readonly ILogger<BaseHttpExceptionHandler> _logger = logger;
     protected static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
 
     protected static readonly IReadOnlyDictionary<HttpStatusCode, MetaData> Metadata = ImmutableDictionary.CreateRange<HttpStatusCode, MetaData>(
@@ -70,10 +72,15 @@ public class BaseHttpExceptionHandler(IErrorMessageService errorMessageService)
         CreateErrorEntry<ConfigurationException>(HttpStatusCode.InternalServerError, configurationException => (configurationException.Source, [$"Invalid service configuration: {configurationException.Message}"]))
     ]);
 
-    protected static (HttpStatusCode StatusCode, Func<Exception, (string?, IEnumerable<string>)>? MessageFunc, LogLevel LogLevel) GetErrorInformation(Exception error) =>
-        ErrorTypes.TryGetValue(error.GetType(), out var mapping)
-            ? mapping
-            : (HttpStatusCode.InternalServerError, null, LogLevel.Error);
+    protected (HttpStatusCode StatusCode, Func<Exception, (string?, IEnumerable<string>)>? MessageFunc, LogLevel LogLevel) GetErrorInformation(Exception error)
+    {
+        if (ErrorTypes.TryGetValue(error.GetType(), out var mapping))
+        {
+            return mapping;
+        }
+        _logger.LogError(error, "Unknown exception type encountered: {ExceptionType}", error.GetType().Name);
+        return (HttpStatusCode.InternalServerError, null, LogLevel.Error);
+    }
 
     protected ErrorResponse CreateErrorResponse(HttpStatusCode statusCode, Exception error, string errorId, string message, IEnumerable<ErrorDetails>? details, Func<Exception, (string?, IEnumerable<string>)>? getSourceAndMessages)
     {

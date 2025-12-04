@@ -28,7 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 public class GeneralHttpExceptionFilter(
     ILogger<GeneralHttpExceptionFilter> logger,
     IErrorMessageService errorMessageService)
-    : BaseHttpExceptionHandler(errorMessageService), IExceptionFilter
+    : BaseHttpExceptionHandler(errorMessageService, logger), IExceptionFilter
 {
     public void OnException(ExceptionContext context)
     {
