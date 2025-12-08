@@ -172,12 +172,15 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
         dbContext.OfferSubscriptions.AsNoTracking()
             .Where(x =>
                 x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
+                x.Offer!.OfferTypeId == OfferTypeId.APP &&
+                x.AppSubscriptionDetail!.AppInstance != null &&
+                x.AppSubscriptionDetail.AppSubscriptionUrl != null &&
                 x.IdentityAssignedRoles.Any(iar =>
                     iar.IdentityId == userId &&
                     iar.Identity!.IdentityTypeId == IdentityTypeId.COMPANY_USER &&
                     iar.OfferSubscriptionId != null))
             .Select(offerSubscription => new ValueTuple<Guid, Guid, string?, string, Guid, string>(
-                offerSubscription!.OfferId,
+                offerSubscription.OfferId,
                 offerSubscription.Id,
                 offerSubscription.Offer!.Name,
                 offerSubscription.AppSubscriptionDetail!.AppSubscriptionUrl!,
