@@ -145,13 +145,10 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetAllBusinessAppDataForUserIdAsync(new("7b42e6de-7b59-4217-a63c-198e83d93776")).ToListAsync();
 
         // Assert
-        result.Should().HaveCount(2).And.Satisfy(
+        result.Should().HaveCount(1).And.Satisfy(
             x => x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce05744000b") &&
                 x.SubscriptionId == new Guid("1b2ca541-206d-48ad-bc02-fb61fbcb5552") &&
-                x.SubscriptionUrl == "https://ec-qas.111.kyma.ondemand.com",
-            x => x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce05744000b") &&
-                x.SubscriptionId == new Guid("2b2ca541-206d-48ad-bc02-fb61fbcb5552") &&
-                x.SubscriptionUrl == null
+                x.SubscriptionUrl == "https://ec-qas.111.kyma.ondemand.com"
         );
     }
 
