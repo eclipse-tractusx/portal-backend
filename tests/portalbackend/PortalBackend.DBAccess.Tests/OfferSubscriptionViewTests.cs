@@ -49,7 +49,7 @@ public class OfferSubscriptionViewTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut.OfferSubscriptionView.ToListAsync();
-        result.Should().HaveCount(18);
+        result.Should().HaveCount(19);
     }
 
     [Fact]

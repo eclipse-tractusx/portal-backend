@@ -1356,11 +1356,13 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.Instances.Should().HaveCount(2).And.Satisfy(
+        result!.Instances.Should().HaveCount(3).And.Satisfy(
             x => x.InstanceId == new Guid("b161d570-f6ff-45b4-a077-243f72487af6") &&
                 x.InternalClientId == "Cl10-CX-xx",
             x => x.InstanceId == new Guid("c161d570-f6ff-45b4-a077-243f72487af6") &&
-                x.InternalClientId == "Cl10-CX-AA"
+                x.InternalClientId == "Cl10-CX-AA",
+            x => x.InstanceId == new Guid("c161d570-f6ff-45b4-a077-243f72487af7") &&
+                x.InternalClientId == "Cl10-CX-BB"
         );
         result.OfferName.Should().Be("Trace-X");
     }

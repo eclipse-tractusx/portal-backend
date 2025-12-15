@@ -19,5 +19,12 @@
     "app_instance_id": "c161d570-f6ff-45b4-a077-243f72487af6",
     "app_subscription_url": "https://ec-qas.111.kyma.ondemand.com",
     "last_editor_id": null
+  },
+  {
+    "id": "bedb45bf-7094-4da0-9e69-0695db782a18",
+    "offer_subscription_id": "1b2ca541-206d-48ad-bc02-fb61fbcb5553",
+    "app_instance_id": "c161d570-f6ff-45b4-a077-243f72487af7",
+    "app_subscription_url": "https://ec-qas.222.kyma.ondemand.com",
+    "last_editor_id": null
   }
 ]
