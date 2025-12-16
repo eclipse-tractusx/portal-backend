@@ -27,7 +27,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.FlurlSetup;
 using System.Net;
 using System.Text.Json;
@@ -274,7 +273,7 @@ public class GeneralHttpExceptionMiddlewareTests
     {
         // Arrange
         var logger = A.Fake<ILogger>();
-        FlurlErrorHandler.ConfigureErrorHandler(logger);
+        Keycloak.ErrorHandling.FlurlErrorHandler.ConfigureErrorHandler(logger);
 
         using var httpTest = new HttpTest();
         httpTest.WithPostImportFailingDueToInvalidUrl();
