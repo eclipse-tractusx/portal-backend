@@ -29,6 +29,11 @@ using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Xunit;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
+using Flurl.Http.Testing;
+using Flurl.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.FlurlSetup;
+
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web.Tests;
 
@@ -262,6 +267,30 @@ public class GeneralHttpExceptionMiddlewareTests
         errorResponse.Errors.Should().ContainKey("unknown");
         errorResponse.Errors["unknown"].Should().BeEquivalentTo(
             new[] { "remote service call failed", "" });
+    }
+
+    [Fact]
+
+    public async Task PostImport_WhenUrlInvalid_ThrowsFlurlExceptionWithExpectedMessage()
+    {
+        // Arrange
+        var logger = A.Fake<ILogger>();
+        FlurlErrorHandler.ConfigureErrorHandler(logger);
+
+        using var httpTest = new HttpTest();
+        httpTest.WithPostImportFailingDueToInvalidUrl();
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ServiceException>(async () =>
+        {
+            await "https://centralidp.tx.test/admin/realms/CX-Central/identity-provider/import-config"
+            .PostAsync(new StringContent("{}"));
+        });
+
+        // Assert
+        exception.Should().NotBeNull();
+        exception.InnerException.Should().BeOfType<HttpRequestException>();
+        exception.InnerException!.Message.Should().Contain("Flurl: call to external system failed");
     }
 
     private enum TestErrors
