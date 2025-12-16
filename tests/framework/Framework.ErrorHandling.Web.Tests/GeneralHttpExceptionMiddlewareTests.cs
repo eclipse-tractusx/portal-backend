@@ -21,19 +21,18 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
+using Flurl.Http;
+using Flurl.Http.Testing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.FlurlSetup;
 using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Xunit;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
-using Flurl.Http.Testing;
-using Flurl.Http;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.FlurlSetup;
-
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web.Tests;
 
