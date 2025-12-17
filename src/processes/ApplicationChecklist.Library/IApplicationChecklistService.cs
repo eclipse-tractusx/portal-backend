@@ -35,6 +35,6 @@ public interface IApplicationChecklistService
     void RequestLock(ManualChecklistProcessStepData context, DateTimeOffset lockExpiryDate);
     void SkipProcessSteps(ManualChecklistProcessStepData context, IEnumerable<ProcessStepTypeId> processStepTypeIds);
     void FinalizeChecklistEntryAndProcessSteps(ManualChecklistProcessStepData context, Action<ApplicationChecklistEntry>? initializeApplicationChecklistEntry, Action<ApplicationChecklistEntry>? modifyApplicationChecklistEntry, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds);
-
+    void FinalizeProcessSteps(IApplicationChecklistService.ManualChecklistProcessStepData context, ProcessStepStatusId processStepStatusId, string message, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds);
     Task<WorkerChecklistProcessStepExecutionResult> HandleServiceErrorAsync(Exception exception, ProcessStepTypeId manualProcessTriggerStep);
 }

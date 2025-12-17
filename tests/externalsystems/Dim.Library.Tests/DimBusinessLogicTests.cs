@@ -320,6 +320,9 @@ public class DimBusinessLogicTests
 
         A.CallTo(() => _companyRepository.CreateWalletData(A<Guid>._, A<string>._, A<JsonDocument>._, A<string>._, A<byte[]>._, A<byte[]?>._, A<int>._, A<string>._))
             .MustNotHaveHappened();
+        A.CallTo(() => _checklistService.FinalizeProcessSteps(context, A<ProcessStepStatusId>._, A<string>._, A<IEnumerable<ProcessStepTypeId>>._))
+           .MustHaveHappenedOnceExactly();
+
     }
 
     [Fact]
@@ -348,6 +351,8 @@ public class DimBusinessLogicTests
         // Assert
         A.CallTo(() => _companyRepository.CreateWalletData(A<Guid>._, A<string>._, A<JsonDocument>._, A<string>._, A<byte[]>._, A<byte[]?>._, A<int>._, A<string>._))
             .MustNotHaveHappened();
+        A.CallTo(() => _checklistService.FinalizeProcessSteps(context, A<ProcessStepStatusId>._, A<string>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -393,7 +398,9 @@ public class DimBusinessLogicTests
         decrypted.Should().Be(data.AuthenticationDetails.ClientSecret);
 
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(context, null, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { ProcessStepTypeId.VALIDATE_DID_DOCUMENT })))
-            .MustHaveHappenedOnceExactly();
+           .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _checklistService.FinalizeProcessSteps(context, A<ProcessStepStatusId>._, A<string>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .MustNotHaveHappened();
     }
 
     #endregion
