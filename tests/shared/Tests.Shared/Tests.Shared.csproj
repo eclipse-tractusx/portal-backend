@@ -28,10 +28,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Testcontainers.PostgreSql" Version="4.6.0" />
+    <PackageReference Include="Testcontainers.PostgreSql" Version="4.9.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Testcontainers" Version="4.9.0" />
     <ProjectReference Include="..\..\..\src\framework\Framework.Token\Framework.Token.csproj" />
     <ProjectReference Include="..\..\..\src\keycloak\Keycloak.Library\Keycloak.Library.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Tests.Shared\Framework.Tests.Shared.csproj" />
