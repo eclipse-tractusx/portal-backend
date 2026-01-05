@@ -354,6 +354,7 @@ public class UserRepository : IUserRepository
 
     public Func<int, int, Task<Pagination.Source<CompanyAppUserDetails>?>> GetOwnCompanyAppUsersPaginationSourceAsync(
         Guid appId,
+        Guid subscriptionId,
         Guid companyUserId,
         IEnumerable<OfferSubscriptionStatusId> subscriptionStatusIds,
         IEnumerable<UserStatusId> companyUserStatusIds,
@@ -373,8 +374,8 @@ public class UserRepository : IUserRepository
                     (lastName == null || EF.Functions.ILike(companyUser.Lastname!, $"%{lastName.EscapeForILike()}%")) &&
                     (email == null || EF.Functions.ILike(companyUser.Email!, $"%{email.EscapeForILike()}%")) &&
                     (roleName == null || companyUser.Identity!.IdentityAssignedRoles.Any(userRole => userRole.UserRole!.OfferId == appId && EF.Functions.ILike(userRole.UserRole!.UserRoleText, $"%{roleName.EscapeForILike()}%"))) &&
-                    (!hasRole.HasValue || !hasRole.Value || companyUser.Identity!.IdentityAssignedRoles.Any(userRole => userRole.UserRole!.OfferId == appId)) &&
-                    (!hasRole.HasValue || hasRole.Value || companyUser.Identity!.IdentityAssignedRoles.All(userRole => userRole.UserRole!.OfferId != appId)) &&
+                    (!hasRole.HasValue || !hasRole.Value || companyUser.Identity!.IdentityAssignedRoles.Any(userRole => userRole.OfferSubscriptionId == subscriptionId)) &&
+                    (!hasRole.HasValue || hasRole.Value || companyUser.Identity!.IdentityAssignedRoles.All(userRole => userRole.OfferSubscriptionId != subscriptionId)) &&
                     companyUserStatusIds.Contains(companyUser.Identity!.UserStatusId))
                 .GroupBy(companyUser => companyUser.Identity!.CompanyId),
             null,

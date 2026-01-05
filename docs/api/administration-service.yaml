@@ -6146,7 +6146,7 @@ paths:
           description: Internal Server Error
         '401':
           description: The User is unauthorized
-  '/api/administration/user/owncompany/apps/{appId}/users':
+  '/api/administration/user/owncompany/apps/{appId}/subscription/{subscriptionId}/users':
     get:
       tags:
         - User
@@ -6156,6 +6156,13 @@ paths:
         - name: appId
           in: path
           description: Get company app users by appId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: subscriptionId
+          in: path
+          description: Get company app users by appId and subscriptionId
           required: true
           schema:
             type: string
