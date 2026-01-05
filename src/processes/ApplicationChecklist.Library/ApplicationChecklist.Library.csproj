@@ -29,6 +29,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Laraue.EfCoreTriggers.PostgreSql" Version="9.2.1" />
       <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     </ItemGroup>
 
