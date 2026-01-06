@@ -36,7 +36,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
     ///<inheritdoc/>
     public Task<OfferProviderDetailsData?> GetOfferProviderDetailsAsync(Guid offerId, OfferTypeId offerTypeId) =>
         dbContext.Offers.AsNoTracking()
-            .Where(o => o.Id == offerId && o.OfferTypeId == offerTypeId)
+            .Where(o => o.Id == offerId && o.OfferTypeId == offerTypeId && o.OfferStatusId == OfferStatusId.ACTIVE)
             .Select(c => new OfferProviderDetailsData(
                 c.Name,
                 c.ProviderCompany!.Name,
