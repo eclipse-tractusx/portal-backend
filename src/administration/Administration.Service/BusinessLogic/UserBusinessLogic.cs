@@ -564,13 +564,14 @@ public class UserBusinessLogic(
         throw new NotFoundException($"Cannot identify companyId or shared idp : userId {companyUserId} is not associated with admin users company {_identityData.CompanyId}");
     }
 
-    public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, int page, int size, CompanyUserFilter filter) =>
+    public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, Guid subscriptionId, int page, int size, CompanyUserFilter filter) =>
         Pagination.CreateResponseAsync(
             page,
             size,
             15,
             portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyAppUsersPaginationSourceAsync(
                 appId,
+                subscriptionId,
                 _identityData.IdentityId,
                 new[] { OfferSubscriptionStatusId.ACTIVE },
                 new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE },

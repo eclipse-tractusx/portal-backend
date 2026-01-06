@@ -81,7 +81,7 @@ public interface IUserRepository
 
     IAsyncEnumerable<Guid> GetServiceProviderCompanyUserWithRoleIdAsync(Guid offerId, IEnumerable<Guid> userRoleIds);
 
-    Func<int, int, Task<Pagination.Source<CompanyAppUserDetails>?>> GetOwnCompanyAppUsersPaginationSourceAsync(Guid appId, Guid companyUserId, IEnumerable<OfferSubscriptionStatusId> subscriptionStatusIds, IEnumerable<UserStatusId> companyUserStatusIds, CompanyUserFilter filter);
+    Func<int, int, Task<Pagination.Source<CompanyAppUserDetails>?>> GetOwnCompanyAppUsersPaginationSourceAsync(Guid appId, Guid subscriptionId, Guid companyUserId, IEnumerable<OfferSubscriptionStatusId> subscriptionStatusIds, IEnumerable<UserStatusId> companyUserStatusIds, CompanyUserFilter filter);
 
     /// <summary>
     /// User account data for deletion of own userId

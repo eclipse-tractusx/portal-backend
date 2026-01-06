@@ -37,6 +37,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     private const string ValidUserCompanyId = "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87";
     private readonly Guid _validCompanyUser = new(ValidCompanyUserTxt);
     private readonly Guid _validOfferId = new("ac1cf001-7fbc-1f2f-817f-bce0572c0007");
+    private readonly Guid _validOfferSubscriptionId = new("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba");
 
     public UserRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -59,6 +60,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Act
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
             _validOfferId,
+            _validOfferSubscriptionId,
             _validCompanyUser,
             new[] { OfferSubscriptionStatusId.ACTIVE },
             new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE },
@@ -78,6 +80,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Act
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
             _validOfferId,
+            _validOfferSubscriptionId,
             _validCompanyUser,
             new[] { OfferSubscriptionStatusId.ACTIVE },
             new[] { UserStatusId.INACTIVE },
@@ -97,6 +100,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Act
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
             _validOfferId,
+            _validOfferSubscriptionId,
             _validCompanyUser,
             new[] { OfferSubscriptionStatusId.ACTIVE },
             new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE, UserStatusId.DELETED },
@@ -116,6 +120,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Act
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
             _validOfferId,
+            _validOfferSubscriptionId,
             Guid.NewGuid(),
             new[] { OfferSubscriptionStatusId.ACTIVE },
             new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE },

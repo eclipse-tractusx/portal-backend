@@ -430,6 +430,7 @@ public class UserController : ControllerBase
     /// Get for given app id all the company assigned users
     /// </summary>
     /// <param name="appId">Get company app users by appId</param>
+    /// <param name="subscriptionId">Get company app users by appId and subscriptionId</param>
     /// <param name="page">page index start from 0</param>
     /// <param name="size">size to get number of records</param>
     /// <param name="firstName">First Name of User</param>
@@ -443,10 +444,11 @@ public class UserController : ControllerBase
     [HttpGet]
     [Authorize(Roles = "view_user_management")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
-    [Route("owncompany/apps/{appId}/users")]
+    [Route("owncompany/apps/{appId}/subscription/{subscriptionId}/users")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyAppUserDetails>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync(
         [FromRoute] Guid appId,
+        [FromRoute] Guid subscriptionId,
         [FromQuery] int page = 0,
         [FromQuery] int size = 15,
         [FromQuery] string? firstName = null,
@@ -456,6 +458,7 @@ public class UserController : ControllerBase
         [FromQuery] bool? hasRole = null) =>
         _logic.GetOwnCompanyAppUsersAsync(
             appId,
+            subscriptionId,
             page,
             size,
             new CompanyUserFilter(
