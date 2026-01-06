@@ -274,5 +274,4 @@ public class DimBusinessLogic : IDimBusinessLogic
 
         await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
-
 }

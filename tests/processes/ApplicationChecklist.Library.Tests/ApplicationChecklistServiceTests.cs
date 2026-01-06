@@ -740,7 +740,6 @@ public class ChecklistServiceTests
             expectedErrorMessage,
             nextProcessStepTypeIds);
 
-
         // Assert
         modifiedProcessStep = getModifiedProcessStep();
         newProcessSteps = getNewProcessSteps();
