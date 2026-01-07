@@ -146,4 +146,24 @@ public sealed class ApplicationChecklistService(IPortalRepositories portalReposi
                     true,
                     stepMessage));
     }
+
+    public void FinalizeProcessSteps(IApplicationChecklistService.ManualChecklistProcessStepData context, ProcessStepStatusId processStepStatusId, string message, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds)
+    {
+        var processStepRepository = portalRepositories.GetInstance<IPortalProcessStepRepository>();
+
+        processStepRepository.AttachAndModifyProcessStep(context.ProcessStepId, null, step =>
+        {
+            step.ProcessStepStatusId = processStepStatusId;
+            step.Message = message;
+        });
+
+        if (nextProcessStepTypeIds == null || !nextProcessStepTypeIds.Any())
+        {
+            return;
+        }
+
+        processStepRepository.CreateProcessStepRange(
+            nextProcessStepTypeIds
+                .Select(stepTypeId => (stepTypeId, ProcessStepStatusId.TODO, context.Process.Id)));
+    }
 }

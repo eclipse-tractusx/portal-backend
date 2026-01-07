@@ -716,4 +716,160 @@ public class ChecklistServiceTests
     }
 
     #endregion
+
+    #region FinalizeProcessSteps
+    [Fact]
+    public void FinalizeProcessSteps_ReturnsExpected()
+    {
+        // Arrange
+        Func<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>?> getModifiedProcessStep;
+        Func<IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>?> getNewProcessSteps;
+
+        Process process;
+        IApplicationChecklistService.ManualChecklistProcessStepData context;
+        ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>? modifiedProcessStep;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? newProcessSteps;
+        MockProcecessStep(out process, out context, out getModifiedProcessStep, out getNewProcessSteps);
+
+        var nextProcessStepTypeIds = new[] { ProcessStepTypeId.AWAIT_DIM_RESPONSE_RESPONSE };
+        var expectedErrorMessage = "An error occurred during processing";
+        // Act
+        _service.FinalizeProcessSteps(
+            context,
+            ProcessStepStatusId.FAILED,
+            expectedErrorMessage,
+            nextProcessStepTypeIds);
+
+        // Assert
+        modifiedProcessStep = getModifiedProcessStep();
+        newProcessSteps = getNewProcessSteps();
+
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
+            .MustHaveHappenedOnceExactly();
+
+        modifiedProcessStep.Should().NotBeNull();
+        modifiedProcessStep!.Id.Should().Be(context.ProcessStepId);
+        modifiedProcessStep.ProcessStepStatusId.Should().Be(ProcessStepStatusId.FAILED);
+        modifiedProcessStep.Message.Should().Be(expectedErrorMessage);
+
+        newProcessSteps.Should().NotBeNull()
+            .And.HaveCount(nextProcessStepTypeIds.Length)
+            .And.AllSatisfy(
+                x =>
+                {
+                    x.ProcessId.Should().Be(process.Id);
+                    x.ProcessStepStatusId.Should().Be(ProcessStepStatusId.TODO);
+                });
+        newProcessSteps!.Select(x => x.ProcessStepTypeId).Should().Contain(nextProcessStepTypeIds);
+    }
+
+    [Fact]
+    public void FinalizeProcessSteps_NoNextStepsProvided()
+    {
+        // Arrange
+        Func<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>?> getModifiedProcessStep;
+        Func<IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>?> getNewProcessSteps;
+
+        Process process;
+        IApplicationChecklistService.ManualChecklistProcessStepData context;
+        ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>? modifiedProcessStep;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? newProcessSteps;
+        MockProcecessStep(out process, out context, out getModifiedProcessStep, out getNewProcessSteps);
+
+        var nextProcessStepTypeIds = null as ProcessStepTypeId[];
+        var expectedErrorMessage = "An error occurred during processing";
+        // Act
+        _service.FinalizeProcessSteps(
+            context,
+            ProcessStepStatusId.FAILED,
+            expectedErrorMessage,
+            nextProcessStepTypeIds);
+
+        // Assert
+        modifiedProcessStep = getModifiedProcessStep();
+
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
+            .MustNotHaveHappened();
+
+        modifiedProcessStep.Should().NotBeNull();
+        modifiedProcessStep!.Id.Should().Be(context.ProcessStepId);
+        modifiedProcessStep.ProcessStepStatusId.Should().Be(ProcessStepStatusId.FAILED);
+        modifiedProcessStep.Message.Should().Be(expectedErrorMessage);
+
+        Assert.Null(getNewProcessSteps());
+    }
+
+    private void MockProcecessStep(
+        out Process process,
+        out IApplicationChecklistService.ManualChecklistProcessStepData context,
+        out Func<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>?> getModifiedProcessStep,
+        out Func<IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>?> getNewProcessSteps)
+    {
+        process = new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
+
+        context = new IApplicationChecklistService.ManualChecklistProcessStepData(
+            Guid.NewGuid(),
+            process,
+            Guid.NewGuid(),
+            _fixture.Create<ApplicationChecklistEntryTypeId>(),
+            _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>>()
+                .ToImmutableDictionary(),
+            new[]
+            {
+                new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(
+                    Guid.NewGuid(),
+                    _fixture.Create<ProcessStepTypeId>(),
+                    ProcessStepStatusId.TODO,
+                    process.Id,
+                    DateTimeOffset.UtcNow)
+            }
+        );
+
+        ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>? modifiedProcessStepLocal = null;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? newProcessStepsLocal = null;
+
+        getModifiedProcessStep = () => modifiedProcessStepLocal;
+        getNewProcessSteps = () => newProcessStepsLocal;
+
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(
+                A<Guid>._,
+                A<Action<IProcessStep<ProcessStepTypeId>>>._,
+                A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid processStepId,
+                    Action<IProcessStep<ProcessStepTypeId>>? initialize,
+                    Action<IProcessStep<ProcessStepTypeId>> modify) =>
+            {
+                modifiedProcessStepLocal =
+                    new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(
+                        processStepId, default, default, default, default);
+
+                initialize?.Invoke(modifiedProcessStepLocal);
+                modify(modifiedProcessStepLocal);
+            });
+
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(
+                A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
+            .ReturnsLazily(
+                (IEnumerable<(ProcessStepTypeId StepTypeId,
+                            ProcessStepStatusId StepStatusId,
+                            Guid ProcessId)> items) =>
+                {
+                    newProcessStepsLocal = items
+                        .Select(x =>
+                            new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(
+                                Guid.NewGuid(),
+                                x.StepTypeId,
+                                x.StepStatusId,
+                                x.ProcessId,
+                                DateTimeOffset.UtcNow))
+                        .ToList();
+
+                    return newProcessStepsLocal;
+                });
+    }
+    #endregion
 }

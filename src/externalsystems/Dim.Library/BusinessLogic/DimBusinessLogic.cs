@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -42,6 +43,9 @@ public class DimBusinessLogic : IDimBusinessLogic
     private readonly IApplicationChecklistService _checklistService;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly DimSettings _settings;
+
+    private static readonly string MALFORMED_DID = "The Did does not match the expected format";
+    private static readonly string INVALID_DID_DOCUMENT = "The Did document does not match the expected format";
 
     public DimBusinessLogic(IPortalRepositories portalRepositories, IDimService dimService, IApplicationChecklistService checklistService, IDateTimeProvider dateTimeProvider, IOptions<DimSettings> options)
     {
@@ -128,30 +132,14 @@ public class DimBusinessLogic : IDimBusinessLogic
 
         if (!ValidateDidFormat(data.Did, bpn))
         {
-            _checklistService.FinalizeChecklistEntryAndProcessSteps(
-                context,
-                null,
-                item =>
-                {
-                    item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
-                    item.Comment = "The did did not match the expected format";
-                },
-                null);
-            return;
+            await FinalizeCheckListProcessStepAsync(context, MALFORMED_DID);
+            throw new ArgumentException(MALFORMED_DID);
         }
 
         if (!await ValidateSchema(data.DidDocument, cancellationToken))
         {
-            _checklistService.FinalizeChecklistEntryAndProcessSteps(
-                context,
-                null,
-                item =>
-                {
-                    item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
-                    item.Comment = "The did document did not match the expected schema";
-                },
-                null);
-            return;
+            await FinalizeCheckListProcessStepAsync(context, INVALID_DID_DOCUMENT);
+            throw new ArgumentException(INVALID_DID_DOCUMENT);
         }
 
         var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == _settings.EncryptionConfigIndex) ?? throw new ConfigurationException($"encryptionConfigIndex {_settings.EncryptionConfigIndex} is not configured");
@@ -276,5 +264,14 @@ public class DimBusinessLogic : IDimBusinessLogic
         }
 
         _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyWalletData(companyWalletId, w => { }, w => w.DidDocument = data.DidDocument);
+    }
+
+    private async Task FinalizeCheckListProcessStepAsync(IApplicationChecklistService.ManualChecklistProcessStepData context, string messageError)
+    {
+        var nextProcessStepTypeIds = new[] { ProcessStepTypeId.AWAIT_DIM_RESPONSE_RESPONSE };
+
+        _checklistService.FinalizeProcessSteps(context, ProcessStepStatusId.FAILED, messageError, nextProcessStepTypeIds);
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }
