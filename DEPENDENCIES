@@ -50,7 +50,7 @@ nuget/nuget/-/Testcontainers.PostgreSql/4.6.0, MIT, approved, #21930
 nuget/nuget/-/Testcontainers/4.6.0, MIT, approved, #21931
 nuget/nuget/-/Xunit.Extensions.AssemblyFixture/2.6.0, MIT, approved, #17055
 nuget/nuget/-/coverlet.collector/6.0.4, MIT, approved, #10075
-nuget/nuget/-/xunit.abstractions/2.0.3, Apache-2.0, approved, clearlydefined
+nuget/nuget/-/xunit.abstractions/2.0.3, Apache-2.0 AND MIT, approved, #25268
 nuget/nuget/-/xunit.analyzers/1.18.0, Apache-2.0 AND MIT, approved, #19066
 nuget/nuget/-/xunit.assert/2.9.3, Apache-2.0, approved, #16331
 nuget/nuget/-/xunit.core/2.9.3, Apache-2.0, approved, #16330

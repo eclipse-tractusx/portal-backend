@@ -19,17 +19,19 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.UniversalDidResolver.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Initialization;
 using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
 
@@ -51,13 +53,14 @@ await WebAppHelper
             .AddTransient<IIdentityProviderProvisioningService, IdentityProviderProvisioningService>()
             .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"))
             .AddTransient<INetworkBusinessLogic, NetworkBusinessLogic>();
-
         builder.Services.AddApplicationChecklistCreation(builder.Configuration.GetSection("ApplicationCreation"));
         builder.Services
             .AddSingleton<IErrorMessageService, ErrorMessageService>()
             .AddSingleton<IErrorMessageContainer, RegistrationValidationErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, RegistrationErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, NetworkErrorMessageContainer>();
+        builder.Services.AddTransient<IBringYourOwnWalletBusinessLogic, BringYourOwnWalletBusinessLogic>()
+            .AddUniversalDidResolverService(builder.Configuration.GetSection("UniversalDidResolver"));
 
         builder.Services.AddBpnAccess(builder.Configuration.GetSection("BpnAccess"));
         builder.Services.AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"));

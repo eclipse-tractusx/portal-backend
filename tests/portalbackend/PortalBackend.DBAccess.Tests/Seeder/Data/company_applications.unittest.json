@@ -58,5 +58,15 @@
     "checklist_process_id": "98309fbf-6350-467a-a3ae-c92ed357c3fb",
     "company_application_type_id": 1,
     "last_editor_id": null
+  },
+  {
+    "id": "c20ba2f7-ac9d-48d4-9498-a46be50c9271",
+    "date_created": "2023-11-06 10:01:33.439000 +00:00",
+    "date_last_changed": "2023-11-06 10:01:33.439000 +00:00",
+    "application_status_id": 1,
+    "company_id": "554f23d5-669e-48ed-b06b-9a84dfa017c5",
+    "checklist_process_id": null,
+    "company_application_type_id": 1,
+    "last_editor_id": null
   }
 ]

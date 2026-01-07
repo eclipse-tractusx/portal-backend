@@ -41,6 +41,7 @@ public class AdministrationServiceAccountErrorMessageContainer : IErrorMessageCo
         new((int)AdministrationServiceAccountErrors.SERVICE_ACCOUNT_PENDING_PROCESS_STEPS, "Service Account {serviceAccountId} has pending process steps {processStepTypeIds}"),
         new((int)AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_ACTIVE, "Service Account {serviceAccountId} is not status active"),
         new((int)AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NO_PROVIDER_OR_OWNER, "Only provider or owner of the service account are allowed to delete it"),
+        new((int)AdministrationServiceAccountErrors.SERVICE_ACCOUNT_USER_ROLES_NOT_ALLOWED, "The roles {userRoleIds} are not allowed, clientId is BringYourOwnWallet"),
         new((int)AdministrationServiceAccountErrors.TECHNICAL_USER_CREATION_IN_PROGRESS, "Technical user can't be deleted because the creation progress is still running")
     ]);
 
@@ -66,5 +67,6 @@ public enum AdministrationServiceAccountErrors
     SERVICE_ACCOUNT_PENDING_PROCESS_STEPS,
     TECHNICAL_USER_CREATION_IN_PROGRESS,
     SERVICE_ACCOUNT_NOT_ACTIVE,
-    SERVICE_ACCOUNT_NO_PROVIDER_OR_OWNER
+    SERVICE_ACCOUNT_NO_PROVIDER_OR_OWNER,
+    SERVICE_ACCOUNT_USER_ROLES_NOT_ALLOWED,
 }

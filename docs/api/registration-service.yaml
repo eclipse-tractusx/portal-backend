@@ -3,6 +3,169 @@ info:
   title: Org.Eclipse.TractusX.Portal.Backend.Registration.Service
   version: v2.6.0
 paths:
+  '/api/registration/bringYourOwnWallet/{did}/validateDid':
+    post:
+      tags:
+        - BringYourOwnWallet
+      summary: ' (Authorization required - Roles: submit_registration)'
+      parameters:
+        - name: did
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+        '415':
+          description: Unsupported Media Type
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/registration/bringYourOwnWallet/{companyId}/saveHolderDid/{did}':
+    post:
+      tags:
+        - BringYourOwnWallet
+      summary: ' (Authorization required - Roles: submit_registration)'
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: did
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+        '415':
+          description: Unsupported Media Type
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/registration/bringYourOwnWallet/{companyId}/getHolderDid':
+    get:
+      tags:
+        - BringYourOwnWallet
+      summary: ' (Authorization required - Roles: submit_registration)'
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: No Content
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+        '415':
+          description: Unsupported Media Type
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
   /api/registration/errormessage:
     get:
       tags:
@@ -1333,6 +1496,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CompanyUniqueIdData'
+        holderDid:
+          type: string
+          nullable: true
         companyId:
           type: string
           format: uuid
@@ -1588,6 +1754,13 @@ components:
           type: array
           items:
             type: string
+      additionalProperties: false
+    NoContentResult:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
       additionalProperties: false
     OspDeclineReason:
       enum:

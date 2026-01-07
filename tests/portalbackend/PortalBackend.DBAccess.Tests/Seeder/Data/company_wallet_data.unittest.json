@@ -11,15 +11,25 @@
     "authentication_service_url": "https://example.org/auth"
   },
   {
-      "id": "ac17d2a4-3bf8-4d78-906f-b96aeddddfd1",
-      "company_id": "3dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
-      "did": "did:web:test",
-      "did_document": {},
-      "client_id": "cl1",
-      "client_secret": "",
-      "initialization_vector": null,
-      "encryption_mode": 0,
-      "authentication_service_url": "https://example.org/auth"
-    }
-  
+    "id": "ac17d2a4-3bf8-4d78-906f-b96aeddddfd1",
+    "company_id": "3dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "did": "did:web:test",
+    "did_document": {},
+    "client_id": "cl1",
+    "client_secret": "",
+    "initialization_vector": null,
+    "encryption_mode": 0,
+    "authentication_service_url": "https://example.org/auth"
+  },
+  {
+    "id": "84571142-db6b-4b86-b7af-1039dc0ffb5d",
+    "company_id": "554f23d5-669e-48ed-b06b-9a84dfa017c5",
+    "did": "did:web:test",
+    "did_document": {},
+    "client_id": "BYOWCLIENT_ID",
+    "client_secret": "",
+    "initialization_vector": null,
+    "encryption_mode": 0,
+    "authentication_service_url": "https://example.org/auth"
+  }
 ]

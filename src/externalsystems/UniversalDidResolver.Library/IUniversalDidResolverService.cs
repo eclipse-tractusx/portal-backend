@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,27 +17,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text.Json.Serialization;
+using Org.Eclipse.TractusX.Portal.Backend.UniversalDidResolver.Library.Models;
+using System.Text.Json;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
+namespace Org.Eclipse.TractusX.Portal.Backend.UniversalDidResolver.Library;
 
-public record RegistrationData(
-    string Name,
-    string City,
-    string StreetName,
-    string CountryAlpha2Code,
-    [property: JsonPropertyName("bpn")] string? BusinessPartnerNumber,
-    string? ShortName,
-    string Region,
-    string? StreetAdditional,
-    string? StreetNumber,
-    string? ZipCode,
-    IEnumerable<CompanyUniqueIdData> UniqueIds,
-    string? HolderDid = null
-);
+public interface IUniversalDidResolverService
+{
+    /// <summary>
+    /// Validates the did using the universal resolver
+    /// </summary>
+    /// <param name="did">The did that should be checked</param>
+    /// <param name="cancellationToken">The CancellationToken</param>
+    /// <returns><c>true</c> if the did is valid, otherwise <c>false</c></returns>
+    Task<DidValidationResult> ValidateDid(string did, CancellationToken cancellationToken);
 
-public record CompanyUniqueIdData(
-    [property: JsonPropertyName("type")] UniqueIdentifierId UniqueIdentifierId,
-    string Value
-);
+    Task<bool> ValidateSchema(JsonDocument content, CancellationToken cancellationToken);
+}
