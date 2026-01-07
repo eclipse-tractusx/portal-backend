@@ -49,13 +49,14 @@ public static class FlurlErrorHandler
             {
                 message = errorContent;
             }
-
+            logger.LogError(call.Exception, "Flur called falied with status code {StatusCode} and message {message}", (int)call.HttpResponseMessage.StatusCode, message);
+            var ex = new Exception("Flurl: call to external system failed");
             throw call.HttpResponseMessage.StatusCode switch
             {
                 HttpStatusCode.NotFound => new KeycloakEntityNotFoundException(message, call.Exception),
                 HttpStatusCode.Conflict => new KeycloakEntityConflictException(message, call.Exception),
                 HttpStatusCode.BadRequest => new KeycloakNoSuccessException(message, call.Exception),
-                _ => new ServiceException(message, call.Exception, call.HttpResponseMessage.StatusCode),
+                _ => new ServiceException(message, ex, call.HttpResponseMessage.StatusCode),
             };
         }));
     }

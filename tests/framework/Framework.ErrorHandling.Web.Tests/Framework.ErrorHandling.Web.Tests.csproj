@@ -39,11 +39,15 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+        <PackageReference Include="Flurl.Http" Version="3.2.0" />
     </ItemGroup>
+
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling.Web\Framework.ErrorHandling.Web.csproj" />
-      <ProjectReference Include="..\Framework.Tests.Shared\Framework.Tests.Shared.csproj" />
+      <ProjectReference Include="..\..\..\src\keycloak\Keycloak.ErrorHandling\Keycloak.ErrorHandling.csproj" />
+      <ProjectReference Include="..\..\..\tests\framework\Framework.Tests.Shared\Framework.Tests.Shared.csproj" />
+      <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
     </ItemGroup>
 
 

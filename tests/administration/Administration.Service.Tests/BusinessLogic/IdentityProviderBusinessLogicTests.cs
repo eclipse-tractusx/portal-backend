@@ -40,6 +40,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Net;
 using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
@@ -1873,6 +1874,46 @@ public class IdentityProviderBusinessLogicTests
         result.Mappers.Should().HaveCount(2);
         result.DisplayName.Should().Be("dis-shared");
         result.Enabled.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task UpdateOwnCompanyIdentityProviderAsync_WhenOidcMetadataImportFails_ThrowsServiceException_WithCorrectJsonMapping()
+    {
+        // Arrange
+        var identityProviderId = Guid.NewGuid();
+        var data = _fixture.Build<IdentityProviderEditableDetails>()
+            .With(x => x.Oidc, _fixture.Build<IdentityProviderEditableDetailsOidc>()
+                .With(x => x.MetadataUrl, "https://invalid-url.com/.well-known/openid-configuration")
+                .Create())
+            .With(x => x.Saml, default(IdentityProviderEditableDetailsSaml?))
+            .With(x => x.DisplayName, "test-display-name")
+            .Create();
+
+        var sut = new IdentityProviderBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            _errorMessageService,
+            _mailingProcessCreation,
+            _options,
+            _logger);
+
+        // Mock repository to return valid data
+        A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateData(A<Guid>._, A<Guid>._))
+            .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, null));
+
+        // Mock provisioning manager to throw ServiceException
+        A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("cl1"))
+            .ThrowsAsync(new ServiceException(
+                "The external identity provider service is currently unavailable.",
+                HttpStatusCode.BadGateway));
+
+        // Act
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None);
+
+        // Assert business logic throws ServiceException
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
+        ex.StatusCode.Should().Be(HttpStatusCode.BadGateway);
     }
 
     #endregion

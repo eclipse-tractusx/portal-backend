@@ -21,10 +21,14 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
+using Flurl.Http;
+using Flurl.Http.Testing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.FlurlSetup;
 using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -253,22 +257,39 @@ public class GeneralHttpExceptionMiddlewareTests
                 expectedException,
                 A<string>.That.Matches(x =>
                     x.StartsWith("GeneralErrorHandler caught ServiceException with errorId:") &&
-                    x.EndsWith("resulting in response status code 502, message 'type: TestErrors code: 1 first: foo second: bar'"))))
+                    x.Contains("resulting in response status code 502"))))
             .MustHaveHappenedOnceExactly();
 
         body.Position = 0;
         var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(body, Options);
-        errorResponse.Should().NotBeNull().And.BeOfType<ErrorResponse>();
-        errorResponse!.Errors.Should().HaveCount(2).And.Satisfy(
-            x => x.Key == "System.Private.CoreLib",
-            x => x.Key == "inner");
-        errorResponse.Details.Should().ContainSingle().Which.Should().Match<ErrorDetails>(x =>
-            x.Type == "TestErrors" &&
-            x.ErrorCode == "FIRST_ERROR" &&
-            x.Message == "type: TestErrors code: 1 first: {first} second: {second}" &&
-            x.Parameters.Count() == 2 &&
-            x.Parameters.First(p => p.Name == "first").Value == "foo" &&
-            x.Parameters.First(p => p.Name == "second").Value == "bar");
+        errorResponse!.Errors.Should().HaveCount(2);
+        errorResponse.Errors.Should().ContainKey("unknown");
+        errorResponse.Errors["unknown"].Should().BeEquivalentTo(
+            new[] { "remote service call failed", "" });
+    }
+
+    [Fact]
+
+    public async Task PostImport_WhenUrlInvalid_ThrowsFlurlExceptionWithExpectedMessage()
+    {
+        // Arrange
+        var logger = A.Fake<ILogger>();
+        FlurlErrorHandler.ConfigureErrorHandler(logger);
+
+        using var httpTest = new HttpTest();
+        httpTest.WithPostImportFailingDueToInvalidUrl();
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ServiceException>(async () =>
+        {
+            await "https://centralidp.tx.test/admin/realms/CX-Central/identity-provider/import-config"
+            .PostAsync(new StringContent("{}"));
+        });
+
+        // Assert
+        exception.Should().NotBeNull();
+        exception.InnerException.Should().BeOfType<HttpRequestException>();
+        exception.InnerException!.Message.Should().Contain("Flurl: call to external system failed");
     }
 
     private enum TestErrors

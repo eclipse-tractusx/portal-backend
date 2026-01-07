@@ -17,8 +17,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using FakeItEasy;
+using FluentAssertions;
 using Flurl.Http;
 using Flurl.Http.Testing;
+using Microsoft.Extensions.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.OpenIDConfiguration;
@@ -26,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 using System.Net;
+using Xunit;
 using IdentityProvider = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin.IdentityProvider;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.FlurlSetup;
@@ -134,11 +139,29 @@ public static class FlurlSetupExtensions
         return testClient;
     }
 
+    public static HttpTest WithGetUsersFailingDueToInvalidUrl(this HttpTest testClient)
+    {
+        testClient.ForCallsTo("*/admin/realms/*/users")
+            .WithVerb(HttpMethod.Get)
+            .SimulateException(new HttpRequestException("Name or service not known"));
+
+        return testClient;
+    }
+
     public static HttpTest WithIdentityProviderMappersAsync(this HttpTest testClient, IEnumerable<IdentityProviderMapper> idpMappers)
     {
         testClient.ForCallsTo("*/admin/realms/*/identity-provider/instances/*/mappers")
             .WithVerb(HttpMethod.Get)
             .RespondWithJson(idpMappers);
+        return testClient;
+    }
+
+    public static HttpTest WithPostImportFailingDueToInvalidUrl(this HttpTest testClient)
+    {
+        testClient.ForCallsTo("*/admin/realms/*/identity-provider/import-config")
+            .WithVerb(HttpMethod.Post)
+            .SimulateException(new HttpRequestException("Flurl: call to external system failed"));
+
         return testClient;
     }
 }
