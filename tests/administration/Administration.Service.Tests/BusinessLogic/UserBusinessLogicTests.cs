@@ -1188,19 +1188,17 @@ public class UserBusinessLogicTests
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var subscriptionId = _fixture.Create<Guid>();
         var userId = Guid.NewGuid();
         var companyUsers = _fixture.CreateMany<CompanyAppUserDetails>(5);
         A.CallTo(() => _identity.IdentityId).Returns(userId);
 
-        A.CallTo(() => _userRepository.GetOwnCompanyAppUsersPaginationSourceAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<IEnumerable<UserStatusId>>._, A<CompanyUserFilter>._))
+        A.CallTo(() => _userRepository.GetOwnCompanyAppUsersPaginationSourceAsync(A<Guid>._, A<Guid>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<IEnumerable<UserStatusId>>._, A<CompanyUserFilter>._))
             .Returns((skip, take) => Task.FromResult<Pagination.Source<CompanyAppUserDetails>?>(new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
         var sut = new UserBusinessLogic(null!, null!, null!, null!, _portalRepositories, _identityService, null!, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         var results = await sut.GetOwnCompanyAppUsersAsync(
             appId,
-            subscriptionId,
             0,
             10,
             new CompanyUserFilter(null, null, null, null, null));
@@ -1215,19 +1213,17 @@ public class UserBusinessLogicTests
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var subscriptionId = _fixture.Create<Guid>();
         var userId = Guid.NewGuid();
         var companyUsers = _fixture.CreateMany<CompanyAppUserDetails>(5);
         A.CallTo(() => _identity.IdentityId).Returns(userId);
 
-        A.CallTo(() => _userRepository.GetOwnCompanyAppUsersPaginationSourceAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<IEnumerable<UserStatusId>>._, A<CompanyUserFilter>._))
+        A.CallTo(() => _userRepository.GetOwnCompanyAppUsersPaginationSourceAsync(A<Guid>._, A<Guid>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<IEnumerable<UserStatusId>>._, A<CompanyUserFilter>._))
             .Returns((skip, take) => Task.FromResult<Pagination.Source<CompanyAppUserDetails>?>(new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
         var sut = new UserBusinessLogic(null!, null!, null!, null!, _portalRepositories, _identityService, null!, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
         var results = await sut.GetOwnCompanyAppUsersAsync(
             appId,
-            subscriptionId,
             1,
             3,
             new CompanyUserFilter(null, null, null, null, null));
