@@ -60,11 +60,6 @@
     "last_editor_id": null
   },
   {
-    "identity_id": "7b42e6de-7b59-4217-a63c-198e83d93776",
-    "user_role_id": "aabcdfeb-6669-4c74-89f0-19cda090873e",
-    "last_editor_id": null
-  },
-  {
     "identity_id": "d0c8ae19-d4f3-49cc-9cb4-6c766d4680f2",
     "user_role_id": "aabcdfeb-6669-4c74-89f0-19cda090873e",
     "last_editor_id": null
@@ -82,19 +77,6 @@
   {
     "identity_id": "8b42e6de-7b59-4217-a63c-198e83d93776",
     "user_role_id": "efc20368-9e82-46ff-b88f-6495b9810253",
-    "offer_subscription_id": "0b2ca541-206d-48ad-bc02-fb61fbcb5552",
-    "last_editor_id": null
-  },
-  {
-    "identity_id": "7b42e6de-7b59-4217-a63c-198e83d93776",
-    "user_role_id": "afc20368-9e82-46ff-b88f-6495b9810254",
-    "offer_subscription_id": "1b2ca541-206d-48ad-bc02-fb61fbcb5552",
-    "last_editor_id": null
-  },
-  {
-    "identity_id": "7b42e6de-7b59-4217-a63c-198e83d93776",
-    "user_role_id": "efc20368-9e82-46ff-b88f-6495b9810253",
-    "offer_subscription_id": "2b2ca541-206d-48ad-bc02-fb61fbcb5552",
     "last_editor_id": null
   }
 ]

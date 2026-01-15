@@ -304,13 +304,13 @@ public class UserRepository : IUserRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, Guid subscriptionId, Guid companyId) =>
+    public Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, Guid companyId) =>
         _dbContext.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
             .Select(companyUser => new
             {
                 User = companyUser,
-                Subscriptions = companyUser.Identity!.Company!.OfferSubscriptions.Where(subscription => subscription.OfferId == offerId && subscription.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE && subscription.Id == subscriptionId)
+                Subscriptions = companyUser.Identity!.Company!.OfferSubscriptions.Where(subscription => subscription.OfferId == offerId && subscription.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE)
             })
             .Select(x => new OfferIamUserData(
                 x.Subscriptions.Any(),

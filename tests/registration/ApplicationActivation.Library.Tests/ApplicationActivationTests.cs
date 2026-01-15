@@ -300,7 +300,7 @@ public class ApplicationActivationTests
             .Returns(userRoleData.ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>._, A<IDictionary<string, IEnumerable<string>>>._))
             .Returns(clientRoleNames.Select(x => (x.ClientId, x.UserRoleNames, default(Exception?))).ToAsyncEnumerable());
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(A<Guid>._, A<Guid>._, A<Action<IdentityAssignedRole>?>._))
+        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(A<Guid>._, A<Guid>._))
             .Returns(_fixture.Create<IdentityAssignedRole>());
         var companyInvitedUsers = new CompanyInvitedUserData[]
         {
@@ -346,7 +346,7 @@ public class ApplicationActivationTests
             .Returns(new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") }.ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>._, A<IDictionary<string, IEnumerable<string>>>._))
             .Returns(clientRoleNames.Select(x => (x.ClientId, x.UserRoleNames, default(Exception?))).ToAsyncEnumerable());
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(A<Guid>._, A<Guid>._, A<Action<IdentityAssignedRole>?>._))
+        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(A<Guid>._, A<Guid>._))
             .Returns(_fixture.Create<IdentityAssignedRole>());
         A.CallTo(() => _applicationRepository.GetInvitedUsersWithoutInitialRoles(Id, A<IEnumerable<Guid>>._))
             .Returns(Enumerable.Repeat(new CompanyInvitedUserData(CompanyUserId1, Enumerable.Empty<Guid>()), 1).ToAsyncEnumerable());

@@ -130,28 +130,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().ContainSingle().Which.Should().Match<(Guid OfferId, Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider)>(x =>
             x.SubscriptionUrl == "https://ec-qas.d13fe27.kyma.ondemand.com" &&
-            x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce05744000b") &&
-            x.SubscriptionId == new Guid("0b2ca541-206d-48ad-bc02-fb61fbcb5552")
-        );
-    }
-
-    [Fact]
-    public async Task GetAllBusinessAppDataForUserIdAsync_WithValidUser_WithMultipleSubscriptions_ReturnsExpectedResult()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut();
-
-        // Act
-        var result = await sut.GetAllBusinessAppDataForUserIdAsync(new("7b42e6de-7b59-4217-a63c-198e83d93776")).ToListAsync();
-
-        // Assert
-        result.Should().HaveCount(2).And.Satisfy(
-            x => x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce05744000b") &&
-                x.SubscriptionId == new Guid("1b2ca541-206d-48ad-bc02-fb61fbcb5552") &&
-                x.SubscriptionUrl == "https://ec-qas.111.kyma.ondemand.com",
-            x => x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce05744000b") &&
-                x.SubscriptionId == new Guid("2b2ca541-206d-48ad-bc02-fb61fbcb5552") &&
-                x.SubscriptionUrl == null
+            x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce05744000b")
         );
     }
 

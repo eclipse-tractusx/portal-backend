@@ -36,7 +36,7 @@ public interface IUserRolesRepository
     UserRole DeleteUserRole(Guid roleId);
 
     IEnumerable<UserRoleDescription> CreateAppUserRoleDescriptions(IEnumerable<(Guid RoleId, string LanguageCode, string Description)> roleLanguageDescriptions);
-    IdentityAssignedRole CreateIdentityAssignedRole(Guid companyUserId, Guid companyUserRoleId, Action<IdentityAssignedRole>? setOptionalParameters = null);
+    IdentityAssignedRole CreateIdentityAssignedRole(Guid companyUserId, Guid companyUserRoleId);
     void CreateIdentityAssignedRoleRange(IEnumerable<(Guid CompanyUserId, Guid CompanyUserRoleId)> companyUserRoleIds);
     IdentityAssignedRole DeleteIdentityAssignedRole(Guid companyUserId, Guid userRoleId);
     void DeleteCompanyUserAssignedRoles(IEnumerable<(Guid CompanyUserId, Guid UserRoleId)> companyUserAssignedRoleIds);

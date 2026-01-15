@@ -10,16 +10,6 @@
     "description": "Vehicle Purchaser"
   },
   {
-    "user_role_id": "afc20368-9e82-46ff-b88f-6495b9810254",
-    "language_short_name": "de",
-    "description": "Verwalter"
-  },
-  {
-    "user_role_id": "afc20368-9e82-46ff-b88f-6495b9810254",
-    "language_short_name": "en",
-    "description": "Manager"
-  },
-  {
     "user_role_id": "aabcdfeb-6669-4c74-89f0-19cda090873f",
     "language_short_name": "de",
     "description": "Dismantling Lead"

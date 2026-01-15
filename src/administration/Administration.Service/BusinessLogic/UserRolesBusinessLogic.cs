@@ -95,10 +95,10 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
             });
     }
 
-    public Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync(Guid appId, Guid companyUserId, Guid subscriptionId, IEnumerable<string> roles) =>
+    public Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync(Guid appId, Guid companyUserId, IEnumerable<string> roles) =>
         ModifyUserRolesInternal(
             () => _portalRepositories.GetInstance<IUserRepository>()
-                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, companyUserId, subscriptionId, _identityData.CompanyId),
+                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, companyUserId, _identityData.CompanyId),
             (Guid companyUserId, IEnumerable<string> roles, Guid offerId) => _portalRepositories.GetInstance<IUserRolesRepository>()
                 .GetAssignedAndMatchingAppRoles(companyUserId, roles, offerId).Select(x => new UserRoleModificationData(x.UserRoleText, x.RoleId, x.IsAssigned, true)),
             appId, companyUserId, roles, _identityData.CompanyId,
@@ -113,15 +113,13 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
                     RemovedRoles = string.Join(",", data.RemovedRoles),
                     AddedRoles = string.Join(",", data.AddedRoles)
                 }, _options), NotificationTypeId.ROLE_UPDATE_APP_OFFER);
-            }, subscriptionId);
+            });
 
     private async Task<IEnumerable<UserRoleWithId>> ModifyUserRolesInternal(
         Func<Task<OfferIamUserData?>> getIamUserData,
         Func<Guid, IEnumerable<string>, Guid, IAsyncEnumerable<UserRoleModificationData>> getUserRoleModificationData,
         Guid offerId, Guid companyUserId, IEnumerable<string> roles, Guid adminCompanyId,
-        Func<(Guid OfferId, string OfferName, string? Firstname, string? Lastname, IEnumerable<string> RemovedRoles,
-        IEnumerable<string> AddedRoles), (string Content, NotificationTypeId NotificationTypeId)>? getNotificationData,
-        Guid? subscriptionId = null)
+        Func<(Guid OfferId, string OfferName, string? Firstname, string? Lastname, IEnumerable<string> RemovedRoles, IEnumerable<string> AddedRoles), (string Content, NotificationTypeId NotificationTypeId)>? getNotificationData)
     {
         var result = await getIamUserData().ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
@@ -163,7 +161,7 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
         var rolesToAdd = existingRoles.Where(role => !role.IsAssigned && role.IsAssignable);
         var rolesToDelete = existingRoles.Where(role => role.IsAssigned).ExceptBy(distinctRoles, role => role.CompanyUserRoleText).ToImmutableList();
 
-        var rolesAdded = await AddRoles(companyUserId, result.IamClientIds, rolesToAdd, iamUserId, subscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var rolesAdded = await AddRoles(companyUserId, result.IamClientIds, rolesToAdd, iamUserId).ConfigureAwait(ConfigureAwaitOptions.None);
         var rolesNotAdded = rolesToAdd.ExceptBy(rolesAdded.Select(role => role.CompanyUserRoleId), role => role.CompanyUserRoleId);
 
         if (rolesToDelete.Any())
@@ -195,7 +193,7 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
         return rolesNotAdded.Select(x => new UserRoleWithId(x.CompanyUserRoleText, x.CompanyUserRoleId));
     }
 
-    private async Task<IEnumerable<UserRoleModificationData>> AddRoles(Guid companyUserId, IEnumerable<string> iamClientIds, IEnumerable<UserRoleModificationData> rolesToAdd, string iamUserId, Guid? subscriptionId = null)
+    private async Task<IEnumerable<UserRoleModificationData>> AddRoles(Guid companyUserId, IEnumerable<string> iamClientIds, IEnumerable<UserRoleModificationData> rolesToAdd, string iamUserId)
     {
         var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var clientRoleNames = iamClientIds.ToDictionary(clientId => clientId, _ => rolesToAdd.Select(x => x.CompanyUserRoleText));
@@ -216,10 +214,7 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
             .ConfigureAwait(false);
         foreach (var roleWithId in rolesToAdd)
         {
-            userRoleRepository.CreateIdentityAssignedRole(companyUserId, roleWithId.CompanyUserRoleId, assignedRoles =>
-            {
-                assignedRoles.OfferSubscriptionId = subscriptionId;
-            });
+            userRoleRepository.CreateIdentityAssignedRole(companyUserId, roleWithId.CompanyUserRoleId);
         }
         return rolesToAdd;
     }

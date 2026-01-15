@@ -196,10 +196,10 @@ public class UserControllerTest
         var roles = _fixture.CreateMany<string>(3);
 
         // Act
-        await _controller.ModifyAppUserRolesAsync(companyUserId, appId, subscriptionId, roles);
+        await _controller.ModifyAppUserRolesAsync(companyUserId, appId, roles);
 
         // Assert
-        A.CallTo(() => _rolesLogic.ModifyAppUserRolesAsync(appId, companyUserId, subscriptionId, roles)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _rolesLogic.ModifyAppUserRolesAsync(appId, companyUserId, roles)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
