@@ -598,16 +598,9 @@ public class AppBusinessLogicTests
             new(Guid.NewGuid(), _fixture.CreateMany<string>(3).ToImmutableArray()),
             new(Guid.NewGuid(), _fixture.CreateMany<string>(3).ToImmutableArray())
         };
-        var offerSubscriptionDetailData = new OfferSubscriptionStateDetailData[]
-        {
-            new(Guid.NewGuid(), OfferSubscriptionStatusId.PENDING),
-            new(Guid.NewGuid(), OfferSubscriptionStatusId.PENDING),
-            new(Guid.NewGuid(), OfferSubscriptionStatusId.ACTIVE)
-        };
         var data = _fixture.Build<OfferDetailsData>()
             .With(x => x.Documents, documentData)
             .With(x => x.TechnicalUserProfile, technicalUserProfiles)
-            .With(x => x.OfferSubscriptionDetailData, offerSubscriptionDetailData)
             .Create();
         A.CallTo(() => _offerRepository.GetOfferDetailsByIdAsync(A<Guid>._, A<Guid>._, A<string?>._, A<string>._!, A<OfferTypeId>._))
             .Returns(data);
@@ -634,6 +627,7 @@ public class AppBusinessLogicTests
         result.LicenseType.Should().Be(data.LicenseTypeId);
         result.Price.Should().Be(data.Price);
         result.Tags.Should().ContainInOrder(data.Tags);
+        result.IsSubscribed.Should().Be(result.IsSubscribed);
         result.Languages.Should().ContainInOrder(data.Languages);
         result.Documents.Should().HaveCount(2).And.Satisfy(
             x => x.Key == DocumentTypeId.APP_CONTRACT &&
@@ -652,11 +646,6 @@ public class AppBusinessLogicTests
             x => x.Key == technicalUserProfiles[0].TechnicalUserProfileId && x.Value.SequenceEqual(technicalUserProfiles[0].UserRoles),
             x => x.Key == technicalUserProfiles[1].TechnicalUserProfileId && x.Value.SequenceEqual(technicalUserProfiles[1].UserRoles)
         );
-        result.OfferSubscriptionDetailData.Should().HaveCount(3).And.Satisfy(
-            x => x.OfferSubscriptionId == offerSubscriptionDetailData[0].OfferSubscriptionId && x.OfferSubscriptionStatus == offerSubscriptionDetailData[0].OfferSubscriptionStatus,
-            x => x.OfferSubscriptionId == offerSubscriptionDetailData[1].OfferSubscriptionId && x.OfferSubscriptionStatus == offerSubscriptionDetailData[1].OfferSubscriptionStatus,
-            x => x.OfferSubscriptionId == offerSubscriptionDetailData[2].OfferSubscriptionId && x.OfferSubscriptionStatus == offerSubscriptionDetailData[2].OfferSubscriptionStatus
-        );
     }
 
     [Fact]
@@ -669,6 +658,7 @@ public class AppBusinessLogicTests
             .With(x => x.ProviderUri, default(string?))
             .With(x => x.LongDescription, default(string?))
             .With(x => x.Price, default(string?))
+            .With(x => x.IsSubscribed, default(OfferSubscriptionStatusId))
             .Create();
         A.CallTo(() => _offerRepository.GetOfferDetailsByIdAsync(A<Guid>._, A<Guid>._, A<string>._, A<string>._, A<OfferTypeId>._))
             .Returns(data);
@@ -686,6 +676,7 @@ public class AppBusinessLogicTests
         result.ProviderUri.Should().Be(Constants.ErrorString);
         result.LongDescription.Should().Be(Constants.ErrorString);
         result.Price.Should().Be(Constants.ErrorString);
+        result.IsSubscribed.Should().BeNull();
     }
 
     #endregion

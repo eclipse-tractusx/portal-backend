@@ -229,23 +229,22 @@ public class UserController : ControllerBase
     /// Updates the app-roles for the user
     /// </summary>
     /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the application</param>
-    /// <param name="companyUserId" example="3282A535-4C52-4D9A-B5DA-2AB11C466933">Id of the company user</param>
-    /// <param name="subscriptionId" example="4ED6B89E-6D74-4C3D-B979-C461C80D7936">Id of the subscription</param>
+    /// <param name="companyUserId"></param>
     /// <param name="roles"></param>
     /// <returns></returns>
-    /// <remarks>Example: PUT: api/administration/user/owncompany/users/{companyUserId}/apps/{appId}/subscription/{subscriptionId}/roles</remarks>
+    /// <remarks>Example: PUT: api/administration/user/owncompany/users/{companyUserId}/apps/{appId}/roles</remarks>
     /// <response code="200">Roles got successfully updated user account.</response>
     /// <response code="400">Invalid User roles for client</response>
     /// <response code="404">User not found</response>
     [HttpPut]
     [Authorize(Roles = "modify_user_account")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [Route("owncompany/users/{companyUserId}/apps/{appId}/subscription/{subscriptionId}/roles")]
+    [Route("owncompany/users/{companyUserId}/apps/{appId}/roles")]
     [ProducesResponseType(typeof(IEnumerable<UserRoleWithId>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync([FromRoute] Guid companyUserId, [FromRoute] Guid appId, [FromRoute] Guid subscriptionId, [FromBody] IEnumerable<string> roles) =>
-        _rolesLogic.ModifyAppUserRolesAsync(appId, companyUserId, subscriptionId, roles);
+    public Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync([FromRoute] Guid companyUserId, [FromRoute] Guid appId, [FromBody] IEnumerable<string> roles) =>
+        _rolesLogic.ModifyAppUserRolesAsync(appId, companyUserId, roles);
 
     /// <summary>
     /// Adds the given business partner numbers to the user for the given id.
@@ -430,7 +429,6 @@ public class UserController : ControllerBase
     /// Get for given app id all the company assigned users
     /// </summary>
     /// <param name="appId">Get company app users by appId</param>
-    /// <param name="subscriptionId">Get company app users by appId and subscriptionId</param>
     /// <param name="page">page index start from 0</param>
     /// <param name="size">size to get number of records</param>
     /// <param name="firstName">First Name of User</param>
@@ -444,11 +442,10 @@ public class UserController : ControllerBase
     [HttpGet]
     [Authorize(Roles = "view_user_management")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
-    [Route("owncompany/apps/{appId}/subscription/{subscriptionId}/users")]
+    [Route("owncompany/apps/{appId}/users")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyAppUserDetails>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync(
         [FromRoute] Guid appId,
-        [FromRoute] Guid subscriptionId,
         [FromQuery] int page = 0,
         [FromQuery] int size = 15,
         [FromQuery] string? firstName = null,
@@ -458,7 +455,6 @@ public class UserController : ControllerBase
         [FromQuery] bool? hasRole = null) =>
         _logic.GetOwnCompanyAppUsersAsync(
             appId,
-            subscriptionId,
             page,
             size,
             new CompanyUserFilter(

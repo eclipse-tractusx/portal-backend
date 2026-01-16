@@ -45,6 +45,6 @@ public interface IUserBusinessLogic
     Task<int> DeleteOwnUserAsync(Guid companyUserId);
     IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> userIds);
     Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid companyUserId);
-    Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, Guid subscriptionId, int page, int size, CompanyUserFilter filter);
+    Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, int page, int size, CompanyUserFilter filter);
     Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid userId, string businessPartnerNumber);
 }

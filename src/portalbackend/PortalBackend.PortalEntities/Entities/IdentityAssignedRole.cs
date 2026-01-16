@@ -22,7 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditIdentityAssignedRole20250929))]
+[AuditEntityV1(typeof(AuditIdentityAssignedRole20230522))]
 public class IdentityAssignedRole : IAuditableV1
 {
     public IdentityAssignedRole(Guid identityId, Guid userRoleId)
@@ -33,7 +33,6 @@ public class IdentityAssignedRole : IAuditableV1
 
     public Guid IdentityId { get; private set; }
     public Guid UserRoleId { get; private set; }
-    public Guid? OfferSubscriptionId { get; set; }
 
     [LastEditorV1]
     public Guid? LastEditorId { get; private set; }
@@ -42,5 +41,4 @@ public class IdentityAssignedRole : IAuditableV1
     public virtual Identity? LastEditor { get; private set; }
     public virtual Identity? Identity { get; private set; }
     public virtual UserRole? UserRole { get; private set; }
-    public virtual OfferSubscription? OfferSubscription { get; private set; }
 }

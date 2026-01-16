@@ -142,10 +142,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         documentTypeId.Should().NotContain(DocumentTypeId.APP_LEADIMAGE);
         documentTypeId.Should().NotContain(DocumentTypeId.APP_IMAGE);
         offerDetail.TechnicalUserProfile.Should().BeEmpty();
-        offerDetail.OfferSubscriptionDetailData.Should().HaveCount(2).And.Satisfy(
-            x => x.OfferSubscriptionId == new Guid("e8886159-9258-44a5-88d8-f5735a197a09") && x.OfferSubscriptionStatus == OfferSubscriptionStatusId.PENDING,
-            x => x.OfferSubscriptionId == new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba") && x.OfferSubscriptionStatus == OfferSubscriptionStatusId.ACTIVE
-        );
+        offerDetail.IsSubscribed.Should().Be(OfferSubscriptionStatusId.PENDING);
     }
 
     #endregion
@@ -1356,14 +1353,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.Instances.Should().HaveCount(3).And.Satisfy(
-            x => x.InstanceId == new Guid("b161d570-f6ff-45b4-a077-243f72487af6") &&
-                x.InternalClientId == "Cl10-CX-xx",
-            x => x.InstanceId == new Guid("c161d570-f6ff-45b4-a077-243f72487af6") &&
-                x.InternalClientId == "Cl10-CX-AA",
-            x => x.InstanceId == new Guid("c161d570-f6ff-45b4-a077-243f72487af7") &&
-                x.InternalClientId == "Cl10-CX-BB"
-        );
+        result!.Instances.Should().HaveCount(1).And.ContainSingle(x => x.InstanceId == new Guid("b161d570-f6ff-45b4-a077-243f72487af6"));
         result.OfferName.Should().Be("Trace-X");
     }
 

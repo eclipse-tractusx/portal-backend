@@ -196,10 +196,10 @@ public class UserControllerTest
         var roles = _fixture.CreateMany<string>(3);
 
         // Act
-        await _controller.ModifyAppUserRolesAsync(companyUserId, appId, subscriptionId, roles);
+        await _controller.ModifyAppUserRolesAsync(companyUserId, appId, roles);
 
         // Assert
-        A.CallTo(() => _rolesLogic.ModifyAppUserRolesAsync(appId, companyUserId, subscriptionId, roles)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _rolesLogic.ModifyAppUserRolesAsync(appId, companyUserId, roles)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -284,15 +284,14 @@ public class UserControllerTest
         //Arrange
         var paginationResponse = new Pagination.Response<CompanyAppUserDetails>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CompanyAppUserDetails>(5));
         var appId = Guid.NewGuid();
-        var subscriptionId = Guid.NewGuid();
-        A.CallTo(() => _logic.GetOwnCompanyAppUsersAsync(appId, subscriptionId, 0, 15, new(null, null, null, null, null)))
+        A.CallTo(() => _logic.GetOwnCompanyAppUsersAsync(appId, 0, 15, new(null, null, null, null, null)))
             .Returns(paginationResponse);
 
         // Act
-        var result = await _controller.GetCompanyAppUsersAsync(appId, subscriptionId, 0, 15);
+        var result = await _controller.GetCompanyAppUsersAsync(appId, 0, 15);
 
         // Assert
-        A.CallTo(() => _logic.GetOwnCompanyAppUsersAsync(appId, subscriptionId, 0, 15, new(null, null, null, null, null))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetOwnCompanyAppUsersAsync(appId, 0, 15, new(null, null, null, null, null))).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(5);
     }
 

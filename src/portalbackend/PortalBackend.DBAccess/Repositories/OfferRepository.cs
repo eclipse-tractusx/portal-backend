@@ -107,6 +107,11 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                     .Select(license => license.Licensetext)
                     .FirstOrDefault(),
                 offer.Tags.Select(t => t.Name),
+                offer.Companies.Where(c => c.Id == userCompanyId)
+                    .SelectMany(company => company.OfferSubscriptions.Where(x => x.OfferId == offerId))
+                    .OrderByDescending(x => x.DateCreated)
+                    .Select(x => x.OfferSubscriptionStatusId)
+                    .FirstOrDefault(),
                 offer.SupportedLanguages.Select(l => l.ShortName),
                 offer.Documents
                     .Where(doc => doc.DocumentTypeId != DocumentTypeId.APP_IMAGE && doc.DocumentTypeId != DocumentTypeId.APP_LEADIMAGE)
@@ -116,10 +121,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 offer.LicenseTypeId,
                 offer.TechnicalUserProfiles.Where(tup => tup.TechnicalUserProfileAssignedUserRoles.Any()).Select(tup => new TechnicalUserRoleData(
                     tup.Id,
-                    tup.TechnicalUserProfileAssignedUserRoles.Select(ur => ur.UserRole!.UserRoleText))),
-                offer.OfferSubscriptions
-                    .Where(os => os.CompanyId == userCompanyId)
-                    .Select(x => new OfferSubscriptionStateDetailData(x.Id, x.OfferSubscriptionStatusId))
+                    tup.TechnicalUserProfileAssignedUserRoles.Select(ur => ur.UserRole!.UserRoleText)))
             ))
             .SingleOrDefaultAsync();
 

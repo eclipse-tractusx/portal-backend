@@ -37,13 +37,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="LongDescription">Long description of the app</param>
 /// <param name="Price">Pricing information of the app</param>
 /// <param name="Tags">Tags assigned to application</param>
+/// <param name="IsSubscribed">Whether app has been purchased by the user's company</param>
 /// <param name="Languages">Languages that the app is available in</param>
 /// <param name="Documents">document assigned to offer</param>
 /// <param name="PrivacyPolicies">privacy policy assigned to offer</param>
 /// <param name="IsSingleInstance">defines whether the offer is a single instance</param>
 /// <param name="LicenseTypeId">LicenseTypeId for APp</param>
 /// <param name="TechnicalUserProfile">Technical User Profile</param>
-/// <param name="OfferSubscriptionDetailData">Detail Data of the offer subscription</param>
 public record OfferDetailsData(
     Guid Id,
     string? Title,
@@ -57,13 +57,13 @@ public record OfferDetailsData(
     string? LongDescription,
     string? Price,
     IEnumerable<string> Tags,
+    OfferSubscriptionStatusId IsSubscribed,
     IEnumerable<string> Languages,
     IEnumerable<DocumentTypeData> Documents,
     IEnumerable<PrivacyPolicyId> PrivacyPolicies,
     bool IsSingleInstance,
     LicenseTypeId LicenseTypeId,
-    IEnumerable<TechnicalUserRoleData> TechnicalUserProfile,
-    IEnumerable<OfferSubscriptionStateDetailData> OfferSubscriptionDetailData
+    IEnumerable<TechnicalUserRoleData> TechnicalUserProfile
 );
 
 /// <summary>

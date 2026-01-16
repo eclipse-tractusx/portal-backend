@@ -75,13 +75,13 @@ public interface IUserRepository
     /// <returns>Returns a list of the company user emails</returns>
     IAsyncEnumerable<(string Email, string? FirstName, string? LastName)> GetCompanyUserEmailForCompanyAndRoleId(IEnumerable<Guid> userRoleIds, Guid companyId);
 
-    Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, Guid subscriptionId, Guid companyId);
+    Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, Guid companyId);
 
     Task<CoreOfferIamUserData?> GetCoreOfferAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, Guid companyId);
 
     IAsyncEnumerable<Guid> GetServiceProviderCompanyUserWithRoleIdAsync(Guid offerId, IEnumerable<Guid> userRoleIds);
 
-    Func<int, int, Task<Pagination.Source<CompanyAppUserDetails>?>> GetOwnCompanyAppUsersPaginationSourceAsync(Guid appId, Guid subscriptionId, Guid companyUserId, IEnumerable<OfferSubscriptionStatusId> subscriptionStatusIds, IEnumerable<UserStatusId> companyUserStatusIds, CompanyUserFilter filter);
+    Func<int, int, Task<Pagination.Source<CompanyAppUserDetails>?>> GetOwnCompanyAppUsersPaginationSourceAsync(Guid appId, Guid companyUserId, IEnumerable<OfferSubscriptionStatusId> subscriptionStatusIds, IEnumerable<UserStatusId> companyUserStatusIds, CompanyUserFilter filter);
 
     /// <summary>
     /// User account data for deletion of own userId

@@ -37,7 +37,6 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     private const string ValidUserCompanyId = "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87";
     private readonly Guid _validCompanyUser = new(ValidCompanyUserTxt);
     private readonly Guid _validOfferId = new("ac1cf001-7fbc-1f2f-817f-bce0572c0007");
-    private readonly Guid _validOfferSubscriptionId = new("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba");
 
     public UserRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -60,7 +59,6 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Act
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
             _validOfferId,
-            _validOfferSubscriptionId,
             _validCompanyUser,
             new[] { OfferSubscriptionStatusId.ACTIVE },
             new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE },
@@ -80,7 +78,6 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Act
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
             _validOfferId,
-            _validOfferSubscriptionId,
             _validCompanyUser,
             new[] { OfferSubscriptionStatusId.ACTIVE },
             new[] { UserStatusId.INACTIVE },
@@ -100,7 +97,6 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Act
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
             _validOfferId,
-            _validOfferSubscriptionId,
             _validCompanyUser,
             new[] { OfferSubscriptionStatusId.ACTIVE },
             new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE, UserStatusId.DELETED },
@@ -120,7 +116,6 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Act
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
             _validOfferId,
-            _validOfferSubscriptionId,
             Guid.NewGuid(),
             new[] { OfferSubscriptionStatusId.ACTIVE },
             new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE },
@@ -269,15 +264,15 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetAppAssignedIamClientUserDataUntrackedAsync
 
     [Theory]
-    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "78d664de-04a0-41c6-9a47-478d303403d2", "3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF", ValidUserCompanyId, true, true, true, "SDE with EDC", "User", "Active")]
-    [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", "78d664de-04a0-41c6-9a47-478d303403d2", "3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF", ValidUserCompanyId, true, false, true, null, "User", "Active")]
-    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "78d664de-04a0-41c6-9a47-478d303403d2", "3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF", "00000000-0000-0000-0000-000000000000", true, true, false, "SDE with EDC", "User", "Active")]
-    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "deadbeef-dead-beef-dead-beefdeadbeef", "3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF", ValidUserCompanyId, false, false, false, null, null, null)]
-    public async Task GetAppAssignedIamClientUserDataUntrackedAsync_ReturnsExpected(Guid offerId, Guid companyUserId, Guid subscriptionId, Guid userCompanyId, bool found, bool validOffer, bool sameCompany, string? offerName, string? firstName, string? lastName)
+    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "78d664de-04a0-41c6-9a47-478d303403d2", ValidUserCompanyId, true, true, true, "SDE with EDC", "User", "Active")]
+    [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", "78d664de-04a0-41c6-9a47-478d303403d2", ValidUserCompanyId, true, false, true, null, "User", "Active")]
+    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "78d664de-04a0-41c6-9a47-478d303403d2", "00000000-0000-0000-0000-000000000000", true, true, false, "SDE with EDC", "User", "Active")]
+    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "deadbeef-dead-beef-dead-beefdeadbeef", ValidUserCompanyId, false, false, false, null, null, null)]
+    public async Task GetAppAssignedIamClientUserDataUntrackedAsync_ReturnsExpected(Guid offerId, Guid companyUserId, Guid userCompanyId, bool found, bool validOffer, bool sameCompany, string? offerName, string? firstName, string? lastName)
     {
         var sut = await CreateSut();
 
-        var iamUserData = await sut.GetAppAssignedIamClientUserDataUntrackedAsync(offerId, companyUserId, subscriptionId, userCompanyId)
+        var iamUserData = await sut.GetAppAssignedIamClientUserDataUntrackedAsync(offerId, companyUserId, userCompanyId)
             ;
 
         if (found)
@@ -444,17 +439,11 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var results = await sut.GetUserAssignedIdentityProviderForNetworkRegistration(new Guid("67ace0a9-b6df-438b-935a-fe858b8598dd")).ToListAsync();
 
         // Assert
-        results.Should().HaveCount(2)
-            .And.Satisfy(
-                x =>
+        results.Should().ContainSingle()
+            .Which.Should().Match<CompanyUserIdentityProviderProcessData>(x =>
+                x.ProviderLinkData.Single().UserName == "drstrange" &&
                 x.Email == "test@email.com" &&
-                x.Bpn == "BPNL00000003AYRE" &&
-                x.ProviderLinkData.Single().UserName == "drstrange",
-                x =>
-                x.Email == "test7@email.com" &&
-                x.Bpn == "BPNL00000003AYRE" &&
-                x.ProviderLinkData.Count() == 0
-            );
+                x.Bpn == "BPNL00000003AYRE");
     }
 
     #endregion

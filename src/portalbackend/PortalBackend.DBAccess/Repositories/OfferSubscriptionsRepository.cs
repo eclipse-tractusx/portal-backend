@@ -169,16 +169,14 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
 
     /// <inheritdoc />
     public IAsyncEnumerable<(Guid OfferId, Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider)> GetAllBusinessAppDataForUserIdAsync(Guid userId) =>
-        dbContext.OfferSubscriptions.AsNoTracking()
-            .Where(x =>
-                x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
-                x.Offer!.OfferTypeId == OfferTypeId.APP &&
-                x.AppSubscriptionDetail!.AppInstance != null &&
-                x.AppSubscriptionDetail.AppSubscriptionUrl != null &&
-                x.IdentityAssignedRoles.Any(iar =>
-                    iar.IdentityId == userId &&
-                    iar.Identity!.IdentityTypeId == IdentityTypeId.COMPANY_USER &&
-                    iar.OfferSubscriptionId != null))
+        dbContext.CompanyUsers.AsNoTracking()
+            .Where(user => user.Id == userId && user.Identity!.IdentityTypeId == IdentityTypeId.COMPANY_USER)
+            .SelectMany(user => user.Identity!.Company!.OfferSubscriptions.Where(subscription =>
+                subscription.Offer!.OfferTypeId == OfferTypeId.APP &&
+                subscription.Offer.UserRoles.Any(ur => ur.IdentityAssignedRoles.Any(iar => iar.IdentityId == userId)) &&
+                subscription.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
+                subscription.AppSubscriptionDetail!.AppInstance != null &&
+                subscription.AppSubscriptionDetail.AppSubscriptionUrl != null))
             .Select(offerSubscription => new ValueTuple<Guid, Guid, string?, string, Guid, string>(
                 offerSubscription.OfferId,
                 offerSubscription.Id,

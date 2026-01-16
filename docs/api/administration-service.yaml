@@ -5714,21 +5714,20 @@ paths:
           description: Internal Server Error
         '401':
           description: The User is unauthorized
-  '/api/administration/user/owncompany/users/{companyUserId}/apps/{appId}/subscription/{subscriptionId}/roles':
+  '/api/administration/user/owncompany/users/{companyUserId}/apps/{appId}/roles':
     put:
       tags:
         - User
       summary: 'Updates the app-roles for the user (Authorization required - Roles: modify_user_account)'
-      description: 'Example: PUT: api/administration/user/owncompany/users/{companyUserId}/apps/{appId}/subscription/{subscriptionId}/roles'
+      description: 'Example: PUT: api/administration/user/owncompany/users/{companyUserId}/apps/{appId}/roles'
       parameters:
         - name: companyUserId
           in: path
-          description: Id of the company user
+          description: ''
           required: true
           schema:
             type: string
             format: uuid
-          example: 3282A535-4C52-4D9A-B5DA-2AB11C466933
         - name: appId
           in: path
           description: Id of the application
@@ -5737,14 +5736,6 @@ paths:
             type: string
             format: uuid
           example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
-        - name: subscriptionId
-          in: path
-          description: Id of the subscription
-          required: true
-          schema:
-            type: string
-            format: uuid
-          example: 4ED6B89E-6D74-4C3D-B979-C461C80D7936
       requestBody:
         description: ''
         content:
@@ -6146,7 +6137,7 @@ paths:
           description: Internal Server Error
         '401':
           description: The User is unauthorized
-  '/api/administration/user/owncompany/apps/{appId}/subscription/{subscriptionId}/users':
+  '/api/administration/user/owncompany/apps/{appId}/users':
     get:
       tags:
         - User
@@ -6156,13 +6147,6 @@ paths:
         - name: appId
           in: path
           description: Get company app users by appId
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: subscriptionId
-          in: path
-          description: Get company app users by appId and subscriptionId
           required: true
           schema:
             type: string
