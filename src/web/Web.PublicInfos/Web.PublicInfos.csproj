@@ -32,6 +32,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\Web.Identity\Web.Identity.csproj" />
   </ItemGroup>
