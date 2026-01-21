@@ -18,12 +18,13 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 
-public class CustomAuthorizationMiddleware(IErrorMessageService errorMessageService) :
-    BaseHttpExceptionHandler(errorMessageService), IMiddleware
+public class CustomAuthorizationMiddleware(IErrorMessageService errorMessageService, ILogger<CustomAuthorizationMiddleware> logger) :
+    BaseHttpExceptionHandler(errorMessageService, logger), IMiddleware
 {
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {

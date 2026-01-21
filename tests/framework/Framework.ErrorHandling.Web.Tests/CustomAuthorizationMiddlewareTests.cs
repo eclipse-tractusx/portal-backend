@@ -22,6 +22,7 @@ using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using System.Net;
 using System.Text.Json;
@@ -43,10 +44,11 @@ public class CustomAuthorizationMiddlewareTests
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         var errorMessageService = A.Fake<IErrorMessageService>();
+        var logger = A.Fake<ILogger<CustomAuthorizationMiddleware>>();
         A.CallTo(() => errorMessageService.GetMessage(A<Type>._, A<int>._))
             .ReturnsLazily((Type type, int code) => $"type: {type.Name} code: {code} first: {{first}} second: {{second}}");
 
-        _customAuthorizationMiddleware = new CustomAuthorizationMiddleware(errorMessageService);
+        _customAuthorizationMiddleware = new CustomAuthorizationMiddleware(errorMessageService, logger);
     }
 
     [Fact]
