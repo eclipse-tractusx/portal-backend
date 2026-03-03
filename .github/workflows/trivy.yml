@@ -24,7 +24,7 @@ name: "Trivy Security Scan"
 
 on:
   push:
-    branches: [ main, develop, "**" ]
+    branches: [ "main", "develop", "**" ]
   # pull_request:
   # The branches below must be a subset of the branches above
   # branches: [ main, master ]
