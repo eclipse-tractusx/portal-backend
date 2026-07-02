@@ -22,7 +22,7 @@
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding</AssemblyName>
     <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding</RootNamespace>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UserSecretsId>b9d59db4-40b8-4722-8263-a61a1ef3155c</UserSecretsId>

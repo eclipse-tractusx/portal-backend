@@ -113,12 +113,11 @@ public class ApplicationActivationService(
             var userData = enumerator.Current;
             var iamUserId = await provisioningManager.GetUserByUserName(userData.CompanyUserId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new ConflictException($"user {userData.CompanyUserId} not found in keycloak");
 
-            var assignedRoles = await provisioningManager
+            var assignedRoles = (await provisioningManager
                 .AssignClientRolesToCentralUserAsync(iamUserId, approvalInitialRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames))
-                .ToDictionaryAsync(assigned => assigned.Client, assigned => (assigned.Roles, assigned.Error), cancellationToken)
-                .ConfigureAwait(false);
-
-            _settings.ApplicationApprovalInitialRoles
+                       .ToListAsync(cancellationToken)
+                       .ConfigureAwait(false))
+                       .ToDictionary(assigned => assigned.Client, assigned => (assigned.Roles, assigned.Error));            _settings.ApplicationApprovalInitialRoles
                 .Select(initialClientRoles => (
                     Initial: initialClientRoles,
                     AssignedRoles: assignedRoles[initialClientRoles.ClientId]))

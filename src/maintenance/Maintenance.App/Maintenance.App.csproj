@@ -22,7 +22,7 @@
     <PropertyGroup>
       <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Maintenance.App</AssemblyName>
       <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Maintenance.App</RootNamespace>
-      <TargetFramework>net9.0</TargetFramework>
+      <TargetFramework>net10.0</TargetFramework>
       <ImplicitUsings>enable</ImplicitUsings>
       <Nullable>enable</Nullable>
       <UserSecretsId>032003D5-FBCF-48CE-AE7C-F8F5F43DCCC1</UserSecretsId>

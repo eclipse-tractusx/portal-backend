@@ -20,7 +20,7 @@
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Processes.IdentityProviderProvisioning.Executor</AssemblyName>
     <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Processes.IdentityProviderProvisioning.Executor</RootNamespace>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>

@@ -54,11 +54,12 @@ public class ProcessExecutor<TProcessTypeId, TProcessStepTypeId> : IProcessExecu
             throw new UnexpectedConditionException($"processType {processTypeId} is not a registered executable processType.");
         }
 
-        var allSteps = await _processStepRepository
+        var allSteps = (await _processStepRepository
             .GetProcessStepData(processId)
             .PreSortedGroupBy(x => x.ProcessStepTypeId, x => x.ProcessStepId)
-            .ToDictionaryAsync(g => g.Key, g => g.AsEnumerable(), cancellationToken)
-            .ConfigureAwait(false);
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false))
+            .ToDictionary(g => g.Key, g => g.AsEnumerable());
 
         var context = new ProcessContext(
             processId,

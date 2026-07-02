@@ -21,7 +21,7 @@
   <PropertyGroup>
     <AssmblyNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests</AssmblyNamespace>
     <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests</RootNamespace>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
