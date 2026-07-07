@@ -20,7 +20,7 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -34,7 +34,7 @@ public static class SwaggerGenConfiguration
 
         c.SwaggerDoc(version, new OpenApiInfo { Title = assemblyName, Version = version });
 
-        c.MapType(typeof(IFormFile), () => new OpenApiSchema { Type = "file", Format = "binary" });
+        c.MapType<IFormFile>(() => new OpenApiSchema { Type = JsonSchemaType.String, Format = "binary" });
         c.SupportNonNullableReferenceTypes();
 
         c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -45,13 +45,10 @@ public static class SwaggerGenConfiguration
             Type = SecuritySchemeType.ApiKey,
             Scheme = "Bearer"
         });
-        c.AddSecurityRequirement(new OpenApiSecurityRequirement
+        c.AddSecurityRequirement(_ => new OpenApiSecurityRequirement
         {
             {
-                new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference {Type = ReferenceType.SecurityScheme, Id = "Bearer"}, Scheme = "oauth2", Name = "Bearer", In = ParameterLocation.Header,
-                },
+                new OpenApiSecuritySchemeReference("Bearer", null, null),
                 new List<string>()
             }
         });
