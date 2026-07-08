@@ -39,16 +39,17 @@ public static class SwaggerGenConfiguration
 
         c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
-            Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
+            Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter your token in the text input below.\r\n\r\nExample: \"eyJhbGc...\"",
             Name = "Authorization",
             In = ParameterLocation.Header,
-            Type = SecuritySchemeType.ApiKey,
-            Scheme = "Bearer"
+            Type = SecuritySchemeType.Http,
+            Scheme = "Bearer",
+            BearerFormat = "JWT"
         });
-        c.AddSecurityRequirement(_ => new OpenApiSecurityRequirement
+        c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
         {
             {
-                new OpenApiSecuritySchemeReference("Bearer", null, null),
+                new OpenApiSecuritySchemeReference("Bearer", document),
                 new List<string>()
             }
         });
