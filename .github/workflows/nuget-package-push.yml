@@ -44,6 +44,9 @@ jobs:
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
 
+    - name: Restore local dotnet tools
+      run: dotnet tool restore
+
     - name: Install dependencies
       run: dotnet restore src
 

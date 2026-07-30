@@ -21,7 +21,9 @@ FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS publi
 ARG TARGETARCH
 WORKDIR /
 COPY LICENSE NOTICE.md DEPENDENCIES /
+COPY .config/ .config/
 COPY src/ src/
+RUN dotnet tool restore
 WORKDIR /src/marketplace/Apps.Service
 RUN dotnet publish "Apps.Service.csproj" -c Release -o /app/publish
 
