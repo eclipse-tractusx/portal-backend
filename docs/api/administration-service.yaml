@@ -190,7 +190,7 @@ paths:
                 CredentialType:
                   type: string
                 Document:
-                  type: file
+                  type: string
                   format: binary
             encoding:
               VerifiedCredentialExternalTypeDetailId:
@@ -209,7 +209,7 @@ paths:
                 CredentialType:
                   type: string
                 Document:
-                  type: file
+                  type: string
                   format: binary
             encoding:
               VerifiedCredentialExternalTypeDetailId:
@@ -246,7 +246,7 @@ paths:
                 CertificateType:
                   $ref: '#/components/schemas/CompanyCertificateTypeId'
                 Document:
-                  type: file
+                  type: string
                   format: binary
                 ExternalCertificateNumber:
                   type: string
@@ -284,7 +284,7 @@ paths:
                 CertificateType:
                   $ref: '#/components/schemas/CompanyCertificateTypeId'
                 Document:
-                  type: file
+                  type: string
                   format: binary
                 ExternalCertificateNumber:
                   type: string
@@ -405,11 +405,13 @@ paths:
           description: Optional filter for company certificate status
           schema:
             $ref: '#/components/schemas/CompanyCertificateStatusId'
+          example: ''
         - name: certificateType
           in: query
           description: Optional filter for company certificate type
           schema:
             $ref: '#/components/schemas/CompanyCertificateTypeId'
+          example: ''
       responses:
         '200':
           description: Returns the list of all active company certificates.
@@ -1011,16 +1013,19 @@ paths:
               type: array
               items:
                 type: string
+            example: BPNL00000003CRHK
           text/json:
             schema:
               type: array
               items:
                 type: string
+            example: BPNL00000003CRHK
           application/*+json:
             schema:
               type: array
               items:
                 type: string
+            example: BPNL00000003CRHK
       responses:
         '200':
           description: Returns company connector per bpn.
@@ -2185,7 +2190,7 @@ paths:
               type: object
               properties:
                 document:
-                  type: file
+                  type: string
                   description: The file including the users
                   format: binary
             encoding:
@@ -3028,6 +3033,7 @@ paths:
           required: true
           schema:
             type: string
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -3059,6 +3065,7 @@ paths:
           required: true
           schema:
             type: string
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -3090,6 +3097,7 @@ paths:
           required: true
           schema:
             type: string
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -3121,6 +3129,7 @@ paths:
           required: true
           schema:
             type: string
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -3152,6 +3161,7 @@ paths:
           required: true
           schema:
             type: string
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -3183,6 +3193,7 @@ paths:
           required: true
           schema:
             type: string
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -3214,6 +3225,7 @@ paths:
           required: true
           schema:
             type: string
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -3727,6 +3739,7 @@ paths:
           schema:
             type: string
             format: uuid
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -3759,6 +3772,7 @@ paths:
           schema:
             type: string
             format: uuid
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -3791,6 +3805,7 @@ paths:
           schema:
             type: string
             format: uuid
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -3823,6 +3838,7 @@ paths:
           schema:
             type: string
             format: uuid
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -3855,6 +3871,7 @@ paths:
           schema:
             type: string
             format: uuid
+          example: ''
         - name: processTypeId
           in: query
           description: 'Optional: The process type id that should be retriggered'
@@ -3956,6 +3973,7 @@ paths:
           schema:
             type: string
             format: uuid
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -3988,6 +4006,7 @@ paths:
           schema:
             type: string
             format: uuid
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -4020,6 +4039,7 @@ paths:
           schema:
             type: string
             format: uuid
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -4052,6 +4072,7 @@ paths:
           schema:
             type: string
             format: uuid
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -4084,6 +4105,7 @@ paths:
           schema:
             type: string
             format: uuid
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -4308,6 +4330,7 @@ paths:
           schema:
             type: string
             format: uuid
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -4340,6 +4363,7 @@ paths:
           schema:
             type: string
             format: uuid
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -4372,6 +4396,7 @@ paths:
           schema:
             type: string
             format: uuid
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -4404,6 +4429,7 @@ paths:
           schema:
             type: string
             format: uuid
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -4436,6 +4462,7 @@ paths:
           schema:
             type: string
             format: uuid
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -4468,6 +4495,7 @@ paths:
           schema:
             type: string
             format: uuid
+          example: ''
       responses:
         '204':
           description: Empty response on success.
@@ -5460,7 +5488,7 @@ paths:
               type: object
               properties:
                 document:
-                  type: file
+                  type: string
                   description: The file including the users
                   format: binary
             encoding:
@@ -5471,7 +5499,7 @@ paths:
               type: object
               properties:
                 document:
-                  type: file
+                  type: string
                   description: The file including the users
                   format: binary
             encoding:
@@ -5581,7 +5609,7 @@ paths:
               type: object
               properties:
                 document:
-                  type: file
+                  type: string
                   description: The file including the users
                   format: binary
             encoding:
@@ -5592,7 +5620,7 @@ paths:
               type: object
               properties:
                 document:
-                  type: file
+                  type: string
                   description: The file including the users
                   format: binary
             encoding:
@@ -8342,4 +8370,21 @@ components:
       name: Authorization
       in: header
 security:
-  - Bearer: [ ]
+  - { }
+tags:
+  - name: CompanyData
+  - name: Connectors
+  - name: Documents
+  - name: ErrorMessage
+  - name: IdentityProvider
+  - name: Invitation
+  - name: Mail
+  - name: Network
+  - name: OpenInformation
+  - name: PartnerNetwork
+  - name: Registration
+  - name: RegistrationStatus
+  - name: ServiceAccount
+  - name: StaticData
+  - name: SubscriptionConfiguration
+  - name: User

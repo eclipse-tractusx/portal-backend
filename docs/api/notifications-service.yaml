@@ -531,4 +531,8 @@ components:
       name: Authorization
       in: header
 security:
-  - Bearer: [ ]
+  - { }
+tags:
+  - name: ErrorMessage
+  - name: Notification
+  - name: OpenInformation

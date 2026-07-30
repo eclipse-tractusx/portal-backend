@@ -339,7 +339,7 @@ paths:
               type: object
               properties:
                 document:
-                  type: file
+                  type: string
                   description: ''
                   format: binary
             encoding:
@@ -350,7 +350,7 @@ paths:
               type: object
               properties:
                 document:
-                  type: file
+                  type: string
                   description: ''
                   format: binary
             encoding:
@@ -1853,4 +1853,11 @@ components:
       name: Authorization
       in: header
 security:
-  - Bearer: [ ]
+  - { }
+tags:
+  - name: BringYourOwnWallet
+  - name: ErrorMessage
+  - name: Network
+  - name: OpenInformation
+  - name: Registration
+  - name: StaticData
