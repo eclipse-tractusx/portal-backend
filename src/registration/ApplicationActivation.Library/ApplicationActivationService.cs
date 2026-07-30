@@ -115,9 +115,10 @@ public class ApplicationActivationService(
 
             var assignedRoles = (await provisioningManager
                 .AssignClientRolesToCentralUserAsync(iamUserId, approvalInitialRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames))
-                       .ToListAsync(cancellationToken)
-                       .ConfigureAwait(false))
-                       .ToDictionary(assigned => assigned.Client, assigned => (assigned.Roles, assigned.Error));            _settings.ApplicationApprovalInitialRoles
+                    .ToListAsync(cancellationToken)
+                    .ConfigureAwait(false))
+                    .ToDictionary(assigned => assigned.Client, assigned => (assigned.Roles, assigned.Error));
+            _settings.ApplicationApprovalInitialRoles
                 .Select(initialClientRoles => (
                     Initial: initialClientRoles,
                     AssignedRoles: assignedRoles[initialClientRoles.ClientId]))
