@@ -180,7 +180,7 @@ paths:
               type: object
               properties:
                 document:
-                  type: file
+                  type: string
                   description: ''
                   format: binary
             encoding:
@@ -191,7 +191,7 @@ paths:
               type: object
               properties:
                 document:
-                  type: file
+                  type: string
                   description: ''
                   format: binary
             encoding:
@@ -440,7 +440,7 @@ paths:
               type: object
               properties:
                 document:
-                  type: file
+                  type: string
                   description: ''
                   format: binary
             encoding:
@@ -451,7 +451,7 @@ paths:
               type: object
               properties:
                 document:
-                  type: file
+                  type: string
                   description: ''
                   format: binary
             encoding:
@@ -562,7 +562,7 @@ paths:
               type: object
               properties:
                 document:
-                  type: file
+                  type: string
                   description: ''
                   format: binary
             encoding:
@@ -573,7 +573,7 @@ paths:
               type: object
               properties:
                 document:
-                  type: file
+                  type: string
                   description: ''
                   format: binary
             encoding:
@@ -3859,9 +3859,15 @@ components:
       type: string
   securitySchemes:
     Bearer:
-      type: apiKey
-      description: "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\""
-      name: Authorization
-      in: header
+      type: http
+      description: "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter your token in the text input below.\r\n\r\nExample: \"eyJhbGc...\""
+      scheme: Bearer
+      bearerFormat: JWT
 security:
   - Bearer: [ ]
+tags:
+  - name: AppChange
+  - name: AppReleaseProcess
+  - name: Apps
+  - name: ErrorMessage
+  - name: OpenInformation

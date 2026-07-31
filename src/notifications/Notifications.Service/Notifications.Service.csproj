@@ -22,7 +22,7 @@
   <PropertyGroup>
       <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Notifications.Service</AssemblyName>
       <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Notifications.Service</RootNamespace>
-      <TargetFramework>net9.0</TargetFramework>
+      <TargetFramework>net10.0</TargetFramework>
       <Nullable>enable</Nullable>
       <ImplicitUsings>enable</ImplicitUsings>
       <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
@@ -38,7 +38,6 @@
       </GetAssemblyIdentity>
 
       <Message Text="generating openapi v$(Version)" Importance="high" />
-      <Exec Command="dotnet tool restore" />
       <Exec Command="dotnet tool run swagger tofile --yaml --output ../../../docs/api/notifications-service.yaml $(OutputPath)$(AssemblyName).dll v$(Version)" EnvironmentVariables="DOTNET_ROLL_FORWARD=LatestMinor;SKIP_CONFIGURATION_VALIDATION=true;MVC_ROUTING_BASEPATH=api/notification" />
     </Target>
 

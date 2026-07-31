@@ -14,7 +14,11 @@ The following setup was done for all existing services of the portal which curre
 
 ### Setup dotnet tool
 
-To be able to run the `dotnet tool run swagger tofile` command it needs to be installed for the project. Therefor a `dotnet-tools.json` file was created within a `.config` directory. This file includes a reference to a nuget package which is needed to execute the command.
+To run the `dotnet tool run swagger tofile` command, restore the repository-local tool from the root `.config/dotnet-tools.json` manifest once before building:
+
+```shell
+dotnet tool restore
+```
 
 ### Setup csproj
 
@@ -23,12 +27,11 @@ To execute the generation of the open api document the .csproj file of the proje
 ```xml
   <Target Name="openapi" AfterTargets="Build">
     <Message Text="generating openapi v$(Version)" Importance="high" />
-    <Exec Command="dotnet tool restore" />
     <Exec Command="dotnet tool run swagger tofile --yaml --output ../../../docs/api/$(AssemblyName).yaml $(OutputPath)$(AssemblyName).dll v$(Version)" EnvironmentVariables="DOTNET_ROLL_FORWARD=LatestMinor;SKIP_CONFIGURATION_VALIDATION=true;MVC_ROUTING_BASEPATH=api/administration" />
   </Target>
 ```
 
-The configuration runs after the build of the project, it executes a `dotnet tool restore` which is needed to than run the command to generate the open api file.
+The configuration runs after the project build and generates the OpenAPI file using the previously restored local tool.
 
 The `dotnet tool run swagger tofile` is executed with the following parameters:
 
