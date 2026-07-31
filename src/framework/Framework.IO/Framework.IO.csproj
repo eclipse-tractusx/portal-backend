@@ -63,9 +63,7 @@
 
 
   <ItemGroup>
-    <PackageReference Include="System.Linq.Async" Version="7.0.1">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="System.Linq.Async" Version="7.0.1" />
   </ItemGroup>
 
   <ItemGroup>
