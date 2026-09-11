@@ -35,6 +35,8 @@ jobs:
     strategy:
       matrix:
         dotnet-version: ['10.0']
+    permissions:
+      id-token: write # Enables OIDC token generation
     steps:
     - name: Checkout code
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -65,11 +67,17 @@ jobs:
           echo "$script_output"
           exit 1
         fi
-
+  
+    - name: NuGet login (OIDC → temp API key)
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: ${{ secrets.NUGET_USER }}
+  
     - name: Push nuget packages
       shell: bash
       run: |
-        bash ./scripts/pack_and_push_packages.sh --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        bash ./scripts/pack_and_push_packages.sh --api-key ${{steps.login.outputs.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
     - name: Get new version
       id: nugetPackageVersion
